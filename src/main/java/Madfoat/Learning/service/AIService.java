@@ -190,10 +190,12 @@ public class AIService {
             prompt.append("Based on the following business requirements or description, ");
         }
         
-        prompt.append("generate comprehensive software test cases In excel sheet . ");
+        // Updated instructions to force a Markdown table output that is easy to parse and export
+        prompt.append("generate comprehensive software test cases. ");
+        prompt.append("Output ONLY a Markdown table with the following headers: ID | Test Condition | Test Case Title | Steps | Expected | Actual. ");
+        prompt.append("Do not include any additional text before or after the table. ");
         prompt.append("Include functional, non-functional, positive, negative, boundary, and edge case test conditions. ");
-        prompt.append("The test cases should have (id , test condition , test case title , steps , expected , actual  ) columns" );
-       prompt.append("Format the output as a structured list with clear categories.\n\n");
+        prompt.append("Ensure each row is a single test case with detailed steps, expected, and an empty 'Actual' cell.\n\n");
         prompt.append("Input: ").append(input);
         
         return prompt.toString();
