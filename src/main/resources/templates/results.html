@@ -147,7 +147,10 @@
                         <button class="copy-btn" onclick="copyToClipboard()">
                             <i class="fas fa-copy"></i> Copy
                         </button>
-                        <div class="test-conditions" id="testConditions" th:text="${testConditions}"></div>
+                        <div class="test-conditions" id="testConditions" th:text="${testConditions}" style="display:none;"></div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="conditionsTable"></table>
+                        </div>
                     </div>
                 </div>
 
@@ -403,6 +406,51 @@ ${testConditions}`;
             parsedTableData = [parsed.headers, ...parsed.rows];
         }
 
+        function renderConditionsOnlyTable() {
+            const table = document.getElementById('conditionsTable');
+            const md = document.getElementById('testConditions').textContent || '';
+            const parsed = parseMarkdownTable(md);
+            let conditions = [];
+            if (parsed) {
+                const idx = parsed.headers.findIndex(h => /test\s*condition/i.test(h));
+                if (idx !== -1) {
+                    conditions = parsed.rows.map(r => (r[idx] || '').trim()).filter(Boolean);
+                } else {
+                    conditions = parsed.rows.map(r => r.find(c => c && c.trim().length > 0) || '').filter(Boolean);
+                }
+            } else {
+                conditions = md.split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l && !/TEST CONDITIONS|INPUT ANALYSIS|TOTAL|TIP/i.test(l) && (/^✓/.test(l) || /^[-*]\s+/.test(l) || /^\d+\./.test(l)))
+                    .map(l => l.replace(/^✓\s*/, ''))
+                    .map(l => l.replace(/^[-*]\s+/, ''))
+                    .map(l => l.replace(/^[A-Z]+\d+\s*:\s*/, ''))
+                    .filter(l => l.length > 0);
+            }
+
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const th = document.createElement('th');
+            th.textContent = 'Test Condition';
+            headerRow.appendChild(th);
+            thead.appendChild(headerRow);
+
+            const tbody = document.createElement('tbody');
+            conditions.forEach(c => {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.textContent = c;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            });
+
+            table.innerHTML = '';
+            table.appendChild(thead);
+            table.appendChild(tbody);
+
+            parsedTableData = [['Test Condition'], ...conditions.map(c => [c])];
+        }
+
         function exportToExcel() {
             if (!parsedTableData) {
                 alert('No parsed table available to export.');
@@ -465,6 +513,7 @@ ${testConditions}`;
             const md = document.getElementById('testConditions').textContent;
             const parsed = parseMarkdownTable(md);
             renderTable(parsed);
+            renderConditionsOnlyTable();
         });
     </script>
 </body>
