@@ -74,10 +74,12 @@
         </div>
     </div>
 
-    <script>
-        // automationCode contains two fenced java code blocks. We'll split and inject.
-        const full = `[[${'${automationCode}'}]]`;
+    <script th:inline="javascript">
+        // Injected by Thymeleaf with proper JS escaping
+        const full = /*[[${automationCode}]]*/ "";
+
         function extractJavaBlocks(md) {
+            if (!md) return [];
             const blocks = [];
             const re = /```java\n([\s\S]*?)\n```/g;
             let m;
