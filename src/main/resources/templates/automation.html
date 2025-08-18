@@ -15,7 +15,6 @@
         .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .card-header { background: linear-gradient(45deg, #4CAF50, #45a049); color: white; border-radius: 15px 15px 0 0 !important; text-align: center; padding: 20px; }
         pre { border-radius: 10px; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; }
         .code-container { position: relative; }
     </style>
 </head>
@@ -25,7 +24,7 @@
             <div class="col-12">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h2 class="mb-0"><i class="fas fa-code"></i> Generated Automation Scripts</h2>
+                        <h2 class="mb-0"><i class="fas fa-code"></i> Generated Automation Test</h2>
                         <p class="mb-0 mt-1">Scenario-driven Java Selenium (TestNG, POM)</p>
                     </div>
                 </div>
@@ -43,26 +42,11 @@
                             <h5 class="mb-0"><i class="fas fa-file-code"></i> Test Class</h5>
                             <div>
                                 <button class="btn btn-sm btn-outline-secondary" onclick="copyBlock('testCode')"><i class="fas fa-copy"></i> Copy</button>
-                                <button class="btn btn-sm btn-outline-primary" onclick="downloadBlock('testCode','TestClass.java')"><i class="fas fa-download"></i> Download</button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="downloadBlock('testCode','GeneratedTest.java')"><i class="fas fa-download"></i> Download</button>
                             </div>
                         </div>
                         <div class="code-container">
                             <pre class="language-java"><code id="testCode"></code></pre>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0"><i class="fas fa-file-code"></i> Page Class</h5>
-                            <div>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="copyBlock('pageCode')"><i class="fas fa-copy"></i> Copy</button>
-                                <button class="btn btn-sm btn-outline-primary" onclick="downloadBlock('pageCode','PageClass.java')"><i class="fas fa-download"></i> Download</button>
-                            </div>
-                        </div>
-                        <div class="code-container">
-                            <pre class="language-java"><code id="pageCode"></code></pre>
                         </div>
                     </div>
                 </div>
@@ -78,15 +62,11 @@
         // Injected by Thymeleaf with proper JS escaping
         const full = /*[[${automationCode}]]*/ "";
 
-        function extractJavaBlocks(md) {
-            if (!md) return [];
-            const blocks = [];
-            const re = /```java\n([\s\S]*?)\n```/g;
-            let m;
-            while ((m = re.exec(md)) !== null) {
-                blocks.push(m[1]);
-            }
-            return blocks;
+        function extractJavaBlock(md) {
+            if (!md) return '';
+            const re = /```java\n([\s\S]*?)\n```/;
+            const m = re.exec(md);
+            return m ? m[1] : md; // fallback if provider didn't fence
         }
         function setCode(id, code) {
             const el = document.getElementById(id);
@@ -110,9 +90,7 @@
             URL.revokeObjectURL(url);
         }
         document.addEventListener('DOMContentLoaded', function() {
-            const blocks = extractJavaBlocks(full);
-            setCode('testCode', blocks[0] || '');
-            setCode('pageCode', blocks[1] || '');
+            setCode('testCode', extractJavaBlock(full));
         });
     </script>
 </body>
