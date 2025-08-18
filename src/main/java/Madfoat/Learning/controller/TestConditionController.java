@@ -40,6 +40,7 @@ public class TestConditionController {
             String result = aiService.generateContent(businessText, "text", genType, includeAcceptance, selectedTypes == null ? null : java.util.Arrays.asList(selectedTypes));
             model.addAttribute("input", businessText);
             model.addAttribute("inputType", "Business Text");
+            model.addAttribute("generationType", genType);
             model.addAttribute("testConditions", result);
             return "results";
         } catch (Exception e) {
@@ -72,6 +73,7 @@ public class TestConditionController {
             
             model.addAttribute("input", imageContext);
             model.addAttribute("inputType", "Image Analysis");
+            model.addAttribute("generationType", genType);
             model.addAttribute("testConditions", result);
             model.addAttribute("fileName", imageFile.getOriginalFilename());
             return "results";

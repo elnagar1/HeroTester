@@ -55,7 +55,7 @@
             <div class="col-xl-10 col-lg-11">
                 <div class="card card-glass mb-3">
                     <div class="card-header-gradient">
-                        <h1 class="h3 mb-0"><i class="fa-solid fa-circle-check me-2"></i> Test Scenarios Generated Successfully</h1>
+                        <h1 class="h3 mb-0"><i class="fa-solid fa-circle-check me-2"></i> <span id="pageHeader">Test Scenarios Generated Successfully</span></h1>
                         <div class="small opacity-75 mt-1">AI-powered analysis complete</div>
                     </div>
                     <div class="card-body">
@@ -70,9 +70,11 @@
 
                 <div class="card card-glass mb-3">
                     <div class="card-body position-relative">
-                        <div class="section-title"><i class="fa-solid fa-list-check me-2"></i>Generated Test Scenarios</div>
+                        <div class="section-title"><i class="fa-solid fa-list-check me-2"></i><span id="generatedTitle">Generated Test Scenarios</span></div>
                         <button class="btn btn-sm btn-outline-secondary copy-btn" onclick="copyRaw()"><i class="fa-regular fa-copy me-1"></i>Copy Raw</button>
                         <div id="rawText" th:text="${testConditions}" style="display:none;"></div>
+                        <div id="generationTypeInitial" th:text="${generationType}" style="display:none;"></div>
+                        <div id="initialStory" class="input-preview mb-3" style="display:none;"></div>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover" id="initialTable"></table>
                         </div>
@@ -188,17 +190,48 @@
 
         function renderInitial() {
             const md = document.getElementById('rawText').textContent;
-            const parsed = parseMarkdownTable(md);
+            const genType = (document.getElementById('generationTypeInitial').textContent || 'test_scenarios').toLowerCase();
             const table = document.getElementById('initialTable');
-            if (parsed) {
-                const tableEl = buildTableEl(parsed);
-                table.innerHTML = '';
-                table.appendChild(tableEl.querySelector('thead'));
-                table.appendChild(tableEl.querySelector('tbody'));
-                window.__initialAOA = [parsed.headers, ...parsed.rows];
+            const storyDiv = document.getElementById('initialStory');
+            if (genType === 'user_story') {
+                // Extract story text before Acceptance Criteria
+                const idx = md.toLowerCase().indexOf('acceptance criteria');
+                const storyText = idx > -1 ? md.substring(0, idx).trim() : md.split('\n\n')[0] || md.split('\n')[0];
+                if (storyText) {
+                    storyDiv.style.display = 'block';
+                    storyDiv.textContent = storyText.trim();
+                }
+                // Parse acceptance criteria lines into a single-column table
+                const criteria = md.split('\n')
+                    .map(l => l.trim())
+                    .filter(l => /^(\d+\.|[-*]|Given|When|Then)/i.test(l))
+                    .map(l => l.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, ''))
+                    .filter(Boolean);
+                const headers = ['Acceptance Criteria'];
+                const rows = criteria.length ? criteria.map(c => [c]) : [];
+                const parsed = { headers, rows };
+                if (rows.length) {
+                    const tableEl = buildTableEl(parsed);
+                    table.innerHTML = '';
+                    table.appendChild(tableEl.querySelector('thead'));
+                    table.appendChild(tableEl.querySelector('tbody'));
+                    window.__initialAOA = [headers, ...rows];
+                } else {
+                    table.innerHTML = '<tbody><tr><td class="text-muted">No acceptance criteria detected.</td></tr></tbody>';
+                    window.__initialAOA = null;
+                }
             } else {
-                table.innerHTML = '<tbody><tr><td class="text-muted">No table detected in initial content.</td></tr></tbody>';
-                window.__initialAOA = null;
+                const parsed = parseMarkdownTable(md);
+                if (parsed) {
+                    const tableEl = buildTableEl(parsed);
+                    table.innerHTML = '';
+                    table.appendChild(tableEl.querySelector('thead'));
+                    table.appendChild(tableEl.querySelector('tbody'));
+                    window.__initialAOA = [parsed.headers, ...parsed.rows];
+                } else {
+                    table.innerHTML = '<tbody><tr><td class="text-muted">No table detected in initial content.</td></tr></tbody>';
+                    window.__initialAOA = null;
+                }
             }
         }
 
@@ -218,7 +251,9 @@
             const csv = XLSX.utils.sheet_to_csv(ws);
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `test-scenarios-${new Date().toISOString().split('T')[0]}.csv`;
+            const genType = (document.getElementById('generationTypeInitial').textContent || 'test_scenarios').toLowerCase();
+            const base = genType === 'user_story' ? 'user-story' : (genType === 'test_cases' ? 'test-cases' : 'test-scenarios');
+            const a = document.createElement('a'); a.href = url; a.download = `${base}-${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         }
 
@@ -302,12 +337,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Dynamic titles based on initial generation type
+            const genType = (document.getElementById('generationTypeInitial').textContent || 'test_scenarios').toLowerCase();
+            const pageHeader = document.getElementById('pageHeader');
+            const generatedTitle = document.getElementById('generatedTitle');
+            const label = genType === 'user_story' ? 'User Story Generated Successfully' : (genType === 'test_cases' ? 'Test Cases Generated Successfully' : 'Test Scenarios Generated Successfully');
+            const genLabel = genType === 'user_story' ? 'Generated User Story' : (genType === 'test_cases' ? 'Generated Test Cases' : 'Generated Test Scenarios');
+            pageHeader.textContent = label;
+            generatedTitle.textContent = genLabel;
+
             renderInitial();
             toggleOptionBlocks();
             document.getElementById('generationType').addEventListener('change', toggleOptionBlocks);
             document.getElementById('btnGenerateMore').addEventListener('click', generateMore);
-            // Add the initial result card too
-            appendResultCard({ generationType: 'test_scenarios', includeAcceptance: false }, document.getElementById('rawText').textContent);
+            // Add the initial result card too using actual type
+            appendResultCard({ generationType: genType, includeAcceptance: false }, document.getElementById('rawText').textContent);
         });
     </script>
 </body>
