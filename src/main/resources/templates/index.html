@@ -14,7 +14,7 @@
             --brand-end: #06b6d4;   /* cyan */
             --panel-bg: rgba(17, 24, 39, 0.7);
             --panel-border: rgba(148, 163, 184, 0.2);
-            --muted: #94a3b8;
+            --muted: #a9b4c7; /* slightly brighter for readability */
         }
         body {
             background: radial-gradient(1200px 800px at 10% -20%, rgba(139,92,246,.15), transparent 60%),
@@ -39,13 +39,9 @@
             background: var(--panel-bg);
             color: #e5e7eb;
         }
-        .hero {
-            text-align: center;
-            margin-bottom: 22px;
-        }
+        .hero { text-align: center; margin-bottom: 22px; }
         .hero h1 {
-            font-weight: 800;
-            letter-spacing: .5px;
+            font-weight: 800; letter-spacing: .5px;
             background: linear-gradient(90deg, var(--brand-start), var(--brand-end));
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
@@ -56,11 +52,15 @@
         .btn-outline-secondary:hover { background: #1f2937; color: #fff; }
         .form-control, .form-select { border-radius: 8px; border: 1px solid #334155; padding: 12px 15px; transition: all 0.3s ease; background: #0f172a; color: #e5e7eb; }
         .form-control:focus, .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 0.2rem rgba(59,130,246,.25); background: #0f172a; color: #e5e7eb; }
+        .form-control::placeholder { color: #9ca3af; opacity: 1; }
         .alert { border-radius: 10px; border: none; }
         .icon-large { font-size: 2rem; margin-bottom: 15px; }
-        .upload-area { border: 2px dashed #334155; border-radius: 10px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; background: #0b1220; color: #cbd5e1; }
+        .upload-area { border: 2px dashed #334155; border-radius: 10px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; background: #0b1220; color: #d1d5db; }
         .upload-area:hover { border-color: #3b82f6; background: rgba(30,58,138,.25); }
         .upload-area.dragover { border-color: #3b82f6; background: rgba(30,58,138,.35); }
+        .nav-tabs .nav-link { color: #cbd5e1; border: 0; }
+        .nav-tabs .nav-link.active { color: #fff; background: rgba(59,130,246,.15); border-bottom: 2px solid #3b82f6; }
+        .tab-pane { padding-top: 20px; }
     </style>
 </head>
 <body>
@@ -77,100 +77,117 @@
             <div class="col-lg-9">
                 <div class="hero">
                     <h1 class="display-6 mb-1">Test Analyst AI Assistant</h1>
-                    <p>Generate user stories and test cases from text and/or images</p>
+                    <p>Generate user stories, test cases, and automation code from text and/or images</p>
                 </div>
                 <div class="modern-panel p-4">
                         <div th:if="${error}" class="alert alert-danger" role="alert">
                             <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
                         </div>
 
-                        <!-- Automation Script Generator -->
-                        <div class="text-center mb-4">
-                            <i class="fas fa-code icon-large text-warning"></i>
-                            <h3>Automation Script Generator</h3>
-                            <p class="text-muted">Describe a page or scenario to generate Selenium TestNG automation code (POM)</p>
-                        </div>
-
-                        <form th:action="@{/generate-automation}" method="post" class="mb-5">
-                            <div class="mb-3">
-                                <label for="scenarioText" class="form-label">Scenario/Page Description:</label>
-                                <textarea
-                                    class="form-control"
-                                    id="scenarioText"
-                                    name="scenarioText"
-                                    rows="5"
-                                    placeholder="Example: As an admin, log in to the portal, open Campaigns, create a new campaign with name, select 'SMS' type, pick sender 'SENDER', choose template 'summer vacation', add post-campaign actions, and verify selections are applied."
-                                    required></textarea>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-bolt"></i> Generate Automation Script
+                        <ul class="nav nav-tabs" id="generatorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-automation-tab" data-bs-toggle="tab" data-bs-target="#tab-automation" type="button" role="tab" aria-controls="tab-automation" aria-selected="true">
+                                    <i class="fas fa-code"></i> Automation Generator
                                 </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-tests-tab" data-bs-toggle="tab" data-bs-target="#tab-tests" type="button" role="tab" aria-controls="tab-tests" aria-selected="false">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Test Generator
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="generatorTabsContent">
+                            <div class="tab-pane fade show active" id="tab-automation" role="tabpanel" aria-labelledby="tab-automation-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-code icon-large text-warning"></i>
+                                    <h3>Automation Script Generator</h3>
+                                    <p class="text-muted">Describe a page or scenario to generate Selenium TestNG automation code (POM)</p>
+                                </div>
+
+                                <form th:action="@{/generate-automation}" method="post" class="mb-4">
+                                    <div class="mb-3">
+                                        <label for="scenarioText" class="form-label">Scenario/Page Description:</label>
+                                        <textarea
+                                            class="form-control"
+                                            id="scenarioText"
+                                            name="scenarioText"
+                                            rows="5"
+                                            placeholder="Example: As an admin, log in to the portal, open Campaigns, create a new record, choose type, set date, and verify selections"
+                                            required></textarea>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-bolt"></i> Generate Automation Script
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                        </form>
 
-                        <!-- Text Input Section -->
-                        <div class="text-center mb-4">
-                            <i class="fas fa-wand-magic-sparkles icon-large text-primary"></i>
-                            <h3>Unified Generation</h3>
-                            <p class="text-muted">Provide text, image, or both. Choose multiple output types.</p>
-                        </div>
+                            <div class="tab-pane fade" id="tab-tests" role="tabpanel" aria-labelledby="tab-tests-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-wand-magic-sparkles icon-large text-primary"></i>
+                                    <h3>Unified Generation</h3>
+                                    <p class="text-muted">Provide text, image, or both. Choose multiple output types.</p>
+                                </div>
 
-                        <form th:action="@{/generate}" method="post" enctype="multipart/form-data" class="mb-4">
-                            <div class="mb-3">
-                                <label for="generationTypes" class="form-label">What do you need?</label>
-                                <select class="form-select" id="generationTypes" name="generationTypes" multiple required>
-                                    <option value="user_story">User Story</option>
-                                    <option value="test_cases" selected>Test Cases</option>
-                                </select>
-                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
-                            </div>
+                                <form th:action="@{/generate}" method="post" enctype="multipart/form-data" class="mb-4">
+                                    <div class="mb-3">
+                                        <label for="generationTypes" class="form-label">What do you need?</label>
+                                        <select class="form-select" id="generationTypes" name="generationTypes" multiple required>
+                                            <option value="user_story">User Story</option>
+                                            <option value="test_cases" selected>Test Cases</option>
+                                        </select>
+                                        <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                                    </div>
 
-                            <div id="userStoryOptions" class="mb-3" style="display:none;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="includeAcceptance" name="includeAcceptance" value="true">
-                                    <label class="form-check-label" for="includeAcceptance">Include Acceptance Criteria</label>
+                                    <div id="userStoryOptions" class="mb-3" style="display:none;">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="includeAcceptance" name="includeAcceptance" value="true">
+                                            <label class="form-check-label" for="includeAcceptance">Include Acceptance Criteria</label>
+                                        </div>
+                                    </div>
+
+                                    <div id="testTypesOptions" class="mb-3" style="display:block;">
+                                        <label class="form-label">Select desired types (optional):</label>
+                                        <div class="row row-cols-2 row-cols-md-3 g-2">
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="functional" id="typeFunctional"><label class="form-check-label" for="typeFunctional">Functional</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="negative" id="typeNegative"><label class="form-check-label" for="typeNegative">Negative</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="boundary" id="typeBoundary"><label class="form-check-label" for="typeBoundary">Boundary</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="security" id="typeSecurity"><label class="form-check-label" for="typeSecurity">Security</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="performance" id="typePerformance"><label class="form-check-label" for="typePerformance">Performance</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="usability" id="typeUsability"><label class="form-check-label" for="typeUsability">Usability</label></div></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="businessText" class="form-label">Business Requirements/Text (optional):</label>
+                                        <textarea class="form-control" id="businessText" name="businessText" rows="6" placeholder="Enter requirements, user stories, or features..."></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="imageFile" class="form-label">Optional Image/Document:</label>
+                                        <div class="upload-area" id="uploadArea">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                            <p class="mb-2">Drag and drop your file here, or click to browse</p>
+                                            <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*,.pdf,.doc,.docx" style="display: none;">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageFile').click()">
+                                                <i class="fas fa-folder-open"></i> Choose File
+                                            </button>
+                                            <div id="fileName" class="mt-2 text-muted"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-magic"></i> Generate</button>
+                                    </div>
+                                </form>
+
+                                <div class="mt-2 small text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Tip: You can generate multiple outputs at once (e.g., User Story + Test Cases + Test Scenarios).
                                 </div>
                             </div>
-
-                            <div id="testTypesOptions" class="mb-3" style="display:block;">
-                                <label class="form-label">Select desired types (optional):</label>
-                                <div class="row row-cols-2 row-cols-md-3 g-2">
-                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="functional" id="typeFunctional"><label class="form-check-label" for="typeFunctional">Functional</label></div></div>
-                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="negative" id="typeNegative"><label class="form-check-label" for="typeNegative">Negative</label></div></div>
-                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="boundary" id="typeBoundary"><label class="form-check-label" for="typeBoundary">Boundary</label></div></div>
-                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="security" id="typeSecurity"><label class="form-check-label" for="typeSecurity">Security</label></div></div>
-                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="performance" id="typePerformance"><label class="form-check-label" for="typePerformance">Performance</label></div></div>
-                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="usability" id="typeUsability"><label class="form-check-label" for="typeUsability">Usability</label></div></div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="businessText" class="form-label">Business Requirements/Text (optional):</label>
-                                <textarea class="form-control" id="businessText" name="businessText" rows="6" placeholder="Enter requirements, user stories, or features..."></textarea>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="imageFile" class="form-label">Optional Image/Document:</label>
-                                <div class="upload-area" id="uploadArea">
-                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                    <p class="mb-2">Drag and drop your file here, or click to browse</p>
-                                    <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*,.pdf,.doc,.docx" style="display: none;">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageFile').click()">
-                                        <i class="fas fa-folder-open"></i> Choose File
-                                    </button>
-                                    <div id="fileName" class="mt-2 text-muted"></div>
-                                </div>
-                            </div>
-
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary"><i class="fas fa-magic"></i> Generate</button>
-                            </div>
-                        </form>
-
-                        <div class="mt-4 small text-muted">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Tip: You can generate multiple outputs at once (e.g., User Story + Test Cases + Test Scenarios).
                         </div>
                 </div>
             </div>
@@ -186,20 +203,22 @@
         const userStoryOptions = document.getElementById('userStoryOptions');
         const testTypesOptions = document.getElementById('testTypesOptions');
 
-        uploadArea.addEventListener('click', () => { fileInput.click(); });
-        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-        uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault(); uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files; if (files.length > 0) { fileInput.files = files; updateFileName(); }
-        });
-        fileInput.addEventListener('change', updateFileName);
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => { fileInput && fileInput.click(); });
+            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+            uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault(); uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files; if (files && files.length > 0 && fileInput) { fileInput.files = files; updateFileName(); }
+            });
+        }
+        if (fileInput) fileInput.addEventListener('change', updateFileName);
 
         function updateFileName() {
-            if (fileInput.files.length > 0) {
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                fileName.innerHTML = `<i class="fas fa-file"></i> Selected: ${file.name} (${formatFileSize(file.size)})`;
-            } else { fileName.innerHTML = ''; }
+                if (fileName) fileName.innerHTML = `<i class="fas fa-file"></i> Selected: ${file.name} (${formatFileSize(file.size)})`;
+            } else { if (fileName) fileName.innerHTML = ''; }
         }
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
