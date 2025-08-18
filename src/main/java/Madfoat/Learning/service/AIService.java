@@ -455,16 +455,11 @@ public class AIService {
 
     private String buildAutomationPrompt(String description) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are a senior QA automation engineer. Based on the following page/scenario description, write Java Selenium + TestNG automation code that matches THIS EXACT STYLE: \n\n");
-        prompt.append("Test class requirements:\n");
-        prompt.append("- Name: <FeatureName>Test (derive from scenario)\n");
-        prompt.append("- Extends: BaseTest\n");
-        prompt.append("- Imports: dPhish.core.BaseTest; dPhish.pages.portal.Web1.CampaignsPage; dPhish.pages.portal.Web1.HomePage; dPhish.pages.portal.Web1.LoginPage; org.testng.annotations.BeforeClass; org.testng.annotations.Test;\n");
-        prompt.append("- Fields: private LoginPage login; private HomePage home; private CampaignsPage campaignsPage;\n");
-        prompt.append("- @BeforeClass: setUp(platformName); new page objects; login.login(); home.openPage(HomePage.MenuItem.Campaigns);\n");
-        prompt.append("- Include constants: campaignName, intervals, chunks, attack, difficultyLevel, successCategory, trackerHost (values derived from scenario or placeholders).\n");
-        prompt.append("- At least one @Test that chains page methods like: clickNewCampaignButton(), enterCampaignName(...), clickDropDownActions(...), scrollDown(...), enterDate(...), enterIntervals(...), enterChunks(...), clickNext(), selectCampaignType(...), selectSenderByValue(...), assertions with hardAssertion.assertTrue(...), selectTemplateByValue(...), selectMultiplePostCampaignByValue(...).\n\n");
-        prompt.append("Output EXACTLY ONE Markdown code block with triple backticks and language 'java' containing ONLY the test class. No extra prose. No package declarations.\n\n");
+        prompt.append("You are a senior QA automation engineer. Based on the following scenario description, write Java Selenium + TestNG automation code using the Page Object Model. ");
+        prompt.append("Assume BaseTest and BasePage exist and an 'element' helper is available for click/setText/isSelected. ");
+        prompt.append("Use meaningful page object method names and at least one assertion with hardAssertion.assertTrue(...). ");
+        prompt.append("Name the test class using key words from the scenario ending with 'Test'. ");
+        prompt.append("Output EXACTLY ONE fenced Markdown code block with language 'java' that contains ONLY the test class (no page classes, no prose, no package).\n\n");
         prompt.append("Scenario description:\n");
         prompt.append(description);
         return prompt.toString();
@@ -578,76 +573,35 @@ public class AIService {
     }
 
     private String generateDemoAutomationScripts(String description) {
-        String scenarioLower = description == null ? "" : description.toLowerCase();
-        String campaignType = scenarioLower.contains("sms") ? "SMS" : (scenarioLower.contains("email") ? "Email" : "SMS");
-
-        String sender = matchFirst(description, "sender\\s*['\"]([^'\"]+)['\"]");
-        if (sender == null) sender = matchFirst(description, "sender\\s*:\\s*([A-Za-z0-9 _-]+)");
-        if (sender == null) sender = "SENDER";
-
-        String template = matchFirst(description, "template\\s*['\"]([^'\"]+)['\"]");
-        if (template == null) template = matchFirst(description, "template\\s*:\\s*([A-Za-z0-9 _-]+)");
-        if (template == null) template = "summer vacation";
-
-        String postAction1 = matchFirst(description, "post[- ]?campaign[^'\"]*['\"]([^'\"]+)['\"]");
-        if (postAction1 == null) postAction1 = "assign course";
-
         String className = buildClassNameFromDescription(description);
-
         String testClass = "" +
             "import dPhish.core.BaseTest;\n" +
-            "import dPhish.pages.portal.Web1.CampaignsPage;\n" +
-            "import dPhish.pages.portal.Web1.HomePage;\n" +
-            "import dPhish.pages.portal.Web1.LoginPage;\n" +
             "import org.testng.annotations.BeforeClass;\n" +
             "import org.testng.annotations.Test;\n\n" +
             "public class " + className + " extends BaseTest {\n\n" +
+            "    // Replace with your actual Page Objects\n" +
             "    private LoginPage login;\n" +
             "    private HomePage home;\n" +
-            "    private CampaignsPage campaignsPage;\n\n" +
+            "    private ScenarioPage scenarioPage;\n\n" +
             "    @BeforeClass\n" +
             "    public void beforeClass() {\n" +
             "        setUp(platformName);\n" +
             "        login = new LoginPage(driver);\n" +
             "        home = new HomePage(driver);\n" +
-            "        campaignsPage = new CampaignsPage(driver);\n" +
+            "        scenarioPage = new ScenarioPage(driver);\n" +
             "        login.login();\n" +
-            "        home.openPage(HomePage.MenuItem.Campaigns);\n" +
             "    }\n\n" +
-            "    String campaignName = \"Automation\" + System.currentTimeMillis();\n" +
-            "    String intervals = \"30\";\n" +
-            "    String chunks = \"150\";\n" +
-            "    String attack = \"Regular Attachment\";\n" +
-            "    String difficultyLevel = \"Hard\";\n" +
-            "    String successCategory = \"Document Opened\";\n" +
-            "    String trackerHost = \"testing.winnnig.store\";\n\n" +
             "    @Test\n" +
-            "    public void testGeneratedScenario() {\n" +
-            "        campaignsPage.clickNewCampaignButton()\n" +
-            "                .enterCampaignName(campaignName)\n" +
-            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.SuccessCategory.getDisplayName(), successCategory)\n" +
-            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.Attack.getDisplayName(), attack)\n" +
-            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.DifficultyLeve.getDisplayName(), difficultyLevel)\n" +
-            "                .scrollDown(300)\n" +
-            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.TrackerHost.getDisplayName(), trackerHost)\n" +
-            "                .enterTags(\"Auto Tag\" + System.currentTimeMillis())\n" +
-            "                .enterDate(\"28\")\n" +
-            "                .enterIntervals(intervals)\n" +
-            "                .enterChunks(chunks)\n" +
-            "                .clickNext()\n" +
-            "                .selectCampaignType(\"" + campaignType + "\")\n" +
-            "                .clickNext()\n" +
-            "                .selectSenderByValue(\"" + sender + "\");\n\n" +
-            "        hardAssertion.assertTrue(campaignsPage.isSenderSelected(\"" + sender + "\"), \"Sender should be selected\");\n\n" +
-            "        campaignsPage.clickNext()\n" +
-            "                     .selectTemplateByValue(\"" + template + "\");\n" +
-            "        hardAssertion.assertTrue(campaignsPage.isTemplateSelected(\"" + template + "\"), \"Template should be selected\");\n\n" +
-            "        campaignsPage.clickNext()\n" +
-            "                .selectMultiplePostCampaignByValue(\"" + postAction1 + "\")\n" +
-            "                .clickNext();\n" +
+            "    public void testScenarioFlow() {\n" +
+            "        home.openMainFeature()\n" +
+            "            .startNewRecord()\n" +
+            "            .typeName(\"Automation\" + System.currentTimeMillis())\n" +
+            "            .chooseType(\"Default\")\n" +
+            "            .setDateToday()\n" +
+            "            .submit();\n\n" +
+            "        hardAssertion.assertTrue(scenarioPage.isRecordVisible(), \"Record should be visible\");\n" +
             "    }\n" +
             "}\n";
-
         return "```java\n" + testClass + "\n```";
     }
 
