@@ -353,12 +353,12 @@ public class AIService {
             prompt.append("Focus on these types: " + filters + ". ");
             prompt.append("Output ONLY a Markdown table with headers: ID | Title | Steps | Expected | Type | Priority | Actual. ");
             prompt.append("Each row should be one test case with concise steps; leave 'Actual' empty. ");
-        } else { // test_scenarios
+        } else { // default fallback -> test_cases
             String filters = (selectedTypes != null && !selectedTypes.isEmpty()) ? String.join(", ", selectedTypes) : "functional, negative, boundary, security, performance, usability";
-            prompt.append("generate comprehensive software test scenarios. ");
+            prompt.append("generate comprehensive software test cases. ");
             prompt.append("Focus on these types: " + filters + ". ");
-            prompt.append("Output ONLY a Markdown table with headers: ID | Test Scenario | Steps | Expected | Type | Priority | Actual. ");
-            prompt.append("Each row should be one scenario with concise steps; leave 'Actual' empty. ");
+            prompt.append("Output ONLY a Markdown table with headers: ID | Title | Steps | Expected | Type | Priority | Actual. ");
+            prompt.append("Each row should be one test case with concise steps; leave 'Actual' empty. ");
         }
         prompt.append("\n\nInput: ").append(input);
         return prompt.toString();
@@ -432,7 +432,7 @@ public class AIService {
             return sb.toString();
         } else if ("test_cases".equals(type)) {
             return "| ID | Title | Steps | Expected | Type | Priority | Actual |\n|---|---|---|---|---|---|---|\n| TC-001 | Login with valid credentials | 1) Open login 2) Enter valid creds 3) Submit | User is logged in | functional | High | |\n| TC-002 | Login with invalid password | 1) Open login 2) Enter invalid password 3) Submit | Error message shown | negative | Medium | |";
-        } else { // test_scenarios
+        } else { // default fallback
             return generateDemoTestConditions(input, inputType);
         }
     }

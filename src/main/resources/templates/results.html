@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Scenarios Generated - Test Analyst AI Assistant</title>
+    <title>Results Generated - Test Analyst AI Assistant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -100,8 +100,7 @@
                                 <label class="form-label" id="labelWhatNeed">What do you need?</label>
                                 <select id="generationType" class="form-select">
                                     <option value="user_story">User Story</option>
-                                    <option value="test_cases">Test Cases</option>
-                                    <option value="test_scenarios" selected>Test Scenarios</option>
+                                    <option value="test_cases" selected>Test Cases</option>
                                 </select>
                             </div>
                             <div class="col-md-4" id="acceptanceWrap" style="display:none;">
@@ -256,21 +255,19 @@
             const table = document.getElementById('initialTable');
             const storyDiv = document.getElementById('initialStory');
             if (genType === 'user_story') {
-                // Extract story text before Acceptance Criteria
-                const idx = md.toLowerCase().indexOf('acceptance criteria');
-                const storyText = idx > -1 ? md.substring(0, idx).trim() : md.split('\n\n')[0] || md.split('\n')[0];
-                if (storyText) {
-                    storyDiv.style.display = 'block';
-                    storyDiv.textContent = storyText.trim();
-                }
-                // Parse acceptance criteria lines into a single-column table
-                const criteria = md.split('\n')
-                    .map(l => l.trim())
-                    .filter(l => /^(\d+\.|[-*]|Given|When|Then)/i.test(l))
-                    .map(l => l.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, ''))
-                    .filter(Boolean);
+                // Extract story text before Acceptance Criteria blocks
+                const lower = md.toLowerCase();
+                const acIndex = lower.indexOf('acceptance criteria');
+                const storyText = acIndex > -1 ? md.substring(0, acIndex).trim() : md.split('\n\n')[0] || md.split('\n')[0];
+                if (storyText) { storyDiv.style.display = 'block'; storyDiv.textContent = storyText.trim(); }
+
+                // Split into criteria blocks separated by blank lines
+                const afterAC = acIndex > -1 ? md.substring(acIndex).split(/\n\n+/) : [];
+                const blocks = afterAC
+                    .map(b => b.replace(/^Acceptance Criteria:?\s*/i, '').trim())
+                    .filter(b => b.length > 0);
                 const headers = ['Acceptance Criteria'];
-                const rows = criteria.length ? criteria.map(c => [c]) : [];
+                const rows = blocks.length ? blocks.map(b => [b]) : [];
                 const parsed = { headers, rows };
                 if (rows.length) {
                     const tableEl = buildTableEl(parsed);

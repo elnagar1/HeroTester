@@ -69,8 +69,7 @@
                                 <label for="generationTypes" class="form-label">What do you need?</label>
                                 <select class="form-select" id="generationTypes" name="generationTypes" multiple required>
                                     <option value="user_story">User Story</option>
-                                    <option value="test_cases">Test Cases</option>
-                                    <option value="test_scenarios" selected>Test Scenarios</option>
+                                    <option value="test_cases" selected>Test Cases</option>
                                 </select>
                                 <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
                             </div>
@@ -161,7 +160,7 @@
         function toggleOptions(selectEl, storyEl, typesEl) {
             const values = Array.from(selectEl.selectedOptions).map(o => o.value);
             storyEl.style.display = values.includes('user_story') ? 'block' : 'none';
-            typesEl.style.display = (values.includes('test_cases') || values.includes('test_scenarios')) ? 'block' : 'none';
+            typesEl.style.display = values.includes('test_cases') ? 'block' : 'none';
         }
         if (genTypes) {
             genTypes.addEventListener('change', () => toggleOptions(genTypes, userStoryOptions, testTypesOptions));
