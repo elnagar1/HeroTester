@@ -3,6 +3,8 @@ package Madfoat.Learning.controller;
 import Madfoat.Learning.service.AIService;
 import Madfoat.Learning.service.ImageProcessingService;
 import Madfoat.Learning.dto.GenerateRequest;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -101,5 +103,63 @@ public class TestConditionController {
                 req.isIncludeAcceptance(),
                 req.getSelectedTypes()
         );
+    }
+
+    // Unified generate endpoint: accepts text and optional image together
+    @PostMapping("/generate")
+    public String generateUnified(
+            @RequestParam(value = "businessText", required = false) String businessText,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "generationTypes", required = false) String[] generationTypes,
+            @RequestParam(value = "includeAcceptance", required = false, defaultValue = "false") boolean includeAcceptance,
+            @RequestParam(value = "selectedTypes", required = false) String[] selectedTypes,
+            Model model
+    ) {
+        try {
+            String textPart = businessText != null ? businessText.trim() : "";
+            String imageContext = "";
+            String inputType = "";
+            if (imageFile != null && !imageFile.isEmpty()) {
+                if (!imageProcessingService.isValidImageFile(imageFile)) {
+                    model.addAttribute("error", "Please upload a valid image file (JPEG, PNG, GIF, BMP)");
+                    return "index";
+                }
+                imageContext = imageProcessingService.getImageAnalysisContext(imageFile);
+            }
+            if (textPart.isEmpty() && imageContext.isEmpty()) {
+                model.addAttribute("error", "Please provide text and/or an image");
+                return "index";
+            }
+            String combinedInput;
+            if (!textPart.isEmpty() && !imageContext.isEmpty()) {
+                combinedInput = textPart + "\n\n" + imageContext;
+                inputType = "Text + Image";
+            } else if (!textPart.isEmpty()) {
+                combinedInput = textPart;
+                inputType = "Business Text";
+            } else {
+                combinedInput = imageContext;
+                inputType = "Image Analysis";
+            }
+
+            String primaryType = (generationTypes != null && generationTypes.length > 0) ? generationTypes[0] : "test_scenarios";
+            String result = aiService.generateContent(combinedInput, imageContext.isEmpty() ? "text" : (textPart.isEmpty() ? "image" : "mixed"), primaryType, includeAcceptance, selectedTypes == null ? null : Arrays.asList(selectedTypes));
+
+            model.addAttribute("input", combinedInput);
+            model.addAttribute("inputType", inputType);
+            model.addAttribute("generationType", primaryType);
+            model.addAttribute("testConditions", result);
+            model.addAttribute("fileName", imageFile != null ? imageFile.getOriginalFilename() : null);
+            String initialTypesCsv = (generationTypes != null && generationTypes.length > 0) ? Arrays.stream(generationTypes).collect(Collectors.joining(",")) : primaryType;
+            model.addAttribute("initialTypes", initialTypesCsv);
+            model.addAttribute("includeAcceptanceFlag", includeAcceptance);
+            String selectedFilters = (selectedTypes != null && selectedTypes.length > 0) ? Arrays.stream(selectedTypes).collect(Collectors.joining(",")) : "";
+            model.addAttribute("selectedTypeFilters", selectedFilters);
+
+            return "results";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error generating content: " + e.getMessage());
+            return "index";
+        }
     }
 }
