@@ -273,12 +273,23 @@ public class AIService {
 
     private String buildAutomationPrompt(String description) {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("You are a senior QA automation engineer. Based on the following page/scenario description, write Java Selenium + TestNG automation code following the Page Object Model (POM). ");
-        prompt.append("Output EXACTLY TWO code blocks in Markdown with triple backticks and language 'java'. The first is a test class named <Scenario>Test that extends BaseTest and uses Page Objects. The second is a page class implementing the interactions used in the test. ");
-        prompt.append("Do not add any prose before or after the code blocks. Use imports, method names, and patterns similar to the examples. ");
-        prompt.append("Assume helper classes BaseTest and BasePage exist with a WebDriver instance and an 'element' helper providing click/setText/clearAndSetText/isSelected. ");
-        prompt.append("Ensure the test includes meaningful assertions. ");
-        prompt.append("Here is the scenario description:\n\n");
+        prompt.append("You are a senior QA automation engineer. Based on the following page/scenario description, write Java Selenium + TestNG automation code that matches THIS EXACT STYLE: \n\n");
+        prompt.append("Test class requirements:\n");
+        prompt.append("- Name: <FeatureName>Test (derive from scenario)\n");
+        prompt.append("- Extends: BaseTest\n");
+        prompt.append("- Imports: dPhish.core.BaseTest; dPhish.pages.portal.Web1.CampaignsPage; dPhish.pages.portal.Web1.HomePage; dPhish.pages.portal.Web1.LoginPage; org.testng.annotations.BeforeClass; org.testng.annotations.Test;\n");
+        prompt.append("- Fields: private LoginPage login; private HomePage home; private CampaignsPage campaignsPage;\n");
+        prompt.append("- @BeforeClass: setUp(platformName); new page objects; login.login(); home.openPage(HomePage.MenuItem.Campaigns);\n");
+        prompt.append("- Include constants: campaignName, intervals, chunks, attack, difficultyLevel, successCategory, trackerHost (values derived from scenario or placeholders).\n");
+        prompt.append("- At least one @Test that chains page methods like: clickNewCampaignButton(), enterCampaignName(...), clickDropDownActions(...), scrollDown(...), enterDate(...), enterIntervals(...), enterChunks(...), clickNext(), selectCampaignType(...), selectSenderByValue(...), assertions with hardAssertion.assertTrue(...), selectTemplateByValue(...), selectMultiplePostCampaignByValue(...).\n\n");
+        prompt.append("Page class requirements:\n");
+        prompt.append("- Class: CampaignsPage extends BasePage\n");
+        prompt.append("- Imports: dPhish.core.BasePage; org.openqa.selenium.*;\n");
+        prompt.append("- Provide By locators similar to example and methods with EXACT signatures used by the test: clickNewCampaignButton(), scrollDown(int pixels), groupAction(String campaignGroupName, String action), clickDropDownActions(String dropdownName, String value), enterCampaignName(String name), enterIntervals(String intervals), enterChunks(String chunks), enterTags(String tags), enterDate(String date), selectCampaignType(String type), clickNext(), clickBack(), search(String name), clickNewSenderButton(), selectSenderByValue(String value), isSenderSelected(String value), selectPageByValue(String value), isPageSelected(String value), selectTemplateByValue(String value), isTemplateSelected(String value), selectMultiplePostCampaignByValue(String value), isPostCampaignSelected(String value). Each method returns this (except boolean checks).\n");
+        prompt.append("- Include enums inside page class: MenuItem { VIEW, EDIT, DELETE } with getDisplayName(); and CreateCampaignItem { DifficultyLeve, SuccessCategory, Attack, TrackerHost } with getDisplayName();\n");
+        prompt.append("- Use an 'element' helper to click/set text, as in example.\n\n");
+        prompt.append("Output EXACTLY TWO Markdown code blocks with triple backticks and language 'java': first the test class, then the page class. No extra prose. No package declarations.\n\n");
+        prompt.append("Scenario description:\n");
         prompt.append(description);
         return prompt.toString();
     }
@@ -393,35 +404,129 @@ public class AIService {
     private String generateDemoAutomationScripts(String description) {
         String testClass = "" +
             "import dPhish.core.BaseTest;\n" +
+            "import dPhish.pages.portal.Web1.CampaignsPage;\n" +
+            "import dPhish.pages.portal.Web1.HomePage;\n" +
+            "import dPhish.pages.portal.Web1.LoginPage;\n" +
             "import org.testng.annotations.BeforeClass;\n" +
-            "import org.testng.annotations.Test;\n" +
-            "import dPhish.pages.portal.Web1.DemoPage;\n\n" +
-            "public class DemoScenarioTest extends BaseTest {\n\n" +
-            "    private DemoPage demoPage;\n\n" +
+            "import org.testng.annotations.Test;\n\n" +
+            "public class CampaignTest extends BaseTest {\n\n" +
+            "    private LoginPage login;\n" +
+            "    private HomePage home;\n" +
+            "    private CampaignsPage campaignsPage;\n\n" +
             "    @BeforeClass\n" +
-            "    public void setUpClass() {\n" +
+            "    public void beforeClass() {\n" +
             "        setUp(platformName);\n" +
-            "        demoPage = new DemoPage(driver);\n" +
+            "        login = new LoginPage(driver);\n" +
+            "        home = new HomePage(driver);\n" +
+            "        campaignsPage = new CampaignsPage(driver);\n" +
+            "        login.login();\n" +
+            "        home.openPage(HomePage.MenuItem.Campaigns);\n" +
             "    }\n\n" +
+            "    String campaignName = \"Automation\" + System.currentTimeMillis();\n" +
+            "    String intervals = \"30\";\n" +
+            "    String chunks = \"150\";\n" +
+            "    String attack = \"Regular Attachment\";\n" +
+            "    String difficultyLevel = \"Hard\";\n" +
+            "    String successCategory = \"Document Opened\";\n" +
+            "    String trackerHost = \"testing.winnnig.store\";\n\n" +
             "    @Test\n" +
-            "    public void testDemoFlow() {\n" +
-            "        demoPage.open()\n" +
-            "                .typeSearch(\"sample\")\n" +
-            "                .submit();\n" +
-            "        hardAssertion.assertTrue(demoPage.isResultVisible(\"sample\"), \"Result should be visible\");\n" +
+            "    public void testCreateCampaignWithType_EmailWithAttachment() {\n" +
+            "        campaignsPage.clickNewCampaignButton()\n" +
+            "                .enterCampaignName(campaignName)\n" +
+            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.SuccessCategory.getDisplayName(), successCategory)\n" +
+            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.Attack.getDisplayName(), attack)\n" +
+            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.DifficultyLeve.getDisplayName(), difficultyLevel)\n" +
+            "                .scrollDown(300)\n" +
+            "                .clickDropDownActions(CampaignsPage.CreateCampaignItem.TrackerHost.getDisplayName(), trackerHost)\n" +
+            "                .enterTags(\"Automation Tag1\" + System.currentTimeMillis())\n" +
+            "                .enterTags(\"Automation Tag2\" + System.currentTimeMillis())\n" +
+            "                .enterDate(\"28\")\n" +
+            "                .enterIntervals(intervals)\n" +
+            "                .enterChunks(chunks)\n" +
+            "                .clickNext()\n" +
+            "                .selectCampaignType(\"SMS\")\n" +
+            "                .clickNext()\n" +
+            "                .selectSenderByValue(\"SENDER\");\n\n" +
+            "        hardAssertion.assertTrue(campaignsPage.isSenderSelected(\"SENDER\"), \"Sender should be selected\");\n\n" +
+            "        campaignsPage.clickNext()\n" +
+            "                     .selectTemplateByValue(\"summer vacation\");\n" +
+            "        hardAssertion.assertTrue(campaignsPage.isTemplateSelected(\"summer vacation\"), \"Template should be selected\");\n\n" +
+            "        campaignsPage.clickNext()\n" +
+            "                .selectMultiplePostCampaignByValue(\"ffffffffffff…\")\n" +
+            "                .selectMultiplePostCampaignByValue(\"s - assign course\")\n" +
+            "                .clickNext();\n" +
             "    }\n" +
             "}\n";
+
         String pageClass = "" +
             "import dPhish.core.BasePage;\n" +
             "import org.openqa.selenium.*;\n\n" +
-            "public class DemoPage extends BasePage {\n\n" +
-            "    public DemoPage(WebDriver driver) { super(driver); }\n\n" +
-            "    private final By searchInput = By.cssSelector(\"input[name='q']\");\n" +
-            "    private final By submitButton = By.cssSelector(\"button[type='submit']\");\n\n" +
-            "    public DemoPage open() { driver.get(\"https://example.com\"); return this; }\n" +
-            "    public DemoPage typeSearch(String text) { element.setText(searchInput, text); return this; }\n" +
-            "    public DemoPage submit() { element.click(submitButton); return this; }\n" +
-            "    public boolean isResultVisible(String text) { return element.isSelected(By.xpath(\"//*[contains(text(),'\" + text + \"')]\")); }\n" +
+            "public class CampaignsPage extends BasePage {\n\n" +
+            "    public CampaignsPage(WebDriver driver) {\n" +
+            "        super(driver);\n" +
+            "    }\n\n" +
+            "    private final By searchInput = By.cssSelector(\"input[placeholder='Search']\");\n" +
+            "    private final By nextButton = By.xpath(\"//button[@type='submit']\");\n" +
+            "    private final By backButton = By.xpath(\"//button[text()='Back']\");\n\n" +
+            "    private final By newCampaignButton = By.xpath(\"//*[text()='New Campaign']\");\n" +
+            "    private final By campaignNameInput = By.id(\"name\");\n" +
+            "    private final By intervalsInput = By.id(\"intervals\");\n" +
+            "    private final By chunksInput = By.id(\"chunks\");\n" +
+            "    private final By tagsTxb = By.xpath(\"//*[@class='v-select vs--multiple tag-input']//input\");\n" +
+            "    private final By DatePicker = By.xpath(\"//input[@placeholder='Choose Date' and @name='start']\");\n\n" +
+            "    private final By newSenderButton = By.xpath(\"//button[text()= 'New Sender']\");\n\n" +
+            "    public CampaignsPage clickNewCampaignButton() {\n" +
+            "        element.click(newCampaignButton);\n" +
+            "        return this;\n" +
+            "    }\n\n" +
+            "    public CampaignsPage scrollDown(int pixels) {\n" +
+            "        ((JavascriptExecutor) driver).executeScript(\"window.scrollBy(0, arguments[0]);\", pixels);\n" +
+            "        return this;\n" +
+            "    }\n\n" +
+            "    public enum MenuItem {\n" +
+            "        VIEW(\"View\"), EDIT(\"Edit\"), DELETE(\"Delete\");\n\n" +
+            "        private final String displayName;\n" +
+            "        MenuItem(String displayName) { this.displayName = displayName; }\n" +
+            "        public String getDisplayName() { return displayName; }\n" +
+            "    }\n\n" +
+            "    public CampaignsPage groupAction(String campaignGroupName, String action) {\n" +
+            "        By elm = By.xpath(\"//*[text()='\" + campaignGroupName + \"']//..//..//..//button\");\n" +
+            "        By elm2 = By.xpath(\"//*[text()='\" + campaignGroupName + \"']//..//..//..//*[text()='\" + action + \"']\");\n" +
+            "        element.click(elm);\n" +
+            "        element.click(elm2);\n" +
+            "        return this;\n" +
+            "    }\n\n" +
+            "    public enum CreateCampaignItem {\n" +
+            "        DifficultyLeve(\"level\"), SuccessCategory(\"successCategory\"), Attack(\"attack\"), TrackerHost(\"trackerHost\");\n\n" +
+            "        private final String displayName;\n" +
+            "        CreateCampaignItem(String displayName) { this.displayName = displayName; }\n" +
+            "        public String getDisplayName() { return displayName; }\n" +
+            "    }\n\n" +
+            "    public CampaignsPage clickDropDownActions(String dropdownName, String value) {\n" +
+            "        By elm = By.xpath(\"//*[@name='\" + dropdownName + \"']//*[@class='vs__actions']\");\n" +
+            "        By elm2 = By.xpath(\"//*[text()='\" + value + \"']\");\n" +
+            "        element.click(elm);\n" +
+            "        element.click(elm2);\n" +
+            "        return this;\n" +
+            "    }\n\n" +
+            "    public CampaignsPage enterCampaignName(String name) { element.setText(campaignNameInput, name); return this; }\n" +
+            "    public CampaignsPage enterIntervals(String intervals) { element.clearAndSetText(intervalsInput, intervals); return this; }\n" +
+            "    public CampaignsPage enterChunks(String chunks) { element.clearAndSetText(chunksInput, chunks); return this; }\n" +
+            "    public CampaignsPage enterTags(String tags) { element.setText(tagsTxb, tags, Keys.ENTER); return this; }\n" +
+            "    public CampaignsPage enterDate(String date) { By Date = By.xpath(\"//*[@aria-label='July \" + date + \", 2025']\"); element.click(DatePicker); element.click(Date); return this; }\n\n" +
+            "    public CampaignsPage selectCampaignType(String type) { By campaignType = By.xpath(\"//*[text()='\" + type + \"']//..//..//input\"); element.click(campaignType); return this; }\n" +
+            "    public CampaignsPage clickNext() { element.click(nextButton); return this; }\n" +
+            "    public CampaignsPage clickBack() { element.click(backButton); return this; }\n\n" +
+            "    public CampaignsPage search(String name) { element.clearAndSetText(searchInput, name); return this; }\n" +
+            "    public CampaignsPage clickNewSenderButton() { element.click(newSenderButton); return this; }\n\n" +
+            "    public CampaignsPage selectSenderByValue(String value) { element.clearAndSetText(searchInput, value); element.click(By.xpath(\"//input[@name='sender']//..//p[text()='\" + value + \"']\")); return this; }\n" +
+            "    public boolean isSenderSelected(String value) { return element.isSelected(By.xpath(\"//input[@name='sender']//..//p[text()='\" + value + \"']//..//..//input\")); }\n\n" +
+            "    public CampaignsPage selectPageByValue(String value) { element.clearAndSetText(searchInput, value); element.click(By.xpath(\"//input[@name='page']//..//p[text()='\" + value + \"']\")); return this; }\n" +
+            "    public boolean isPageSelected(String value) { return element.isSelected(By.xpath(\"//input[@name='page']//..//p[text()='\" + value + \"']//..//..//input\")); }\n\n" +
+            "    public CampaignsPage selectTemplateByValue(String value) { search(value); element.click(By.xpath(\"//input[@name='template']//..//span[text()=' \" + value + \"']\")); return this; }\n" +
+            "    public boolean isTemplateSelected(String value) { return element.isSelected(By.xpath(\"//input[@name='template']//..//span[text()=' \" + value + \"']//..//input\")); }\n\n" +
+            "    public CampaignsPage selectMultiplePostCampaignByValue(String value) { search(value); element.click(By.xpath(\"//input[@name='posts']//..//span[text()=' \" + value + \"']\")); return this; }\n" +
+            "    public boolean isPostCampaignSelected(String value) { return element.isSelected(By.xpath(\"//input[@name='posts']//..//span[text()=' \" + value + \"']//..//input\")); }\n" +
             "}\n";
         return "```java\n" + testClass + "\n```\n\n```java\n" + pageClass + "\n```";
     }
