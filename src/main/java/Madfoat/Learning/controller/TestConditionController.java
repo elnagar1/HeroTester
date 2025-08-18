@@ -23,26 +23,37 @@ public class TestConditionController {
     }
 
     @PostMapping("/generate-from-text")
-    public String generateFromText(@RequestParam("businessText") String businessText, Model model) {
+    public String generateFromText(
+            @RequestParam("businessText") String businessText,
+            @RequestParam(value = "generationType", required = false) String generationType,
+            @RequestParam(value = "includeAcceptance", required = false, defaultValue = "false") boolean includeAcceptance,
+            @RequestParam(value = "selectedTypes", required = false) String[] selectedTypes,
+            Model model) {
         if (businessText == null || businessText.trim().isEmpty()) {
             model.addAttribute("error", "Please provide business text or requirements");
             return "index";
         }
 
         try {
-            String testConditions = aiService.generateTestConditions(businessText, "text");
+            String genType = generationType == null ? "test_scenarios" : generationType;
+            String result = aiService.generateContent(businessText, "text", genType, includeAcceptance, selectedTypes == null ? null : java.util.Arrays.asList(selectedTypes));
             model.addAttribute("input", businessText);
             model.addAttribute("inputType", "Business Text");
-            model.addAttribute("testConditions", testConditions);
+            model.addAttribute("testConditions", result);
             return "results";
         } catch (Exception e) {
-            model.addAttribute("error", "Error generating test conditions: " + e.getMessage());
+            model.addAttribute("error", "Error generating content: " + e.getMessage());
             return "index";
         }
     }
 
     @PostMapping("/generate-from-image")
-    public String generateFromImage(@RequestParam("imageFile") MultipartFile imageFile, Model model) {
+    public String generateFromImage(
+            @RequestParam("imageFile") MultipartFile imageFile,
+            @RequestParam(value = "generationType", required = false) String generationType,
+            @RequestParam(value = "includeAcceptance", required = false, defaultValue = "false") boolean includeAcceptance,
+            @RequestParam(value = "selectedTypes", required = false) String[] selectedTypes,
+            Model model) {
         if (imageFile == null || imageFile.isEmpty()) {
             model.addAttribute("error", "Please select an image file");
             return "index";
@@ -55,15 +66,16 @@ public class TestConditionController {
 
         try {
             String imageContext = imageProcessingService.getImageAnalysisContext(imageFile);
-            String testConditions = aiService.generateTestConditions(imageContext, "image");
+            String genType = generationType == null ? "test_scenarios" : generationType;
+            String result = aiService.generateContent(imageContext, "image", genType, includeAcceptance, selectedTypes == null ? null : java.util.Arrays.asList(selectedTypes));
             
             model.addAttribute("input", imageContext);
             model.addAttribute("inputType", "Image Analysis");
-            model.addAttribute("testConditions", testConditions);
+            model.addAttribute("testConditions", result);
             model.addAttribute("fileName", imageFile.getOriginalFilename());
             return "results";
         } catch (Exception e) {
-            model.addAttribute("error", "Error processing image and generating test conditions: " + e.getMessage());
+            model.addAttribute("error", "Error processing image and generating content: " + e.getMessage());
             return "index";
         }
     }

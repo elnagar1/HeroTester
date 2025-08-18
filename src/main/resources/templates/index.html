@@ -102,7 +102,7 @@
                         <h1 class="mb-0">
                             <i class="fas fa-robot"></i> Test Analyst AI Assistant
                         </h1>
-                        <p class="mb-0 mt-2">Generate comprehensive software test conditions from business text or images</p>
+                        <p class="mb-0 mt-2">Generate comprehensive software test scenarios from business text or images</p>
                     </div>
                     <div class="card-body p-4">
                         <!-- Error Alert -->
@@ -119,6 +119,31 @@
 
                         <form th:action="@{/generate-from-text}" method="post" class="mb-4">
                             <div class="mb-3">
+                                <label for="generationType" class="form-label">What do you need?</label>
+                                <select class="form-select" id="generationType" name="generationType" required>
+                                    <option value="user_story">User Story</option>
+                                    <option value="test_cases">Test Cases</option>
+                                    <option value="test_scenarios" selected>Test Scenarios</option>
+                                </select>
+                            </div>
+                            <div id="userStoryOptions" class="mb-3" style="display:none;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeAcceptance" name="includeAcceptance" value="true">
+                                    <label class="form-check-label" for="includeAcceptance">Include Acceptance Criteria</label>
+                                </div>
+                            </div>
+                            <div id="testTypesOptions" class="mb-3" style="display:block;">
+                                <label class="form-label">Select desired types (optional):</label>
+                                <div class="row row-cols-2 g-2">
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="functional" id="typeFunctional"><label class="form-check-label" for="typeFunctional">Functional</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="negative" id="typeNegative"><label class="form-check-label" for="typeNegative">Negative</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="boundary" id="typeBoundary"><label class="form-check-label" for="typeBoundary">Boundary</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="security" id="typeSecurity"><label class="form-check-label" for="typeSecurity">Security</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="performance" id="typePerformance"><label class="form-check-label" for="typePerformance">Performance</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="usability" id="typeUsability"><label class="form-check-label" for="typeUsability">Usability</label></div></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
                                 <label for="businessText" class="form-label">Business Requirements/Text:</label>
                                 <textarea
                                     class="form-control"
@@ -130,7 +155,7 @@
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-magic"></i> Generate Test Conditions from Text
+                                    <i class="fas fa-magic"></i> Generate from Text
                                 </button>
                             </div>
                         </form>
@@ -146,6 +171,31 @@
                         </div>
 
                         <form th:action="@{/generate-from-image}" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="generationTypeImg" class="form-label">What do you need?</label>
+                                <select class="form-select" id="generationTypeImg" name="generationType" required>
+                                    <option value="user_story">User Story</option>
+                                    <option value="test_cases">Test Cases</option>
+                                    <option value="test_scenarios" selected>Test Scenarios</option>
+                                </select>
+                            </div>
+                            <div id="userStoryOptionsImg" class="mb-3" style="display:none;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeAcceptanceImg" name="includeAcceptance" value="true">
+                                    <label class="form-check-label" for="includeAcceptanceImg">Include Acceptance Criteria</label>
+                                </div>
+                            </div>
+                            <div id="testTypesOptionsImg" class="mb-3" style="display:block;">
+                                <label class="form-label">Select desired types (optional):</label>
+                                <div class="row row-cols-2 g-2">
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="functional" id="typeFunctionalImg"><label class="form-check-label" for="typeFunctionalImg">Functional</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="negative" id="typeNegativeImg"><label class="form-check-label" for="typeNegativeImg">Negative</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="boundary" id="typeBoundaryImg"><label class="form-check-label" for="typeBoundaryImg">Boundary</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="security" id="typeSecurityImg"><label class="form-check-label" for="typeSecurityImg">Security</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="performance" id="typePerformanceImg"><label class="form-check-label" for="typePerformanceImg">Performance</label></div></div>
+                                    <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="usability" id="typeUsabilityImg"><label class="form-check-label" for="typeUsabilityImg">Usability</label></div></div>
+                                </div>
+                            </div>
                             <div class="mb-3">
                                 <label for="imageFile" class="form-label">Upload Image/Document:</label>
                                 <div class="upload-area" id="uploadArea">
@@ -167,7 +217,7 @@
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-magic"></i> Generate Test Conditions from Image
+                                    <i class="fas fa-magic"></i> Generate from Image
                                 </button>
                             </div>
                         </form>
@@ -184,8 +234,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <ul class="list-unstyled">
-                                        <li><i class="fas fa-check text-success"></i> <strong>AI Analysis:</strong> ChatGPT analyzes your input and generates test conditions</li>
-                                        <li><i class="fas fa-check text-success"></i> <strong>Comprehensive Output:</strong> Get functional, non-functional, and edge case tests</li>
+                                        <li><i class="fas fa-check text-success"></i> <strong>AI Analysis:</strong> ChatGPT analyzes your input and generates test scenarios</li>
+                                        <li><i class="fas fa-check text-success"></i> <strong>Comprehensive Output:</strong> Get functional, non-functional, and edge case scenarios</li>
                                     </ul>
                                 </div>
                             </div>
@@ -202,6 +252,12 @@
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('imageFile');
         const fileName = document.getElementById('fileName');
+        const genType = document.getElementById('generationType');
+        const userStoryOptions = document.getElementById('userStoryOptions');
+        const testTypesOptions = document.getElementById('testTypesOptions');
+        const genTypeImg = document.getElementById('generationTypeImg');
+        const userStoryOptionsImg = document.getElementById('userStoryOptionsImg');
+        const testTypesOptionsImg = document.getElementById('testTypesOptionsImg');
 
         uploadArea.addEventListener('click', () => {
             fileInput.click();
@@ -243,6 +299,26 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function toggleOptions(selectEl, storyEl, typesEl) {
+            const value = selectEl.value;
+            if (value === 'user_story') {
+                storyEl.style.display = 'block';
+                typesEl.style.display = 'none';
+            } else if (value === 'test_cases' || value === 'test_scenarios') {
+                storyEl.style.display = 'none';
+                typesEl.style.display = 'block';
+            }
+        }
+
+        if (genType) {
+            genType.addEventListener('change', () => toggleOptions(genType, userStoryOptions, testTypesOptions));
+            toggleOptions(genType, userStoryOptions, testTypesOptions);
+        }
+        if (genTypeImg) {
+            genTypeImg.addEventListener('change', () => toggleOptions(genTypeImg, userStoryOptionsImg, testTypesOptionsImg));
+            toggleOptions(genTypeImg, userStoryOptionsImg, testTypesOptionsImg);
         }
     </script>
 </body>
