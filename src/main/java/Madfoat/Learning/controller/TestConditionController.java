@@ -3,6 +3,7 @@ package Madfoat.Learning.controller;
 import Madfoat.Learning.service.AIService;
 import Madfoat.Learning.service.ImageProcessingService;
 import Madfoat.Learning.dto.GenerateRequest;
+import Madfoat.Learning.dto.RowQuestion;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,16 @@ public class TestConditionController {
                 req.isIncludeAcceptance(),
                 req.getSelectedTypes()
         );
+    }
+
+    // QA endpoint: ask about a specific table row
+    @PostMapping("/api/ask-row")
+    @ResponseBody
+    public String askRow(@RequestBody RowQuestion rq) {
+        String prompt = "You are a helpful QA assistant. Based on the following selected test case row, answer the user's question concisely.\n\n" +
+                "Row:\n" + rq.getRowText() + "\n\n" +
+                "Question: " + rq.getQuestion();
+        return aiService.generateContent(prompt, "text", "user_story", false, null);
     }
 
     // Unified generate endpoint: accepts text and optional image together
