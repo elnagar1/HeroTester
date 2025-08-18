@@ -68,6 +68,23 @@ public class TestConditionController {
         }
     }
 
+    @PostMapping("/generate-automation")
+    public String generateAutomation(@RequestParam("scenarioText") String scenarioText, Model model) {
+        if (scenarioText == null || scenarioText.trim().isEmpty()) {
+            model.addAttribute("error", "Please provide a scenario description");
+            return "index";
+        }
+        try {
+            String automationCode = aiService.generateAutomationScripts(scenarioText);
+            model.addAttribute("scenario", scenarioText);
+            model.addAttribute("automationCode", automationCode);
+            return "automation";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error generating automation scripts: " + e.getMessage());
+            return "index";
+        }
+    }
+
     @GetMapping("/api/health")
     @ResponseBody
     public String health() {

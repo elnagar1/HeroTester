@@ -110,6 +110,31 @@
                             <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
                         </div>
 
+                        <!-- Automation Script Generator -->
+                        <div class="text-center mb-4">
+                            <i class="fas fa-code icon-large text-warning"></i>
+                            <h3>Automation Script Generator</h3>
+                            <p class="text-muted">Describe a page or scenario to generate Selenium TestNG automation code (POM)</p>
+                        </div>
+
+                        <form th:action="@{/generate-automation}" method="post" class="mb-5">
+                            <div class="mb-3">
+                                <label for="scenarioText" class="form-label">Scenario/Page Description:</label>
+                                <textarea
+                                    class="form-control"
+                                    id="scenarioText"
+                                    name="scenarioText"
+                                    rows="5"
+                                    placeholder="Example: As an admin, log in to the portal, open Campaigns, create a new campaign with name, select 'SMS' type, pick sender 'SENDER', choose template 'summer vacation', add post-campaign actions, and verify selections are applied."
+                                    required></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-bolt"></i> Generate Automation Script
+                                </button>
+                            </div>
+                        </form>
+
                         <!-- Text Input Section -->
                         <div class="text-center mb-4">
                             <i class="fas fa-file-text icon-large text-primary"></i>
@@ -178,14 +203,15 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success"></i> <strong>Automation:</strong> Describe a scenario to generate POM-based TestNG code</li>
                                         <li><i class="fas fa-check text-success"></i> <strong>Text Input:</strong> Paste requirements, user stories, or feature descriptions</li>
                                         <li><i class="fas fa-check text-success"></i> <strong>Image Upload:</strong> Upload screenshots, mockups, or requirement documents</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
                                     <ul class="list-unstyled">
-                                        <li><i class="fas fa-check text-success"></i> <strong>AI Analysis:</strong> ChatGPT analyzes your input and generates test conditions</li>
-                                        <li><i class="fas fa-check text-success"></i> <strong>Comprehensive Output:</strong> Get functional, non-functional, and edge case tests</li>
+                                        <li><i class="fas fa-check text-success"></i> <strong>AI Analysis:</strong> ChatGPT analyzes your input and generates outputs</li>
+                                        <li><i class="fas fa-check text-success"></i> <strong>Comprehensive Output:</strong> Get functional tests and automation scripts</li>
                                     </ul>
                                 </div>
                             </div>

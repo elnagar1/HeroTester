@@ -55,6 +55,22 @@ public class AIService {
         }
     }
 
+    public String generateAutomationScripts(String description) {
+        switch (aiProvider.toLowerCase()) {
+            case "openai":
+                return generateAutomationWithOpenAI(description);
+            case "ollama":
+                return generateAutomationWithOllama(description);
+            case "huggingface":
+                return generateAutomationWithHuggingFace(description);
+            case "gemini":
+                return generateAutomationWithGemini(description);
+            case "demo":
+            default:
+                return generateDemoAutomationScripts(description);
+        }
+    }
+
     private String generateWithOpenAI(String input, String inputType) {
         if ("your-api-key-here".equals(openaiKey)) {
             return "OpenAI API key not configured. Please set openai.api.key in application.properties";
@@ -253,6 +269,161 @@ public class AIService {
         result.append("💡 TIP: Set ai.provider=ollama for completely free local AI!");
         
         return result.toString();
+    }
+
+    private String buildAutomationPrompt(String description) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("You are a senior QA automation engineer. Based on the following page/scenario description, write Java Selenium + TestNG automation code following the Page Object Model (POM). ");
+        prompt.append("Output EXACTLY TWO code blocks in Markdown with triple backticks and language 'java'. The first is a test class named <Scenario>Test that extends BaseTest and uses Page Objects. The second is a page class implementing the interactions used in the test. ");
+        prompt.append("Do not add any prose before or after the code blocks. Use imports, method names, and patterns similar to the examples. ");
+        prompt.append("Assume helper classes BaseTest and BasePage exist with a WebDriver instance and an 'element' helper providing click/setText/clearAndSetText/isSelected. ");
+        prompt.append("Ensure the test includes meaningful assertions. ");
+        prompt.append("Here is the scenario description:\n\n");
+        prompt.append(description);
+        return prompt.toString();
+    }
+
+    private String generateAutomationWithOpenAI(String description) {
+        if ("your-api-key-here".equals(openaiKey)) {
+            return generateDemoAutomationScripts(description);
+        }
+        try {
+            String prompt = buildAutomationPrompt(description);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-3.5-turbo");
+            requestBody.put("messages", List.of(
+                Map.of("role", "system", "content", "You generate high-quality Java Selenium TestNG automation code."),
+                Map.of("role", "user", "content", prompt)
+            ));
+            requestBody.put("max_tokens", 2000);
+            requestBody.put("temperature", 0.5);
+
+            Mono<String> response = webClient.post()
+                    .uri("https://api.openai.com/v1/chat/completions")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + openaiKey)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class);
+
+            String responseBody = response.block();
+            return extractOpenAIContent(responseBody);
+        } catch (Exception e) {
+            return "Error with OpenAI: " + e.getMessage();
+        }
+    }
+
+    private String generateAutomationWithOllama(String description) {
+        try {
+            String prompt = buildAutomationPrompt(description);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "llama2");
+            requestBody.put("prompt", prompt);
+            requestBody.put("stream", false);
+
+            Mono<String> response = webClient.post()
+                    .uri(ollamaUrl + "/api/generate")
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class);
+
+            String responseBody = response.block();
+            return extractOllamaContent(responseBody);
+        } catch (Exception e) {
+            return "Error with Ollama: " + e.getMessage();
+        }
+    }
+
+    private String generateAutomationWithHuggingFace(String description) {
+        if ("your-hf-key-here".equals(huggingfaceKey)) {
+            return generateDemoAutomationScripts(description);
+        }
+        try {
+            String prompt = buildAutomationPrompt(description);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("inputs", prompt);
+            requestBody.put("parameters", Map.of(
+                "max_new_tokens", 1200,
+                "temperature", 0.5,
+                "do_sample", true
+            ));
+
+            Mono<String> response = webClient.post()
+                    .uri("https://api-inference.huggingface.co/models/google/flan-t5-large")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + huggingfaceKey)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class);
+
+            String responseBody = response.block();
+            return extractHuggingFaceContent(responseBody);
+        } catch (Exception e) {
+            return "Error with Hugging Face: " + e.getMessage();
+        }
+    }
+
+    private String generateAutomationWithGemini(String description) {
+        if ("your-gemini-key-here".equals(geminiKey)) {
+            return generateDemoAutomationScripts(description);
+        }
+        try {
+            String prompt = buildAutomationPrompt(description);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("contents", List.of(
+                Map.of("parts", List.of(Map.of("text", prompt)))
+            ));
+
+            Mono<String> response = webClient.post()
+                    .uri("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent")
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .header("X-goog-api-key", geminiKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class);
+
+            String responseBody = response.block();
+            return extractGeminiContent(responseBody);
+        } catch (Exception e) {
+            return "Error with Gemini: " + e.getMessage();
+        }
+    }
+
+    private String generateDemoAutomationScripts(String description) {
+        String testClass = "" +
+            "import dPhish.core.BaseTest;\n" +
+            "import org.testng.annotations.BeforeClass;\n" +
+            "import org.testng.annotations.Test;\n" +
+            "import dPhish.pages.portal.Web1.DemoPage;\n\n" +
+            "public class DemoScenarioTest extends BaseTest {\n\n" +
+            "    private DemoPage demoPage;\n\n" +
+            "    @BeforeClass\n" +
+            "    public void setUpClass() {\n" +
+            "        setUp(platformName);\n" +
+            "        demoPage = new DemoPage(driver);\n" +
+            "    }\n\n" +
+            "    @Test\n" +
+            "    public void testDemoFlow() {\n" +
+            "        demoPage.open()\n" +
+            "                .typeSearch(\"sample\")\n" +
+            "                .submit();\n" +
+            "        hardAssertion.assertTrue(demoPage.isResultVisible(\"sample\"), \"Result should be visible\");\n" +
+            "    }\n" +
+            "}\n";
+        String pageClass = "" +
+            "import dPhish.core.BasePage;\n" +
+            "import org.openqa.selenium.*;\n\n" +
+            "public class DemoPage extends BasePage {\n\n" +
+            "    public DemoPage(WebDriver driver) { super(driver); }\n\n" +
+            "    private final By searchInput = By.cssSelector(\"input[name='q']\");\n" +
+            "    private final By submitButton = By.cssSelector(\"button[type='submit']\");\n\n" +
+            "    public DemoPage open() { driver.get(\"https://example.com\"); return this; }\n" +
+            "    public DemoPage typeSearch(String text) { element.setText(searchInput, text); return this; }\n" +
+            "    public DemoPage submit() { element.click(submitButton); return this; }\n" +
+            "    public boolean isResultVisible(String text) { return element.isSelected(By.xpath(\"//*[contains(text(),'\" + text + \"')]\")); }\n" +
+            "}\n";
+        return "```java\n" + testClass + "\n```\n\n```java\n" + pageClass + "\n```";
     }
 
     // Response extraction methods
