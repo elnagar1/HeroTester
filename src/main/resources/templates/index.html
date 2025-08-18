@@ -28,23 +28,10 @@
             background: linear-gradient(90deg, var(--brand-start), var(--brand-end));
             box-shadow: 0 10px 30px rgba(0,0,0,.35);
         }
-        .container {
-            padding-top: 50px;
-        }
-        .modern-panel {
-            border: 1px solid var(--panel-border);
-            border-radius: 18px;
-            box-shadow: 0 12px 40px rgba(0,0,0,.45);
-            backdrop-filter: blur(12px);
-            background: var(--panel-bg);
-            color: #e5e7eb;
-        }
+        .container { padding-top: 50px; }
+        .modern-panel { border: 1px solid var(--panel-border); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); backdrop-filter: blur(12px); background: var(--panel-bg); color: #e5e7eb; }
         .hero { text-align: center; margin-bottom: 22px; }
-        .hero h1 {
-            font-weight: 800; letter-spacing: .5px;
-            background: linear-gradient(90deg, var(--brand-start), var(--brand-end));
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-        }
+        .hero h1 { font-weight: 800; letter-spacing: .5px; background: linear-gradient(90deg, var(--brand-start), var(--brand-end)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .hero p { color: var(--muted); }
         .text-muted { color: var(--muted) !important; }
         .form-text { color: var(--muted) !important; }
@@ -79,7 +66,7 @@
             <div class="col-lg-9">
                 <div class="hero">
                     <h1 class="display-6 mb-1">Test Analyst AI Assistant</h1>
-                    <p>Generate user stories, test cases, and automation code from text and/or images</p>
+                    <p>Generate user stories, test cases, automation code, and API scenarios</p>
                 </div>
                 <div class="modern-panel p-4">
                         <div th:if="${error}" class="alert alert-danger" role="alert">
@@ -97,6 +84,11 @@
                                     <i class="fas fa-wand-magic-sparkles"></i> Test Generator
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-api-tab" data-bs-toggle="tab" data-bs-target="#tab-api" type="button" role="tab" aria-controls="tab-api" aria-selected="false">
+                                    <i class="fas fa-plug"></i> API Scenario Runner
+                                </button>
+                            </li>
                         </ul>
 
                         <div class="tab-content" id="generatorTabsContent">
@@ -110,18 +102,10 @@
                                 <form th:action="@{/generate-automation}" method="post" class="mb-4">
                                     <div class="mb-3">
                                         <label for="scenarioText" class="form-label">Scenario/Page Description:</label>
-                                        <textarea
-                                            class="form-control"
-                                            id="scenarioText"
-                                            name="scenarioText"
-                                            rows="5"
-                                            placeholder="Example: As an admin, log in to the portal, open Campaigns, create a new record, choose type, set date, and verify selections"
-                                            required></textarea>
+                                        <textarea class="form-control" id="scenarioText" name="scenarioText" rows="5" placeholder="Example: As an admin, log in to the portal, open Campaigns, create a new record, choose type, set date, and verify selections" required></textarea>
                                     </div>
                                     <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-bolt"></i> Generate Automation Script
-                                        </button>
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-bolt"></i> Generate Automation Script</button>
                                     </div>
                                 </form>
                             </div>
@@ -190,6 +174,27 @@
                                     Tip: You can generate multiple outputs at once (e.g., User Story + Test Cases + Test Scenarios).
                                 </div>
                             </div>
+
+                            <div class="tab-pane fade" id="tab-api" role="tabpanel" aria-labelledby="tab-api-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-plug icon-large text-info"></i>
+                                    <h3>API Scenario Runner</h3>
+                                    <p class="text-muted">Paste a cURL and optionally add a description to generate scenarios you can run</p>
+                                </div>
+                                <form th:action="@{/api/generate-scenarios}" method="post" class="mb-4">
+                                    <div class="mb-3">
+                                        <label for="curl" class="form-label">cURL:</label>
+                                        <textarea class="form-control" id="curl" name="curl" rows="4" placeholder="curl -X POST https://api.example.com/v1/items -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{\"name\":\"Item\"}'" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="apiDesc" class="form-label">Description (optional):</label>
+                                        <textarea class="form-control" id="apiDesc" name="description" rows="3" placeholder="e.g., Create item API. Expect 200 on happy path, 401 without token, 400 on invalid body"></textarea>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-list"></i> Generate Scenarios</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                 </div>
             </div>
@@ -219,7 +224,7 @@
         function updateFileName() {
             if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                if (fileName) fileName.innerHTML = `<i class="fas fa-file"></i> Selected: ${file.name} (${formatFileSize(file.size)})`;
+                if (fileName) fileName.innerHTML = `<i class=\"fas fa-file\"></i> Selected: ${file.name} (${formatFileSize(file.size)})`;
             } else { if (fileName) fileName.innerHTML = ''; }
         }
         function formatFileSize(bytes) {
