@@ -128,7 +128,8 @@
                 <div class="card card-glass mb-3">
                     <div class="card-body">
                         <div class="section-title"><i class="fa-solid fa-layer-group me-2"></i>All Results</div>
-                        <div id="resultsContainer" class="d-flex flex-column gap-3"></div>
+                        <ul class="nav nav-tabs" id="resultsTabs" role="tablist"></ul>
+                        <div class="tab-content pt-3" id="resultsTabContent"></div>
                     </div>
                 </div>
             </div>
@@ -301,39 +302,42 @@
         }
 
         function appendResultCard(payload, content) {
-            const container = document.getElementById('resultsContainer');
-            const card = document.createElement('div');
-            card.className = 'card card-glass';
-            const body = document.createElement('div');
-            body.className = 'card-body';
+            const tabs = document.getElementById('resultsTabs');
+            const panes = document.getElementById('resultsTabContent');
+            const id = `tab-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+            const label = payload.generationType === 'user_story' ? (payload.includeAcceptance ? 'User Story + AC' : 'User Story') : (payload.generationType === 'test_cases' ? 'Test Cases' : 'Test Scenarios');
 
-            const title = document.createElement('div');
-            title.className = 'result-card-title mb-2';
-            const icon = document.createElement('i');
-            icon.className = payload.generationType === 'user_story' ? 'fa-solid fa-book-open' : 'fa-solid fa-table';
-            const label = document.createElement('span');
-            const typeLabel = payload.generationType === 'user_story' ? (payload.includeAcceptance ? 'User Story + Acceptance Criteria' : 'User Story') : (payload.generationType === 'test_cases' ? 'Test Cases' : 'Test Scenarios');
-            label.textContent = typeLabel;
-            const meta = document.createElement('span'); meta.className = 'badge bg-light text-dark result-badge ms-2'; meta.textContent = new Date().toLocaleString();
-            title.appendChild(icon); title.appendChild(label); title.appendChild(meta);
-            body.appendChild(title);
+            const tab = document.createElement('li'); tab.className = 'nav-item'; tab.role = 'presentation';
+            tab.innerHTML = `<button class="nav-link" id="${id}-tab" data-bs-toggle="tab" data-bs-target="#${id}" type="button" role="tab" aria-controls="${id}" aria-selected="false">${label}</button>`;
+            tabs.appendChild(tab);
 
-            // Try to parse as table first
+            const pane = document.createElement('div'); pane.className = 'tab-pane fade'; pane.id = id; pane.role = 'tabpanel'; pane.setAttribute('aria-labelledby', `${id}-tab`);
+
+            const header = document.createElement('div'); header.className = 'd-flex align-items-center mb-2 result-card-title';
+            const icon = document.createElement('i'); icon.className = payload.generationType === 'user_story' ? 'fa-solid fa-book-open me-2' : 'fa-solid fa-table me-2';
+            const time = document.createElement('span'); time.className = 'badge bg-light text-dark result-badge ms-2'; time.textContent = new Date().toLocaleString();
+            header.appendChild(icon); header.appendChild(document.createTextNode(label)); header.appendChild(time);
+            pane.appendChild(header);
+
             const parsed = parseMarkdownTable(content);
             if (parsed) {
-                body.appendChild(buildTableEl(parsed));
+                pane.appendChild(buildTableEl(parsed));
             } else {
-                const pre = document.createElement('pre'); pre.style.whiteSpace = 'pre-wrap'; pre.textContent = content; body.appendChild(pre);
+                const pre = document.createElement('pre'); pre.style.whiteSpace = 'pre-wrap'; pre.textContent = content; pane.appendChild(pre);
             }
 
             const actions = document.createElement('div'); actions.className = 'mt-2 d-flex gap-2';
             const copyBtn = document.createElement('button'); copyBtn.className = 'btn btn-sm btn-outline-secondary'; copyBtn.innerHTML = '<i class="fa-regular fa-copy me-1"></i>Copy';
             copyBtn.onclick = () => { if (navigator.clipboard) navigator.clipboard.writeText(content); };
             actions.appendChild(copyBtn);
-            body.appendChild(actions);
+            pane.appendChild(actions);
 
-            card.appendChild(body);
-            container.appendChild(card);
+            panes.appendChild(pane);
+
+            // Activate the newly added tab
+            const triggerEl = tab.querySelector('button');
+            const tabObj = new bootstrap.Tab(triggerEl);
+            tabObj.show();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -350,7 +354,7 @@
             toggleOptionBlocks();
             document.getElementById('generationType').addEventListener('change', toggleOptionBlocks);
             document.getElementById('btnGenerateMore').addEventListener('click', generateMore);
-            // Add the initial result card too using actual type
+            // Seed tabs with initial result
             appendResultCard({ generationType: genType, includeAcceptance: false }, document.getElementById('rawText').textContent);
         });
     </script>
