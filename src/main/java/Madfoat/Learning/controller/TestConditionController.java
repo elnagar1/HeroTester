@@ -2,6 +2,7 @@ package Madfoat.Learning.controller;
 
 import Madfoat.Learning.service.AIService;
 import Madfoat.Learning.service.ImageProcessingService;
+import Madfoat.Learning.dto.GenerateRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -84,5 +85,19 @@ public class TestConditionController {
     @ResponseBody
     public String health() {
         return "Test Analyst AI Assistant is running!";
+    }
+
+    // API to request additional generation from results page
+    @PostMapping("/api/generate-more")
+    @ResponseBody
+    public String generateMore(@RequestBody GenerateRequest req) {
+        String genType = req.getGenerationType() == null ? "test_scenarios" : req.getGenerationType();
+        return aiService.generateContent(
+                req.getInput(),
+                req.getInputType() == null ? "text" : req.getInputType(),
+                genType,
+                req.isIncludeAcceptance(),
+                req.getSelectedTypes()
+        );
     }
 }
