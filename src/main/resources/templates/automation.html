@@ -24,8 +24,8 @@
             <div class="col-12">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h2 class="mb-0"><i class="fas fa-code"></i> Generated Automation Test</h2>
-                        <p class="mb-0 mt-1">Scenario-driven Java Selenium (TestNG, POM)</p>
+                        <h2 class="mb-0"><i class="fas fa-code"></i> Generated Automation Code</h2>
+                        <p class="mb-0 mt-1">Java Selenium (TestNG, POM)</p>
                     </div>
                 </div>
 
@@ -44,6 +44,21 @@
                     </div>
                 </div>
 
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0"><i class="fas fa-file-code"></i> Page Class</h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="copyBlock('pageCode')"><i class="fas fa-copy"></i> Copy</button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="downloadBlock('pageCode','GeneratedPage.java')"><i class="fas fa-download"></i> Download</button>
+                            </div>
+                        </div>
+                        <div class="code-container">
+                            <pre class="language-java"><code id="pageCode"></code></pre>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="text-center">
                     <a href="/" class="btn btn-success"><i class="fas fa-arrow-left"></i> Back to Home</a>
                 </div>
@@ -52,38 +67,21 @@
     </div>
 
     <script th:inline="javascript">
-        // Injected by Thymeleaf with proper JS escaping
         const full = /*[[${automationCode}]]*/ "";
-
-        function extractJavaBlock(md) {
-            if (!md) return '';
-            const re = /```java\n([\s\S]*?)\n```/;
-            const m = re.exec(md);
-            return m ? m[1] : md; // fallback if provider didn't fence
+        function extractJavaBlocks(md) {
+            const blocks = [];
+            if (!md) return blocks;
+            const re = /```java\n([\s\S]*?)\n```/g;
+            let m; while ((m = re.exec(md)) !== null) { blocks.push(m[1]); }
+            return blocks;
         }
-        function setCode(id, code) {
-            const el = document.getElementById(id);
-            el.textContent = code || '// No code generated';
-            Prism.highlightElement(el);
-        }
-        function copyBlock(id) {
-            const code = document.getElementById(id).textContent;
-            navigator.clipboard.writeText(code);
-        }
-        function downloadBlock(id, filename) {
-            const code = document.getElementById(id).textContent;
-            const blob = new Blob([code], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+        function setCode(id, code) { const el = document.getElementById(id); el.textContent = code || ''; Prism.highlightElement(el); }
+        function copyBlock(id) { const code = document.getElementById(id).textContent; navigator.clipboard.writeText(code); }
+        function downloadBlock(id, filename) { const code = document.getElementById(id).textContent; const blob = new Blob([code], { type: 'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
         document.addEventListener('DOMContentLoaded', function() {
-            setCode('testCode', extractJavaBlock(full));
+            const blocks = extractJavaBlocks(full);
+            setCode('testCode', blocks[0] || '');
+            setCode('pageCode', blocks[1] || '');
         });
     </script>
 </body>

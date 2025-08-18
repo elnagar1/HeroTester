@@ -459,7 +459,7 @@ public class AIService {
         prompt.append("Assume BaseTest and BasePage exist and an 'element' helper is available for click/setText/isSelected. ");
         prompt.append("Use meaningful page object method names and at least one assertion with hardAssertion.assertTrue(...). ");
         prompt.append("Name the test class using key words from the scenario ending with 'Test'. ");
-        prompt.append("Output EXACTLY ONE fenced Markdown code block with language 'java' that contains ONLY the test class (no page classes, no prose, no package).\n\n");
+        prompt.append("Output EXACTLY TWO fenced Markdown code blocks with language 'java' in this order: (1) ONLY the test class, (2) ONLY the page class that implements the methods used by the test. No prose, no packages.\n\n");
         prompt.append("Scenario description:\n");
         prompt.append(description);
         return prompt.toString();
@@ -577,9 +577,11 @@ public class AIService {
         String testClass = "" +
             "import dPhish.core.BaseTest;\n" +
             "import org.testng.annotations.BeforeClass;\n" +
-            "import org.testng.annotations.Test;\n\n" +
+            "import org.testng.annotations.Test;\n" +
+            "import dPhish.pages.portal.Web1.LoginPage;\n" +
+            "import dPhish.pages.portal.Web1.HomePage;\n" +
+            "import dPhish.pages.portal.Web1.ScenarioPage;\n\n" +
             "public class " + className + " extends BaseTest {\n\n" +
-            "    // Replace with your actual Page Objects\n" +
             "    private LoginPage login;\n" +
             "    private HomePage home;\n" +
             "    private ScenarioPage scenarioPage;\n\n" +
@@ -602,7 +604,29 @@ public class AIService {
             "        hardAssertion.assertTrue(scenarioPage.isRecordVisible(), \"Record should be visible\");\n" +
             "    }\n" +
             "}\n";
-        return "```java\n" + testClass + "\n```";
+
+        String pageClass = "" +
+            "import dPhish.core.BasePage;\n" +
+            "import org.openqa.selenium.*;\n\n" +
+            "public class ScenarioPage extends BasePage {\n\n" +
+            "    public ScenarioPage(WebDriver driver) { super(driver); }\n\n" +
+            "    private final By mainFeatureBtn = By.cssSelector(\"[data-test='open-feature']\");\n" +
+            "    private final By newRecordBtn = By.cssSelector(\"[data-test='new-record']\");\n" +
+            "    private final By nameInput = By.cssSelector(\"input[name='name']\");\n" +
+            "    private final By typeDropdown = By.cssSelector(\"select[name='type']\");\n" +
+            "    private final By dateInput = By.cssSelector(\"input[type='date']\");\n" +
+            "    private final By submitBtn = By.cssSelector(\"button[type='submit']\");\n" +
+            "    private final By recordRow = By.cssSelector(\"[data-test='record-row']\");\n\n" +
+            "    public ScenarioPage openMainFeature() { element.click(mainFeatureBtn); return this; }\n" +
+            "    public ScenarioPage startNewRecord() { element.click(newRecordBtn); return this; }\n" +
+            "    public ScenarioPage typeName(String name) { element.clearAndSetText(nameInput, name); return this; }\n" +
+            "    public ScenarioPage chooseType(String value) { element.click(typeDropdown); element.click(By.xpath(\"//option[normalize-space()=\\'\" + value + \"\\']\")); return this; }\n" +
+            "    public ScenarioPage setDateToday() { ((JavascriptExecutor)driver).executeScript(\"arguments[0].valueAsDate = new Date();\", driver.findElement(dateInput)); return this; }\n" +
+            "    public ScenarioPage submit() { element.click(submitBtn); return this; }\n" +
+            "    public boolean isRecordVisible() { return element.isSelected(recordRow); }\n" +
+            "}\n";
+
+        return "```java\n" + testClass + "\n```\n\n```java\n" + pageClass + "\n```";
     }
 
     private String matchFirst(String text, String regex) {
