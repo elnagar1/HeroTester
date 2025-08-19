@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Analyst AI Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-start: #0b1220;
+            --bg-end: #0a0f1c;
+            --brand-start: #8b5cf6; /* violet */
+            --brand-end: #06b6d4;   /* cyan */
+            --panel-bg: rgba(17, 24, 39, 0.7);
+            --panel-border: rgba(148, 163, 184, 0.2);
+            --muted: #a9b4c7; /* slightly brighter for readability */
+        }
+        body {
+            background: radial-gradient(1200px 800px at 10% -20%, rgba(139,92,246,.15), transparent 60%),
+                        radial-gradient(1000px 600px at 110% 10%, rgba(6,182,212,.10), transparent 60%),
+                        linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            color: #e5e7eb;
+        }
+        .navbar-modern {
+            background: linear-gradient(90deg, var(--brand-start), var(--brand-end));
+            box-shadow: 0 10px 30px rgba(0,0,0,.35);
+        }
+        .container { padding-top: 50px; }
+        .modern-panel { border: 1px solid var(--panel-border); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); backdrop-filter: blur(12px); background: var(--panel-bg); color: #e5e7eb; }
+        .hero { text-align: center; margin-bottom: 22px; }
+        .hero h1 { font-weight: 800; letter-spacing: .5px; background: linear-gradient(90deg, var(--brand-start), var(--brand-end)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .hero p { color: var(--muted); }
+        .text-muted { color: var(--muted) !important; }
+        .form-text { color: var(--muted) !important; }
+        .btn-primary { background: #2563eb; border-color: #2563eb; border-radius: 8px; padding: 12px 30px; font-weight: 600; transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(30,64,175,0.4); }
+        .btn-outline-secondary { color: #e5e7eb; border-color: #475569; }
+        .btn-outline-secondary:hover { background: #1f2937; color: #fff; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #334155; padding: 12px 15px; transition: all 0.3s ease; background: #0f172a; color: #e5e7eb; }
+        .form-control:focus, .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 0.2rem rgba(59,130,246,.25); background: #0f172a; color: #e5e7eb; }
+        .form-control::placeholder { color: #9ca3af; opacity: 1; }
+        .alert { border-radius: 10px; border: none; }
+        .icon-large { font-size: 2rem; margin-bottom: 15px; }
+        .upload-area { border: 2px dashed #334155; border-radius: 10px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; background: #0b1220; color: #d1d5db; }
+        .upload-area:hover { border-color: #3b82f6; background: rgba(30,58,138,.25); }
+        .upload-area.dragover { border-color: #3b82f6; background: rgba(30,58,138,.35); }
+        .nav-tabs .nav-link { color: #cbd5e1; border: 0; }
+        .nav-tabs .nav-link.active { color: #fff; background: rgba(59,130,246,.15); border-bottom: 2px solid #3b82f6; }
+        .tab-pane { padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-modern navbar-expand-lg">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand text-white fw-bold" href="/">
+                <i class="fa-solid fa-flask-vial me-2"></i> HeroTester
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="hero">
+                    <h1 class="display-6 mb-1">Test Analyst AI Assistant</h1>
+                    <p>Generate user stories, test cases, automation code, and API scenarios</p>
+                </div>
+                <div class="modern-panel p-4">
+                        <div th:if="${error}" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
+                        </div>
+
+                        <ul class="nav nav-tabs" id="generatorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-automation-tab" data-bs-toggle="tab" data-bs-target="#tab-automation" type="button" role="tab" aria-controls="tab-automation" aria-selected="true">
+                                    <i class="fas fa-code"></i> Automation Generator
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-tests-tab" data-bs-toggle="tab" data-bs-target="#tab-tests" type="button" role="tab" aria-controls="tab-tests" aria-selected="false">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Test Generator
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-api-tab" data-bs-toggle="tab" data-bs-target="#tab-api" type="button" role="tab" aria-controls="tab-api" aria-selected="false">
+                                    <i class="fas fa-plug"></i> API Scenario Runner
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-ai-tab" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button" role="tab" aria-controls="tab-ai" aria-selected="false">
+                                    <i class="fas fa-robot"></i> AI Model
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="generatorTabsContent">
+                            <div class="tab-pane fade show active" id="tab-automation" role="tabpanel" aria-labelledby="tab-automation-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-code icon-large text-warning"></i>
+                                    <h3>Automation Script Generator</h3>
+                                    <p class="text-muted">Describe a page or scenario to generate Selenium TestNG automation code (POM)</p>
+                                </div>
+
+                                <form th:action="@{/generate-automation}" method="post" class="mb-4">
+                                    <div class="mb-3">
+                                        <label for="scenarioText" class="form-label">Scenario/Page Description:</label>
+                                        <textarea class="form-control" id="scenarioText" name="scenarioText" rows="5" placeholder="Example: As an admin, log in to the portal, open Campaigns, create a new record, choose type, set date, and verify selections" required></textarea>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-bolt"></i> Generate Automation Script</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-tests" role="tabpanel" aria-labelledby="tab-tests-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-wand-magic-sparkles icon-large text-primary"></i>
+                                    <h3>Unified Generation</h3>
+                                    <p class="text-muted">Provide text, image, or both. Choose multiple output types.</p>
+                                </div>
+
+                                <form th:action="@{/generate}" method="post" enctype="multipart/form-data" class="mb-4">
+                                    <div class="mb-3">
+                                        <label for="generationTypes" class="form-label">What do you need?</label>
+                                        <select class="form-select" id="generationTypes" name="generationTypes" multiple required>
+                                            <option value="user_story">User Story</option>
+                                            <option value="test_cases" selected>Test Cases</option>
+                                        </select>
+                                        <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                                    </div>
+
+                                    <div id="userStoryOptions" class="mb-3" style="display:none;">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="includeAcceptance" name="includeAcceptance" value="true">
+                                            <label class="form-check-label" for="includeAcceptance">Include Acceptance Criteria</label>
+                                        </div>
+                                    </div>
+
+                                    <div id="testTypesOptions" class="mb-3" style="display:block;">
+                                        <label class="form-label">Select desired types (optional):</label>
+                                        <div class="row row-cols-2 row-cols-md-3 g-2">
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="functional" id="typeFunctional"><label class="form-check-label" for="typeFunctional">Functional</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="negative" id="typeNegative"><label class="form-check-label" for="typeNegative">Negative</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="boundary" id="typeBoundary"><label class="form-check-label" for="typeBoundary">Boundary</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="security" id="typeSecurity"><label class="form-check-label" for="typeSecurity">Security</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="performance" id="typePerformance"><label class="form-check-label" for="typePerformance">Performance</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="selectedTypes" value="usability" id="typeUsability"><label class="form-check-label" for="typeUsability">Usability</label></div></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="businessText" class="form-label">Business Requirements/Text (optional):</label>
+                                        <textarea class="form-control" id="businessText" name="businessText" rows="6" placeholder="Enter requirements, user stories, or features..."></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="imageFile" class="form-label">Optional Image/Document:</label>
+                                        <div class="upload-area" id="uploadArea">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                            <p class="mb-2">Drag and drop your file here, or click to browse</p>
+                                            <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*,.pdf,.doc,.docx" style="display: none;">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageFile').click()">
+                                                <i class="fas fa-folder-open"></i> Choose File
+                                            </button>
+                                            <div id="fileName" class="mt-2 text-muted"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-magic"></i> Generate</button>
+                                    </div>
+                                </form>
+
+                                <div class="mt-2 small text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Tip: You can generate multiple outputs at once (e.g., User Story + Test Cases + Test Scenarios).
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-api" role="tabpanel" aria-labelledby="tab-api-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-plug icon-large text-info"></i>
+                                    <h3>API Scenario Runner</h3>
+                                    <p class="text-muted">Paste a cURL, choose case filters, and generate scenarios to run</p>
+                                </div>
+                                <form th:action="@{/api/generate-scenarios}" method="post" class="mb-4">
+                                    <div class="mb-3">
+                                        <label for="curl" class="form-label">cURL:</label>
+                                        <textarea class="form-control" id="curl" name="curl" rows="4" placeholder="curl -X POST https://api.example.com/v1/items -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{&quot;name&quot;:&quot;Item&quot;}'" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="caseLimit" class="form-label">Number of cases:</label>
+                                        <input type="number" class="form-control" id="caseLimit" name="limit" min="1" max="50" value="5">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Case types:</label>
+                                        <div class="row row-cols-2 row-cols-md-3 g-2">
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="happy" id="ctHappy" checked><label class="form-check-label" for="ctHappy">Happy</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="unauthorized" id="ctUnauthorized"><label class="form-check-label" for="ctUnauthorized">Unauthorized</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="invalid_payload" id="ctInvalid"><label class="form-check-label" for="ctInvalid">Invalid Payload</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="missing_required" id="ctMissing"><label class="form-check-label" for="ctMissing">Missing Required</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="pagination" id="ctPagination"><label class="form-check-label" for="ctPagination">Pagination</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="not_found" id="ctNotFound"><label class="form-check-label" for="ctNotFound">Not Found</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="conflict" id="ctConflict"><label class="form-check-label" for="ctConflict">Conflict</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="rate_limit" id="ctRateLimit"><label class="form-check-label" for="ctRateLimit">Rate Limit</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="xml" id="ctXml"><label class="form-check-label" for="ctXml">XML Response</label></div></div>
+                                        </div>
+                                        <div class="form-text">Select one or more. Default includes Happy only.</div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-list"></i> Generate Scenarios</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-ai" role="tabpanel" aria-labelledby="tab-ai-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-robot icon-large text-success"></i>
+                                    <h3>AI Knowledge Console</h3>
+                                    <p class="text-muted">Connect data sources (User Stories, Test Cases, Jira, Slack) and ask questions</p>
+                                </div>
+                                <div class="d-grid">
+                                    <a href="/ai" class="btn btn-primary"><i class="fas fa-terminal"></i> Open AI Model Console</a>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('imageFile');
+        const fileName = document.getElementById('fileName');
+        const genTypes = document.getElementById('generationTypes');
+        const userStoryOptions = document.getElementById('userStoryOptions');
+        const testTypesOptions = document.getElementById('testTypesOptions');
+
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => { fileInput && fileInput.click(); });
+            uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+            uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault(); uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files; if (files && files.length > 0 && fileInput) { fileInput.files = files; updateFileName(); }
+            });
+        }
+        if (fileInput) fileInput.addEventListener('change', updateFileName);
+
+        function updateFileName() {
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (fileName) fileName.innerHTML = `<i class="fas fa-file"></i> Selected: ${file.name} (${formatFileSize(file.size)})`;
+            } else { if (fileName) fileName.innerHTML = ''; }
+        }
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024; const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function toggleOptions(selectEl, storyEl, typesEl) {
+            const values = Array.from(selectEl.selectedOptions).map(o => o.value);
+            storyEl.style.display = values.includes('user_story') ? 'block' : 'none';
+            typesEl.style.display = values.includes('test_cases') ? 'block' : 'none';
+        }
+        if (genTypes) {
+            genTypes.addEventListener('change', () => toggleOptions(genTypes, userStoryOptions, testTypesOptions));
+            toggleOptions(genTypes, userStoryOptions, testTypesOptions);
+        }
+    </script>
+</body>
+</html>
