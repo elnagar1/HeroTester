@@ -74,10 +74,27 @@ public class ApiScenarioService {
         } catch (Exception ignore) {
         }
 
-        if (scenarios.size() > max) {
+        if (scenarios.size() >= max) {
             return scenarios.subList(0, max);
         }
-        return scenarios;
+
+        // Fill up to desired max with simple, labeled variants of existing scenarios
+        try {
+            while (scenarios.size() < max && !scenarios.isEmpty()) {
+                int idx = scenarios.size() % scenarios.size();
+                Map<String, Object> baseSc = scenarios.get(idx);
+                String baseTitle = String.valueOf(baseSc.getOrDefault("title", "Variant"));
+                String baseCurl = String.valueOf(baseSc.get("curl"));
+                Integer baseExpected = (Integer) baseSc.getOrDefault("expectedStatus", 200);
+                RequestParts p = parseCurl(baseCurl);
+                // mark variant in URL for uniqueness
+                p.url = ensureQueryParam(p.url, Map.of("variant", String.valueOf(scenarios.size() + 1)));
+                String title = baseTitle + " (variant " + (scenarios.size() + 1) + ")";
+                scenarios.add(createScenario(title, buildCurl(p), null, Map.of("expectedStatus", baseExpected)));
+            }
+        } catch (Exception ignored) {}
+
+        return scenarios.subList(0, Math.min(max, scenarios.size()));
     }
 
     public Map<String, Object> runScenario(String id) {
@@ -212,8 +229,9 @@ public class ApiScenarioService {
         }
         String curl = (String) scenario.get("curl");
         Integer expected = (Integer) scenario.getOrDefault("expectedStatus", 200);
+        String assertContains = (String) scenario.getOrDefault("assertContains", null);
         RequestParts parts = parseCurl(curl);
-        String code = buildRestAssuredCode(parts, expected == null ? 200 : expected);
+        String code = buildRestAssuredCode(parts, expected == null ? 200 : expected, assertContains);
         return Map.of("status", "ok", "code", code);
     }
 
@@ -235,7 +253,7 @@ public class ApiScenarioService {
         return detail;
     }
 
-    private String buildRestAssuredCode(RequestParts p, int expectedStatus) {
+    private String buildRestAssuredCode(RequestParts p, int expectedStatus, String assertContains) {
         StringBuilder b = new StringBuilder();
         b.append("import io.restassured.RestAssured;\n");
         b.append("import io.restassured.http.ContentType;\n");
@@ -281,10 +299,23 @@ public class ApiScenarioService {
                 .append(escapeJava(p.url)).append("\")\n");
         b.append("        .then()\n");
         b.append("            .statusCode(").append(expectedStatus).append(")\n");
+        if (assertContains != null && !assertContains.isBlank()) {
+            b.append("            .body(containsString(\"").append(escapeJava(assertContains)).append("\"))\n");
+        }
         b.append("        ;\n");
         b.append("    }\n");
         b.append("}\n");
         return b.toString();
+    }
+
+    public Map<String, String> setScenarioAssertion(String id, String expectedContains) {
+        Map<String, Object> scenario = idToScenario.get(id);
+        if (scenario == null) {
+            return Map.of("status", "error", "message", "Scenario not found");
+        }
+        if (expectedContains == null) expectedContains = "";
+        scenario.put("assertContains", expectedContains);
+        return Map.of("status", "ok");
     }
 
     private RequestParts cloneParts(RequestParts src) {

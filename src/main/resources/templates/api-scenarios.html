@@ -6,6 +6,7 @@
     <title>API Scenarios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
 </head>
 <body class="bg-light">
 <div class="container py-4">
@@ -53,11 +54,14 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-2"><span class="badge text-bg-secondary" id="contentType">-</span> <span class="badge text-bg-info" id="statusBadge">-</span> <span class="badge text-bg-light text-dark" id="timeBadge">-</span></div>
-                                <pre id="resultText" class="mb-2" style="max-height: 420px; overflow: auto; background: #0f172a; color: #e5e7eb; padding: 12px; border-radius: 6px;"></pre>
+                                <pre class="mb-2"><code id="resultText" class="language-json" style="max-height: 420px; overflow:auto; display:block;"></code></pre>
                                 <details>
                                     <summary>Headers</summary>
-                                    <pre id="headersText" class="mb-0" style="max-height: 200px; overflow:auto;"></pre>
+                                    <pre class="mb-0"><code id="headersText" class="language-json" style="max-height: 200px; overflow:auto; display:block;"></code></pre>
                                 </details>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-success" id="btnAssert">Add/Update Expected Assertion</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -67,7 +71,7 @@
                         <div class="card h-100">
                             <div class="card-header"><i class="fas fa-code"></i> Rest Assured</div>
                             <div class="card-body">
-                                <pre id="codeText" style="max-height: 540px; overflow: auto; background: #0b1220; color: #e5e7eb; padding: 12px; border-radius: 6px;"></pre>
+                                <pre class="language-java" style="max-height: 540px; overflow:auto;"><code id="codeText" class="language-java"></code></pre>
                             </div>
                         </div>
                     </div>
@@ -78,11 +82,11 @@
                                 <div class="mb-2"><span class="badge text-bg-dark" id="reqMethod">-</span> <code id="reqUrl">-</code></div>
                                 <details open>
                                     <summary>Headers</summary>
-                                    <pre id="reqHeaders" class="mb-2" style="max-height: 200px; overflow:auto; background:#0b1220; color:#e5e7eb; padding:10px; border-radius:6px;"></pre>
+                                    <pre class="mb-2"><code id="reqHeaders" class="language-json" style="max-height: 200px; overflow:auto; display:block;"></code></pre>
                                 </details>
                                 <details>
                                     <summary>Body</summary>
-                                    <pre id="reqBody" class="mb-0" style="max-height: 260px; overflow:auto; background:#0b1220; color:#e5e7eb; padding:10px; border-radius:6px;"></pre>
+                                    <pre class="mb-0"><code id="reqBody" class="language-json" style="max-height: 260px; overflow:auto; display:block;"></code></pre>
                                 </details>
                             </div>
                         </div>
@@ -95,6 +99,9 @@
         </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
 <script th:inline="none">
     async function runScenario(btn) {
         const id = btn.getAttribute('data-id');
@@ -119,13 +126,21 @@
         } else if (contentType.includes('xml') || bodyOut.trim().startsWith('<')) {
             bodyOut = formatXml(bodyOut);
         }
+        const isXml = bodyOut.trim().startsWith('<');
+        const pre = document.getElementById('resultText');
+        pre.className = isXml ? 'language-markup' : 'language-json';
         pre.textContent = bodyOut;
+        Prism.highlightElement(pre);
         ctBadge.textContent = json.contentType || '-';
         statusBadge.textContent = 'HTTP ' + (json.httpStatus ?? '-');
         timeBadge.textContent = (json.timeMs != null ? json.timeMs + ' ms' : '');
         headersPre.textContent = JSON.stringify(json.headers || {}, null, 2);
+        Prism.highlightElement(headersPre);
         container.style.display = 'block';
         pre.scrollIntoView({ behavior: 'smooth' });
+
+        // Wire assertion button to current scenario id if available in table row
+        document.getElementById('btnAssert').onclick = () => openAssertModal();
     }
 
     async function viewCode(btnOrRow) {
@@ -133,10 +148,11 @@
         const res = await fetch('/api/scenario-code?id=' + encodeURIComponent(id));
         const json = await res.json();
         if (json.status === 'ok') {
-            const pre = document.getElementById('codeText');
-            pre.textContent = json.code;
+            const codeEl = document.getElementById('codeText');
+            codeEl.textContent = json.code;
+            Prism.highlightElement(codeEl);
             document.getElementById('codePanel').style.display = 'block';
-            pre.scrollIntoView({ behavior: 'smooth' });
+            codeEl.scrollIntoView({ behavior: 'smooth' });
         }
     }
 
@@ -147,12 +163,17 @@
         if (json.status === 'ok') {
             document.getElementById('reqMethod').textContent = (json.method || 'GET');
             document.getElementById('reqUrl').textContent = json.url || '-';
-            document.getElementById('reqHeaders').textContent = JSON.stringify(json.headers || {}, null, 2);
+            const reqHeaders = document.getElementById('reqHeaders');
+            reqHeaders.textContent = JSON.stringify(json.headers || {}, null, 2);
+            Prism.highlightElement(reqHeaders);
             let body = json.body || '';
             const looksJson = body.trim().startsWith('{') || body.trim().startsWith('[');
             if (looksJson) { try { body = JSON.stringify(JSON.parse(body), null, 2); } catch (e) {} }
             else if (body.trim().startsWith('<')) { body = formatXml(body); }
-            document.getElementById('reqBody').textContent = body;
+            const reqBody = document.getElementById('reqBody');
+            reqBody.className = body.trim().startsWith('<') ? 'language-markup' : 'language-json';
+            reqBody.textContent = body;
+            Prism.highlightElement(reqBody);
             document.getElementById('requestPanel').style.display = 'block';
             document.getElementById('requestPanel').scrollIntoView({ behavior: 'smooth' });
         }
@@ -187,6 +208,44 @@
             });
             return formatted.trim();
         } catch { return xml; }
+    }
+
+    // Assertion modal logic
+    function openAssertModal() {
+        const existing = prompt('Is this the expected response? (OK for Yes, Cancel/No for No)');
+        if (existing !== null) {
+            // user clicked OK (Yes): clear assertion
+            const selectedRow = document.querySelector('.scenario-row');
+            if (!selectedRow) return;
+            const id = selectedRow.getAttribute('data-id');
+            updateAssertion(id, '');
+            return;
+        }
+        const expected = prompt('Type the expected text that should be present in response body:');
+        if (expected == null) return;
+        const selectedRow = document.querySelector('.scenario-row');
+        if (!selectedRow) return;
+        const id = selectedRow.getAttribute('data-id');
+        updateAssertion(id, expected);
+    }
+
+    async function updateAssertion(id, expected) {
+        const params = new URLSearchParams();
+        params.set('id', id);
+        params.set('expected', expected);
+        const res = await fetch('/api/scenario-assert', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params.toString() });
+        const json = await res.json();
+        if (json.status === 'ok') {
+            // refresh code panel to include assertion
+            const codeRes = await fetch('/api/scenario-code?id=' + encodeURIComponent(id));
+            const codeJson = await codeRes.json();
+            if (codeJson.status === 'ok') {
+                const codeEl = document.getElementById('codeText');
+                codeEl.textContent = codeJson.code;
+                Prism.highlightElement(codeEl);
+                document.getElementById('codePanel').style.display = 'block';
+            }
+        }
     }
 </script>
 </body>

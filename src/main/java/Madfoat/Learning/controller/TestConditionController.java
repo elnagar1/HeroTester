@@ -161,6 +161,13 @@ public class TestConditionController {
         return apiScenarioService.getScenarioDetail(id);
     }
 
+    @PostMapping("/api/scenario-assert")
+    @ResponseBody
+    public Map<String, String> setScenarioAssert(@RequestParam("id") String id,
+                                                 @RequestParam(value = "expected", required = false) String expected) {
+        return apiScenarioService.setScenarioAssertion(id, expected);
+    }
+
     @GetMapping("/api/health")
     @ResponseBody
     public String health() {
