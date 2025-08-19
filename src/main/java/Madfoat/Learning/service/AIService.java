@@ -90,6 +90,25 @@ public class AIService {
         }
     }
 
+    // Generic prompt-based generation (for row Q&A and custom asks)
+    public String generateWithPrompt(String prompt) {
+        switch (aiProvider.toLowerCase()) {
+            case "openai":
+                return generateWithOpenAIPrompt(prompt);
+            case "ollama":
+                return generateWithOllamaPrompt(prompt);
+            case "huggingface":
+                return generateWithHuggingFacePrompt(prompt);
+            case "gemini":
+                return generateWithGeminiPrompt(prompt);
+            case "demo":
+            default:
+                return "[DEMO MODE]\n" +
+                        "Prompt Summary:\n" + prompt + "\n\n" +
+                        "This is a demo response. Configure a free provider like Ollama/HuggingFace or Gemini for real answers.";
+        }
+    }
+
     private String generateWithOpenAI(String input, String inputType) {
         if ("your-api-key-here".equals(openaiKey)) {
             return "OpenAI API key not configured. Please set openai.api.key in application.properties";

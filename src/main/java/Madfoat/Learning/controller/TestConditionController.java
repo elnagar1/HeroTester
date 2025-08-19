@@ -48,6 +48,44 @@ public class TestConditionController {
         }
     }
 
+    // Unified generator backing the UI tab "/generate" form
+    @PostMapping("/generate")
+    public String generateUnified(@RequestParam("generationTypes") List<String> generationTypes,
+                                  @RequestParam(value = "includeAcceptance", required = false, defaultValue = "false") boolean includeAcceptance,
+                                  @RequestParam(value = "selectedTypes", required = false) List<String> selectedTypes,
+                                  @RequestParam(value = "businessText", required = false) String businessText,
+                                  @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                                  Model model) {
+        try {
+            // Prefer text if provided; otherwise try image
+            String input; String inputType;
+            if (businessText != null && !businessText.trim().isEmpty()) {
+                input = businessText; inputType = "text";
+            } else if (imageFile != null && !imageFile.isEmpty()) {
+                input = imageProcessingService.getImageAnalysisContext(imageFile); inputType = "image";
+            } else {
+                model.addAttribute("error", "Please provide text or an image/document");
+                return "index";
+            }
+
+            // For first type in list, generate initial content for results page
+            String firstType = generationTypes == null || generationTypes.isEmpty() ? "test_cases" : generationTypes.get(0);
+            String content = aiService.generateContent(input, inputType, firstType, includeAcceptance, selectedTypes);
+
+            model.addAttribute("input", input);
+            model.addAttribute("inputType", "text".equals(inputType) ? "Business Text" : "Image Analysis");
+            model.addAttribute("testConditions", content);
+            model.addAttribute("generationType", firstType);
+            if (imageFile != null && !imageFile.isEmpty()) {
+                model.addAttribute("fileName", imageFile.getOriginalFilename());
+            }
+            return "results";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error generating: " + e.getMessage());
+            return "index";
+        }
+    }
+
     @PostMapping("/generate-from-image")
     public String generateFromImage(@RequestParam("imageFile") MultipartFile imageFile, Model model) {
         if (imageFile == null || imageFile.isEmpty()) {
@@ -127,5 +165,31 @@ public class TestConditionController {
     @ResponseBody
     public String health() {
         return "Test Analyst AI Assistant is running!";
+    }
+
+    // API used by results.html for generating more content dynamically
+    @PostMapping("/api/generate-more")
+    @ResponseBody
+    public String generateMore(@RequestBody Map<String, Object> payload) {
+        String input = String.valueOf(payload.getOrDefault("input", ""));
+        String inputType = String.valueOf(payload.getOrDefault("inputType", "text"));
+        String generationType = String.valueOf(payload.getOrDefault("generationType", "test_cases"));
+        boolean includeAcceptance = Boolean.TRUE.equals(payload.get("includeAcceptance"));
+        @SuppressWarnings("unchecked")
+        List<String> selectedTypes = (List<String>) payload.get("selectedTypes");
+        return aiService.generateContent(input, inputType, generationType, includeAcceptance, selectedTypes);
+    }
+
+    // API for row Q&A in results.html
+    @PostMapping("/api/ask-row")
+    @ResponseBody
+    public String askRow(@RequestBody Map<String, String> payload) {
+        String rowText = payload.getOrDefault("rowText", "");
+        String question = payload.getOrDefault("question", "");
+        String prompt = "Given this test row, answer the user's question clearly.\n\n" +
+                "Row:\n" + rowText + "\n\n" +
+                "Question:\n" + question + "\n\n" +
+                "Answer:";
+        return aiService.generateWithPrompt(prompt);
     }
 }
