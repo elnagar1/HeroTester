@@ -179,7 +179,7 @@
                                 <div class="text-center mb-4 mt-2">
                                     <i class="fas fa-plug icon-large text-info"></i>
                                     <h3>API Scenario Runner</h3>
-                                    <p class="text-muted">Paste a cURL and optionally add a description to generate scenarios you can run</p>
+                                    <p class="text-muted">Paste a cURL, choose case filters, and generate scenarios to run</p>
                                 </div>
                                 <form th:action="@{/api/generate-scenarios}" method="post" class="mb-4">
                                     <div class="mb-3">
@@ -187,8 +187,23 @@
                                         <textarea class="form-control" id="curl" name="curl" rows="4" placeholder="curl -X POST https://api.example.com/v1/items -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{\"name\":\"Item\"}'" required></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="apiDesc" class="form-label">Description (optional):</label>
-                                        <textarea class="form-control" id="apiDesc" name="description" rows="3" placeholder="e.g., Create item API. Expect 200 on happy path, 401 without token, 400 on invalid body"></textarea>
+                                        <label for="caseLimit" class="form-label">Number of cases:</label>
+                                        <input type="number" class="form-control" id="caseLimit" name="limit" min="1" max="50" value="5">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Case types:</label>
+                                        <div class="row row-cols-2 row-cols-md-3 g-2">
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="happy" id="ctHappy" checked><label class="form-check-label" for="ctHappy">Happy</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="unauthorized" id="ctUnauthorized"><label class="form-check-label" for="ctUnauthorized">Unauthorized</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="invalid_payload" id="ctInvalid"><label class="form-check-label" for="ctInvalid">Invalid Payload</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="missing_required" id="ctMissing"><label class="form-check-label" for="ctMissing">Missing Required</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="pagination" id="ctPagination"><label class="form-check-label" for="ctPagination">Pagination</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="not_found" id="ctNotFound"><label class="form-check-label" for="ctNotFound">Not Found</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="conflict" id="ctConflict"><label class="form-check-label" for="ctConflict">Conflict</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="rate_limit" id="ctRateLimit"><label class="form-check-label" for="ctRateLimit">Rate Limit</label></div></div>
+                                            <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="caseTypes" value="xml" id="ctXml"><label class="form-check-label" for="ctXml">XML Response</label></div></div>
+                                        </div>
+                                        <div class="form-text">Select one or more. Default includes Happy only.</div>
                                     </div>
                                     <div class="d-grid">
                                         <button type="submit" class="btn btn-primary"><i class="fas fa-list"></i> Generate Scenarios</button>

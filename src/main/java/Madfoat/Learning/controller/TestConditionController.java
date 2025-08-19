@@ -92,10 +92,11 @@ public class TestConditionController {
 
     @PostMapping("/api/generate-scenarios")
     public String generateApiScenarios(@RequestParam("curl") String curl,
-                                       @RequestParam(value = "description", required = false) String description,
+                                       @RequestParam(value = "limit", required = false) Integer limit,
+                                       @RequestParam(value = "caseTypes", required = false) List<String> caseTypes,
                                        Model model) {
         try {
-            List<Map<String, Object>> scenarios = apiScenarioService.generateScenarios(curl, description);
+            List<Map<String, Object>> scenarios = apiScenarioService.generateScenarios(curl, limit, caseTypes);
             model.addAttribute("scenarios", scenarios);
             return "api-scenarios";
         } catch (Exception e) {
@@ -114,6 +115,12 @@ public class TestConditionController {
     @ResponseBody
     public Map<String, String> getScenarioCode(@RequestParam("id") String id) {
         return apiScenarioService.getScenarioCode(id);
+    }
+
+    @GetMapping("/api/scenario-detail")
+    @ResponseBody
+    public Map<String, Object> getScenarioDetail(@RequestParam("id") String id) {
+        return apiScenarioService.getScenarioDetail(id);
     }
 
     @GetMapping("/api/health")

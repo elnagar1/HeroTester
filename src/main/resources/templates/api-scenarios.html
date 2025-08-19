@@ -20,20 +20,23 @@
                     <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Description</th>
+                        <th>Expected</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="sc : ${scenarios}" class="scenario-row" th:attr="data-id=${sc.id}">
                         <td th:text="${sc.title}"></td>
-                        <td th:text="${sc.desc}">-</td>
+                        <td th:text="${sc.expectedStatus}">-</td>
                         <td class="d-flex gap-2">
                             <button class="btn btn-sm btn-outline-primary" th:attr="data-id=${sc.id}" onclick="runScenario(this)">
                                 <i class="fas fa-play"></i> Run
                             </button>
                             <button class="btn btn-sm btn-outline-secondary" th:attr="data-id=${sc.id}" onclick="viewCode(this)">
                                 <i class="fas fa-code"></i> Code
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" th:attr="data-id=${sc.id}" onclick="viewRequest(this)">
+                                <i class="fas fa-file-alt"></i> Request
                             </button>
                         </td>
                     </tr>
@@ -65,6 +68,22 @@
                             <div class="card-header"><i class="fas fa-code"></i> Rest Assured</div>
                             <div class="card-body">
                                 <pre id="codeText" style="max-height: 540px; overflow: auto; background: #0b1220; color: #e5e7eb; padding: 12px; border-radius: 6px;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="requestPanel" style="display:none;" class="mt-3">
+                        <div class="card h-100">
+                            <div class="card-header"><i class="fas fa-file-alt"></i> Request Details</div>
+                            <div class="card-body">
+                                <div class="mb-2"><span class="badge text-bg-dark" id="reqMethod">-</span> <code id="reqUrl">-</code></div>
+                                <details open>
+                                    <summary>Headers</summary>
+                                    <pre id="reqHeaders" class="mb-2" style="max-height: 200px; overflow:auto; background:#0b1220; color:#e5e7eb; padding:10px; border-radius:6px;"></pre>
+                                </details>
+                                <details>
+                                    <summary>Body</summary>
+                                    <pre id="reqBody" class="mb-0" style="max-height: 260px; overflow:auto; background:#0b1220; color:#e5e7eb; padding:10px; border-radius:6px;"></pre>
+                                </details>
                             </div>
                         </div>
                     </div>
@@ -121,11 +140,29 @@
         }
     }
 
-    // Make entire row clickable to open code
+    async function viewRequest(btnOrRow) {
+        const id = btnOrRow.getAttribute('data-id');
+        const res = await fetch('/api/scenario-detail?id=' + encodeURIComponent(id));
+        const json = await res.json();
+        if (json.status === 'ok') {
+            document.getElementById('reqMethod').textContent = (json.method || 'GET');
+            document.getElementById('reqUrl').textContent = json.url || '-';
+            document.getElementById('reqHeaders').textContent = JSON.stringify(json.headers || {}, null, 2);
+            let body = json.body || '';
+            const looksJson = body.trim().startsWith('{') || body.trim().startsWith('[');
+            if (looksJson) { try { body = JSON.stringify(JSON.parse(body), null, 2); } catch (e) {} }
+            else if (body.trim().startsWith('<')) { body = formatXml(body); }
+            document.getElementById('reqBody').textContent = body;
+            document.getElementById('requestPanel').style.display = 'block';
+            document.getElementById('requestPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    // Make entire row clickable to open request details
     document.querySelectorAll('.scenario-row').forEach(r => {
         r.addEventListener('click', (e) => {
             if (e.target.closest('button')) return; // ignore if a button was clicked
-            viewCode(r);
+            viewRequest(r);
         });
     });
 
