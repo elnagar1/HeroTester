@@ -14,11 +14,64 @@ public class ApiScenarioService {
     private final Map<String, Map<String, Object>> idToScenario = new ConcurrentHashMap<>();
 
     public List<Map<String, Object>> generateScenarios(String curl, String description) {
-        // For now, create 3 simple scenarios derived from input. In future, call AI to expand
+        // Base scenarios
         List<Map<String, Object>> scenarios = new ArrayList<>();
         scenarios.add(createScenario("Happy Path", curl, description, Map.of("expectedStatus", 200)));
         scenarios.add(createScenario("Unauthorized", curl + " -H 'Authorization: Bearer invalid'", description, Map.of("expectedStatus", 401)));
         scenarios.add(createScenario("Invalid Payload", curl, description, Map.of("expectedStatus", 400, "mutateBody", true)));
+
+        // Heuristics: enrich scenarios based on description hints
+        String hints = description == null ? "" : description.toLowerCase(Locale.ROOT);
+        try {
+            RequestParts base = parseCurl(curl);
+
+            if (hints.contains("pagination") || hints.contains("page") || hints.contains("limit")) {
+                RequestParts p = cloneParts(base);
+                p.url = ensureQueryParam(p.url, Map.of("page", "2", "limit", "10"));
+                scenarios.add(createScenario("Pagination (page=2, limit=10)", buildCurl(p), description, Map.of("expectedStatus", 200)));
+                RequestParts pInvalid = cloneParts(base);
+                pInvalid.url = ensureQueryParam(pInvalid.url, Map.of("page", "-1"));
+                scenarios.add(createScenario("Invalid pagination (page=-1)", buildCurl(pInvalid), description, Map.of("expectedStatus", 400)));
+            }
+
+            if (hints.contains("rate limit") || hints.contains("429") || hints.contains("throttle")) {
+                RequestParts p = cloneParts(base);
+                p.headers.put("X-RateLimit-Test", "true");
+                scenarios.add(createScenario("Rate limit exceeded", buildCurl(p), description, Map.of("expectedStatus", 429)));
+            }
+
+            if (hints.contains("not found") || hints.contains("404")) {
+                RequestParts p = cloneParts(base);
+                p.url = mutatePathToNotFound(p.url);
+                scenarios.add(createScenario("Resource not found", buildCurl(p), description, Map.of("expectedStatus", 404)));
+            }
+
+            if (hints.contains("conflict") || hints.contains("409")) {
+                RequestParts p = cloneParts(base);
+                p.headers.put("X-Conflict-Test", "true");
+                scenarios.add(createScenario("Conflict state", buildCurl(p), description, Map.of("expectedStatus", 409)));
+            }
+
+            if (hints.contains("xml")) {
+                RequestParts p = cloneParts(base);
+                p.headers.put("Accept", "application/xml");
+                if (p.body != null && !p.body.trim().startsWith("<")) {
+                    // naive JSON->XML placeholder when user mentions XML
+                    p.headers.putIfAbsent("Content-Type", "application/xml");
+                    p.body = "<payload>" + escapeXml(p.body) + "</payload>";
+                }
+                scenarios.add(createScenario("XML response", buildCurl(p), description, Map.of("expectedStatus", 200)));
+            }
+
+            if ((hints.contains("missing") || hints.contains("required")) && base.body != null) {
+                RequestParts p = cloneParts(base);
+                p.body = mutateBodyRemoveFirstField(p.body);
+                scenarios.add(createScenario("Missing required field", buildCurl(p), description, Map.of("expectedStatus", 400)));
+            }
+        } catch (Exception ignore) {
+            // Fallback silently to base scenarios if parsing fails
+        }
+
         return scenarios;
     }
 
@@ -33,7 +86,9 @@ public class ApiScenarioService {
             if (Boolean.TRUE.equals(scenario.get("mutateBody")) && parts.body != null) {
                 parts.body = parts.body.replaceAll("\\d+", "-1");
             }
+            long start = System.currentTimeMillis();
             Response resp = execute(parts);
+            long timeMs = System.currentTimeMillis() - start;
             int status = resp.statusCode();
             String body = resp.asString();
             Map<String, Object> result = new LinkedHashMap<>();
@@ -41,6 +96,9 @@ public class ApiScenarioService {
             result.put("status", "done");
             result.put("httpStatus", status);
             result.put("body", body);
+            try { result.put("contentType", resp.getContentType()); } catch (Exception ignored) {}
+            try { result.put("headers", resp.getHeaders() == null ? Map.of() : resp.getHeaders().asList().stream().collect(java.util.stream.Collectors.toMap(h -> h.getName(), h -> h.getValue(), (a,b)->b, LinkedHashMap::new))); } catch (Exception ignored) {}
+            result.put("timeMs", timeMs);
             return result;
         } catch (Exception ex) {
             return Map.of("id", id, "status", "error", "message", ex.getMessage());
@@ -133,5 +191,136 @@ public class ApiScenarioService {
             case "OPTIONS" -> req.options(URI.create(p.url));
             default -> req.get(URI.create(p.url));
         };
+    }
+
+    public Map<String, String> getScenarioCode(String id) {
+        Map<String, Object> scenario = idToScenario.get(id);
+        if (scenario == null) {
+            return Map.of("status", "error", "message", "Scenario not found");
+        }
+        String curl = (String) scenario.get("curl");
+        Integer expected = (Integer) scenario.getOrDefault("expectedStatus", 200);
+        RequestParts parts = parseCurl(curl);
+        String code = buildRestAssuredCode(parts, expected == null ? 200 : expected);
+        return Map.of("status", "ok", "code", code);
+    }
+
+    private String buildRestAssuredCode(RequestParts p, int expectedStatus) {
+        StringBuilder b = new StringBuilder();
+        b.append("import io.restassured.RestAssured;\n");
+        b.append("import static io.restassured.RestAssured.*;\n");
+        b.append("import static org.hamcrest.Matchers.*;\n\n");
+        b.append("given()\n");
+        if (p.headers != null && !p.headers.isEmpty()) {
+            for (Map.Entry<String, String> e : p.headers.entrySet()) {
+                b.append("    .header(\"").append(escapeJava(e.getKey())).append("\", \"")
+                        .append(escapeJava(e.getValue())).append("\")\n");
+            }
+        }
+        if (p.body != null && !p.body.isBlank()) {
+            // Try to infer content type if not provided
+            if (!p.headers.keySet().stream().map(String::toLowerCase).anyMatch(h -> h.equals("content-type"))) {
+                String ct = looksLikeXml(p.body) ? "application/xml" : "application/json";
+                b.append("    .contentType(\"").append(ct).append("\")\n");
+            }
+            b.append("    .body(\"").append(escapeJava(p.body)).append("\")\n");
+        }
+        b.append(".when()\n");
+        String method = p.method == null ? "GET" : p.method.toUpperCase(Locale.ROOT);
+        b.append("    .").append(method.toLowerCase(Locale.ROOT)).append("(\"")
+                .append(escapeJava(p.url)).append("\")\n");
+        b.append(".then()\n");
+        b.append("    .statusCode(").append(expectedStatus).append(")\n");
+        b.append(";\n");
+        return b.toString();
+    }
+
+    private RequestParts cloneParts(RequestParts src) {
+        RequestParts p = new RequestParts();
+        p.method = src.method;
+        p.url = src.url;
+        p.headers = new LinkedHashMap<>(src.headers);
+        p.body = src.body;
+        return p;
+    }
+
+    private String buildCurl(RequestParts p) {
+        StringBuilder curl = new StringBuilder("curl");
+        if (p.method != null) curl.append(" -X ").append(p.method);
+        for (Map.Entry<String, String> e : p.headers.entrySet()) {
+            curl.append(" -H '").append(e.getKey()).append(": ").append(e.getValue()).append("'");
+        }
+        if (p.body != null) curl.append(" -d '").append(p.body.replace("'", "'\\''")).append("'");
+        curl.append(" ").append(p.url);
+        return curl.toString();
+    }
+
+    private String ensureQueryParam(String url, Map<String, String> params) {
+        try {
+            URI u = URI.create(url);
+            String existing = u.getQuery();
+            StringBuilder q = new StringBuilder(existing == null ? "" : existing + "&");
+            for (Map.Entry<String, String> e : params.entrySet()) {
+                if (q.length() > 0 && q.charAt(q.length() - 1) != '&') q.append('&');
+                q.append(e.getKey()).append('=').append(e.getValue());
+            }
+            URI with = new URI(u.getScheme(), u.getAuthority(), u.getPath(), q.toString(), u.getFragment());
+            return with.toString();
+        } catch (Exception e) {
+            return url;
+        }
+    }
+
+    private String mutatePathToNotFound(String url) {
+        try {
+            URI u = URI.create(url);
+            String path = u.getPath();
+            String newPath = path == null ? "/non-existent" : (path.matches(".*/\\d+$") ? path.replaceAll("\\d+$", "999999999") : (path.endsWith("/") ? path + "non-existent" : path + "/non-existent"));
+            URI with = new URI(u.getScheme(), u.getAuthority(), newPath, u.getQuery(), u.getFragment());
+            return with.toString();
+        } catch (Exception e) {
+            return url + "/non-existent";
+        }
+    }
+
+    private String mutateBodyRemoveFirstField(String body) {
+        // Very naive removal of the first JSON key-value if body looks like JSON
+        String trimmed = body == null ? null : body.trim();
+        if (trimmed == null || trimmed.isEmpty()) return body;
+        if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+            // remove content between first key and following comma
+            String inner = trimmed.substring(1, trimmed.length() - 1);
+            int comma = inner.indexOf(',');
+            String newInner = comma > 0 ? inner.substring(comma + 1).trim() : "";
+            if (newInner.startsWith(",")) newInner = newInner.substring(1).trim();
+            return "{" + newInner + "}";
+        }
+        return ""; // otherwise produce empty to trigger 400
+    }
+
+    private boolean looksLikeXml(String s) {
+        String t = s == null ? "" : s.trim();
+        return t.startsWith("<") && t.endsWith(">");
+    }
+
+    private String escapeJava(String s) {
+        if (s == null) return "";
+        StringBuilder out = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            switch (c) {
+                case '\\' -> out.append("\\\\");
+                case '"' -> out.append("\\\"");
+                case '\n' -> out.append("\\n");
+                case '\r' -> out.append("\\r");
+                case '\t' -> out.append("\\t");
+                default -> out.append(c);
+            }
+        }
+        return out.toString();
+    }
+
+    private String escapeXml(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 }

@@ -110,6 +110,12 @@ public class TestConditionController {
         return apiScenarioService.runScenario(id);
     }
 
+    @GetMapping("/api/scenario-code")
+    @ResponseBody
+    public Map<String, String> getScenarioCode(@RequestParam("id") String id) {
+        return apiScenarioService.getScenarioCode(id);
+    }
+
     @GetMapping("/api/health")
     @ResponseBody
     public String health() {
