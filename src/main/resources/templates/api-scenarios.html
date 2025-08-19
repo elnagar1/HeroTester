@@ -76,7 +76,7 @@
         </div>
     </div>
 </div>
-<script>
+<script th:inline="none">
     async function runScenario(btn) {
         const id = btn.getAttribute('data-id');
         const res = await fetch('/api/run-scenario', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'id=' + encodeURIComponent(id)});
