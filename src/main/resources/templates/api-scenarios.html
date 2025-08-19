@@ -103,8 +103,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
 <script th:inline="none">
+    let currentScenarioId = null;
     async function runScenario(btn) {
         const id = btn.getAttribute('data-id');
+        currentScenarioId = id;
         const res = await fetch('/api/run-scenario', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: 'id=' + encodeURIComponent(id)});
         const json = await res.json();
         renderResponse(json);
@@ -112,7 +114,6 @@
 
     function renderResponse(json) {
         const container = document.getElementById('result');
-        const pre = document.getElementById('resultText');
         const contentType = (json.contentType || '').toLowerCase();
         const statusBadge = document.getElementById('statusBadge');
         const ctBadge = document.getElementById('contentType');
@@ -127,17 +128,17 @@
             bodyOut = formatXml(bodyOut);
         }
         const isXml = bodyOut.trim().startsWith('<');
-        const pre = document.getElementById('resultText');
-        pre.className = isXml ? 'language-markup' : 'language-json';
-        pre.textContent = bodyOut;
-        Prism.highlightElement(pre);
+        const resultEl = document.getElementById('resultText');
+        resultEl.className = isXml ? 'language-markup' : 'language-json';
+        resultEl.textContent = bodyOut;
+        Prism.highlightElement(resultEl);
         ctBadge.textContent = json.contentType || '-';
         statusBadge.textContent = 'HTTP ' + (json.httpStatus ?? '-');
         timeBadge.textContent = (json.timeMs != null ? json.timeMs + ' ms' : '');
         headersPre.textContent = JSON.stringify(json.headers || {}, null, 2);
         Prism.highlightElement(headersPre);
         container.style.display = 'block';
-        pre.scrollIntoView({ behavior: 'smooth' });
+        resultEl.scrollIntoView({ behavior: 'smooth' });
 
         // Wire assertion button to current scenario id if available in table row
         document.getElementById('btnAssert').onclick = () => openAssertModal();
@@ -145,6 +146,7 @@
 
     async function viewCode(btnOrRow) {
         const id = btnOrRow.getAttribute('data-id');
+        currentScenarioId = id;
         const res = await fetch('/api/scenario-code?id=' + encodeURIComponent(id));
         const json = await res.json();
         if (json.status === 'ok') {
@@ -158,6 +160,7 @@
 
     async function viewRequest(btnOrRow) {
         const id = btnOrRow.getAttribute('data-id');
+        currentScenarioId = id;
         const res = await fetch('/api/scenario-detail?id=' + encodeURIComponent(id));
         const json = await res.json();
         if (json.status === 'ok') {
@@ -183,6 +186,7 @@
     document.querySelectorAll('.scenario-row').forEach(r => {
         r.addEventListener('click', (e) => {
             if (e.target.closest('button')) return; // ignore if a button was clicked
+            currentScenarioId = r.getAttribute('data-id');
             viewRequest(r);
         });
     });
@@ -212,21 +216,14 @@
 
     // Assertion modal logic
     function openAssertModal() {
-        const existing = prompt('Is this the expected response? (OK for Yes, Cancel/No for No)');
-        if (existing !== null) {
-            // user clicked OK (Yes): clear assertion
-            const selectedRow = document.querySelector('.scenario-row');
-            if (!selectedRow) return;
-            const id = selectedRow.getAttribute('data-id');
-            updateAssertion(id, '');
+        if (!currentScenarioId) return;
+        if (confirm('Is this the expected response?')) {
+            updateAssertion(currentScenarioId, '');
             return;
         }
         const expected = prompt('Type the expected text that should be present in response body:');
         if (expected == null) return;
-        const selectedRow = document.querySelector('.scenario-row');
-        if (!selectedRow) return;
-        const id = selectedRow.getAttribute('data-id');
-        updateAssertion(id, expected);
+        updateAssertion(currentScenarioId, expected);
     }
 
     async function updateAssertion(id, expected) {
