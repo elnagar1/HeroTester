@@ -68,7 +68,7 @@
                             <tr th:each="d : ${docs}">
                                 <td th:text="${d.title}"></td>
                                 <td th:text="${d.source}"></td>
-                                <td th:text="${#dates.format(d.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                                <td th:text="${d.createdAt}"></td>
                             </tr>
                             </tbody>
                         </table>

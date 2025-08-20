@@ -82,9 +82,7 @@ public class KnowledgeBaseService {
             try (java.util.stream.Stream<Row> rows = sheet.openStream()) {
                 rows.forEach(r -> {
                     java.util.List<String> vals = new ArrayList<>();
-                    int firstCol = r.getFirstColumn();
-                    int lastCol = r.getLastColumn();
-                    for (Cell c : r.getCells(firstCol, lastCol)) {
+                    for (Cell c : r) {
                         String t = c == null ? "" : c.getText();
                         vals.add(t == null ? "" : t);
                     }
