@@ -1,7 +1,9 @@
 package Madfoat.Learning.service;
 
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.dhatim.fastexcel.reader.ReadableWorkbook;
+import org.dhatim.fastexcel.reader.Sheet;
+import org.dhatim.fastexcel.reader.Row;
+import org.dhatim.fastexcel.reader.Cell;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -73,19 +75,38 @@ public class KnowledgeBaseService {
     }
 
     private String extractExcel(InputStream in) {
-        try (Workbook wb = new XSSFWorkbook(in)) {
-            Sheet sheet = wb.getNumberOfSheets() > 0 ? wb.getSheetAt(0) : null;
+        try (ReadableWorkbook wb = new ReadableWorkbook(in)) {
+            Sheet sheet = wb.getFirstSheet();
             if (sheet == null) return "[Empty Excel workbook]";
-            StringBuilder sb = new StringBuilder();
-            for (Row row : sheet) {
-                List<String> cells = new ArrayList<>();
-                for (Cell cell : row) {
-                    cell.setCellType(CellType.STRING);
-                    cells.add(cell.getStringCellValue());
-                }
-                sb.append(String.join(",", cells)).append("\n");
+            java.util.List<java.util.List<String>> rowsData = new ArrayList<>();
+            try (java.util.stream.Stream<Row> rows = sheet.openStream()) {
+                rows.forEach(r -> {
+                    java.util.List<String> vals = new ArrayList<>();
+                    for (Cell c : r.getCells()) {
+                        String t = c.getText();
+                        vals.add(t == null ? "" : t);
+                    }
+                    rowsData.add(vals);
+                });
             }
-            return sb.toString();
+            if (rowsData.isEmpty()) return "[Empty Excel workbook]";
+            // Build Markdown table using first row as headers
+            java.util.List<String> headers = new ArrayList<>();
+            for (String h : rowsData.get(0)) headers.add(h == null || h.isBlank() ? "Col" + (headers.size() + 1) : h.trim());
+            int numCols = headers.size();
+            StringBuilder md = new StringBuilder();
+            md.append("| ").append(String.join(" | ", headers)).append(" |\n");
+            md.append("| ");
+            for (int i = 0; i < numCols; i++) { md.append("---"); if (i < numCols - 1) md.append(" | "); }
+            md.append(" |\n");
+            for (int i = 1; i < rowsData.size(); i++) {
+                java.util.List<String> rowVals = rowsData.get(i);
+                // pad row to numCols
+                java.util.List<String> padded = new ArrayList<>();
+                for (int c = 0; c < numCols; c++) padded.add(c < rowVals.size() ? rowVals.get(c) : "");
+                md.append("| ").append(String.join(" | ", padded)).append(" |\n");
+            }
+            return md.toString();
         } catch (Exception e) { return "[Error parsing Excel: " + e.getMessage() + "]"; }
     }
 
