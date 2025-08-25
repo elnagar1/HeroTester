@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مولد سيناريوهات اختبار الأداء الذكي</title>
+    <title>Intelligent Performance Test Scenario Generator</title>
     <style>
         * {
             margin: 0;
@@ -221,108 +221,115 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 مولد سيناريوهات اختبار الأداء الذكي</h1>
-            <p>توليد سيناريوهات اختبار الأداء باستخدام الذكاء الاصطناعي</p>
+            <h1 id="headerTitle">🤖 Intelligent Performance Test Scenario Generator</h1>
+            <p id="headerSubtitle">Generate performance test scenarios using AI</p>
+            <div style="margin-top:12px;">
+                <label for="langSelect" style="font-weight:600; margin-right:8px;">Language:</label>
+                <select id="langSelect" style="padding:6px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.15); color: #fff;">
+                    <option value="en" selected>English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
         </div>
 
         <div class="content">
             <form id="performanceTestForm">
                 <div class="form-section">
-                    <h3>📊 معلومات النظام الأساسية</h3>
+                    <h3 id="secBasicInfo">📊 Basic System Information</h3>
                     
                     <div class="form-group">
-                        <label for="systemType">نوع النظام:</label>
+                        <label id="labelSystemType" for="systemType">System Type:</label>
                         <select id="systemType" name="systemType" required>
-                            <option value="">اختر نوع النظام</option>
-                            <option value="E_COMMERCE">متجر إلكتروني</option>
-                            <option value="BANKING">نظام مصرفي</option>
-                            <option value="HEALTHCARE">نظام صحي</option>
-                            <option value="EDUCATION">نظام تعليمي</option>
-                            <option value="GOVERNMENT">نظام حكومي</option>
-                            <option value="SOCIAL_MEDIA">وسائل التواصل الاجتماعي</option>
-                            <option value="GAMING">نظام ألعاب</option>
-                            <option value="ENTERPRISE">نظام مؤسسي</option>
+                            <option id="optSystemPlaceholder" value="">Select system type</option>
+                            <option id="optSystemEcom" value="E_COMMERCE">E-commerce</option>
+                            <option id="optSystemBank" value="BANKING">Banking</option>
+                            <option id="optSystemHealth" value="HEALTHCARE">Healthcare</option>
+                            <option id="optSystemEdu" value="EDUCATION">Education</option>
+                            <option id="optSystemGov" value="GOVERNMENT">Government</option>
+                            <option id="optSystemSocial" value="SOCIAL_MEDIA">Social Media</option>
+                            <option id="optSystemGaming" value="GAMING">Gaming</option>
+                            <option id="optSystemEnterprise" value="ENTERPRISE">Enterprise</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="expectedUsers">عدد المستخدمين المتوقعين:</label>
+                        <label id="labelExpectedUsers" for="expectedUsers">Expected Users:</label>
                         <input type="number" id="expectedUsers" name="expectedUsers" min="1" max="100000" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="dataVolume">حجم البيانات (عدد السجلات):</label>
+                        <label id="labelDataVolume" for="dataVolume">Data Volume (records):</label>
                         <input type="number" id="dataVolume" name="dataVolume" min="1000" max="10000000" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="deploymentEnvironment">بيئة النشر:</label>
+                        <label id="labelEnv" for="deploymentEnvironment">Deployment Environment:</label>
                         <select id="deploymentEnvironment" name="deploymentEnvironment" required>
-                            <option value="">اختر بيئة النشر</option>
-                            <option value="DEVELOPMENT">بيئة التطوير</option>
-                            <option value="STAGING">بيئة الاختبار</option>
-                            <option value="PRODUCTION_LIKE">بيئة مشابهة للإنتاج</option>
-                            <option value="PRODUCTION">بيئة الإنتاج</option>
+                            <option id="optEnvPlaceholder" value="">Select environment</option>
+                            <option id="optEnvDev" value="DEVELOPMENT">Development</option>
+                            <option id="optEnvStaging" value="STAGING">Staging</option>
+                            <option id="optEnvProdLike" value="PRODUCTION_LIKE">Production-like</option>
+                            <option id="optEnvProd" value="PRODUCTION">Production</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h3>🔄 العمليات الشائعة</h3>
+                    <h3 id="secCommonOps">🔄 Common Operations</h3>
                     <div class="checkbox-group">
                         <div class="checkbox-item">
                             <input type="checkbox" id="login" name="commonOperations" value="تسجيل الدخول">
-                            <label for="login">تسجيل الدخول</label>
+                            <label id="labelOpLogin" for="login">Login</label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="search" name="commonOperations" value="البحث">
-                            <label for="search">البحث</label>
+                            <label id="labelOpSearch" for="search">Search</label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="addProduct" name="commonOperations" value="إضافة منتج">
-                            <label for="addProduct">إضافة منتج</label>
+                            <label id="labelOpAddProduct" for="addProduct">Add Product</label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="viewPage" name="commonOperations" value="عرض الصفحة">
-                            <label for="viewPage">عرض الصفحة</label>
+                            <label id="labelOpViewPage" for="viewPage">View Page</label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="uploadFile" name="commonOperations" value="تحميل ملف">
-                            <label for="uploadFile">تحميل ملف</label>
+                            <label id="labelOpUploadFile" for="uploadFile">Upload File</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <h3>⏰ أوقات الذروة</h3>
+                    <h3 id="secPeakTimes">⏰ Peak Times</h3>
                     <div class="form-group">
-                        <label for="peakTimeMorning">ذروة الصباح (عدد المستخدمين):</label>
-                        <input type="number" id="peakTimeMorning" name="peakTimes" placeholder="مثال: 500" min="0">
+                        <label id="labelPeakMorning" for="peakTimeMorning">Morning peak (users):</label>
+                        <input type="number" id="peakTimeMorning" name="peakTimes" placeholder="e.g. 500" min="0">
                     </div>
                     <div class="form-group">
-                        <label for="peakTimeAfternoon">ذروة الظهر (عدد المستخدمين):</label>
-                        <input type="number" id="peakTimeAfternoon" name="peakTimes" placeholder="مثال: 800" min="0">
+                        <label id="labelPeakAfternoon" for="peakTimeAfternoon">Afternoon peak (users):</label>
+                        <input type="number" id="peakTimeAfternoon" name="peakTimes" placeholder="e.g. 800" min="0">
                     </div>
                     <div class="form-group">
-                        <label for="peakTimeEvening">ذروة المساء (عدد المستخدمين):</label>
-                        <input type="number" id="peakTimeEvening" name="peakTimes" placeholder="مثال: 1200" min="0">
+                        <label id="labelPeakEvening" for="peakTimeEvening">Evening peak (users):</label>
+                        <input type="number" id="peakTimeEvening" name="peakTimes" placeholder="e.g. 1200" min="0">
                     </div>
                 </div>
 
                 <button type="submit" class="btn" id="generateBtn">
-                    🚀 توليد سيناريوهات اختبار الأداء
+                    🚀 Generate Performance Test Scenarios
                 </button>
             </form>
 
             <div id="loading" class="loading" style="display: none;">
                 <div class="spinner"></div>
-                <p>جاري توليد سيناريوهات اختبار الأداء...</p>
+                <p id="loadingText">Generating performance test scenarios...</p>
             </div>
 
             <div id="error" class="error" style="display: none;"></div>
 
             <div id="results" class="results">
-                <h3>📋 خطة اختبار الأداء المولدة</h3>
+                <h3 id="resultsTitle">📋 Generated Performance Test Plan</h3>
                 <div id="scenariosList"></div>
             </div>
         </div>
@@ -362,13 +369,13 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('خطأ في استجابة الخادم');
+                    throw new Error('Server response error');
                 }
 
                 const result = await response.json();
                 displayResults(result);
             } catch (error) {
-                document.getElementById('error').textContent = 'خطأ: ' + error.message;
+                document.getElementById('error').textContent = 'Error: ' + error.message;
                 document.getElementById('error').style.display = 'block';
             } finally {
                 document.getElementById('loading').style.display = 'none';
@@ -380,27 +387,28 @@
             const resultsDiv = document.getElementById('results');
             const scenariosList = document.getElementById('scenariosList');
             
+            const locale = (window.currentLang || 'en') === 'ar' ? 'ar-SA' : 'en-US';
             scenariosList.innerHTML = `
                 <div class="scenario-card">
                     <div class="scenario-header">
                         <div class="scenario-title">${plan.planName}</div>
-                        <div class="scenario-type">خطة شاملة</div>
+                        <div id="planTag" class="scenario-type">Comprehensive Plan</div>
                     </div>
                     <div class="scenario-details">
                         <div class="detail-item">
-                            <div class="detail-label">معرف الخطة</div>
+                            <div id="labelPlanId" class="detail-label">Plan ID</div>
                             <div class="detail-value">${plan.planId}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">النظام</div>
+                            <div id="labelSystem" class="detail-label">System</div>
                             <div class="detail-value">${plan.systemName}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">تاريخ الإنشاء</div>
-                            <div class="detail-value">${new Date(plan.createdDate).toLocaleString('ar-SA')}</div>
+                            <div id="labelCreatedDate" class="detail-label">Created</div>
+                            <div class="detail-value">${new Date(plan.createdDate).toLocaleString(locale)}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">المدة المتوقعة</div>
+                            <div id="labelEstimatedDuration" class="detail-label">Estimated Duration</div>
                             <div class="detail-value">${plan.estimatedDuration}</div>
                         </div>
                     </div>
@@ -418,30 +426,30 @@
                     <p style="margin-bottom: 15px; color: #666;">${scenario.description}</p>
                     <div class="scenario-details">
                         <div class="detail-item">
-                            <div class="detail-label">المستخدمين المستهدفين</div>
+                            <div class="detail-label" data-i18n="targetUsers">Target Users</div>
                             <div class="detail-value">${scenario.targetUsers}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">وقت الزيادة التدريجية</div>
-                            <div class="detail-value">${scenario.rampUpTime} دقيقة</div>
+                            <div class="detail-label" data-i18n="rampUpTime">Ramp-up Time</div>
+                            <div class="detail-value">${scenario.rampUpTime}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">مدة الاختبار</div>
-                            <div class="detail-value">${scenario.testDuration} دقيقة</div>
+                            <div class="detail-label" data-i18n="testDuration">Test Duration</div>
+                            <div class="detail-value">${scenario.testDuration}</div>
                         </div>
                         <div class="detail-item">
-                            <div class="detail-label">الأولوية</div>
+                            <div class="detail-label" data-i18n="priority">Priority</div>
                             <div class="detail-value">${scenario.priority}/5</div>
                         </div>
                     </div>
                     <div style="margin-top: 15px;">
-                        <strong style="color: #667eea;">خطوات الاختبار:</strong>
+                        <strong id="testStepsTitle" style="color: #667eea;">Test Steps:</strong>
                         <ul style="margin-top: 10px; padding-right: 20px;">
                             ${scenario.testSteps.map(step => `<li>${step}</li>`).join('')}
                         </ul>
                     </div>
                     <div style="margin-top: 15px;">
-                        <strong style="color: #667eea;">معايير النجاح:</strong>
+                        <strong id="successCriteriaTitle" style="color: #667eea;">Success Criteria:</strong>
                         <ul style="margin-top: 10px; padding-right: 20px;">
                             ${scenario.successCriteria.map(criteria => `<li>${criteria}</li>`).join('')}
                         </ul>
@@ -454,14 +462,189 @@
         }
 
         function getScenarioTypeName(type) {
+            const lang = window.currentLang || 'en';
             const types = {
-                'STRESS': 'اختبار الضغط',
-                'SOAK': 'اختبار التحمل',
-                'VOLUME': 'اختبار الحجم',
-                'SPIKE': 'اختبار الذروة',
-                'SCALABILITY': 'اختبار التوسع'
+                en: {
+                    'STRESS': 'Stress Test',
+                    'SOAK': 'Soak Test',
+                    'VOLUME': 'Volume Test',
+                    'SPIKE': 'Spike Test',
+                    'SCALABILITY': 'Scalability Test'
+                },
+                ar: {
+                    'STRESS': 'اختبار الضغط',
+                    'SOAK': 'اختبار التحمل',
+                    'VOLUME': 'اختبار الحجم',
+                    'SPIKE': 'اختبار الذروة',
+                    'SCALABILITY': 'اختبار التوسع'
+                }
             };
-            return types[type] || type;
+            return (types[lang] && types[lang][type]) ? types[lang][type] : type;
+        }
+
+        // Simple language toggle (EN default with AR option)
+        const translations = {
+            en: {
+                headerTitle: '🤖 Intelligent Performance Test Scenario Generator',
+                headerSubtitle: 'Generate performance test scenarios using AI',
+                secBasicInfo: '📊 Basic System Information',
+                labelSystemType: 'System Type:',
+                optSystemPlaceholder: 'Select system type',
+                optSystemEcom: 'E-commerce',
+                optSystemBank: 'Banking',
+                optSystemHealth: 'Healthcare',
+                optSystemEdu: 'Education',
+                optSystemGov: 'Government',
+                optSystemSocial: 'Social Media',
+                optSystemGaming: 'Gaming',
+                optSystemEnterprise: 'Enterprise',
+                labelExpectedUsers: 'Expected Users:',
+                labelDataVolume: 'Data Volume (records):',
+                labelEnv: 'Deployment Environment:',
+                optEnvPlaceholder: 'Select environment',
+                optEnvDev: 'Development',
+                optEnvStaging: 'Staging',
+                optEnvProdLike: 'Production-like',
+                optEnvProd: 'Production',
+                secCommonOps: '🔄 Common Operations',
+                labelOpLogin: 'Login',
+                labelOpSearch: 'Search',
+                labelOpAddProduct: 'Add Product',
+                labelOpViewPage: 'View Page',
+                labelOpUploadFile: 'Upload File',
+                secPeakTimes: '⏰ Peak Times',
+                labelPeakMorning: 'Morning peak (users):',
+                labelPeakAfternoon: 'Afternoon peak (users):',
+                labelPeakEvening: 'Evening peak (users):',
+                generateBtn: '🚀 Generate Performance Test Scenarios',
+                loadingText: 'Generating performance test scenarios...',
+                resultsTitle: '📋 Generated Performance Test Plan',
+                planTag: 'Comprehensive Plan',
+                labelPlanId: 'Plan ID',
+                labelSystem: 'System',
+                labelCreatedDate: 'Created',
+                labelEstimatedDuration: 'Estimated Duration',
+                targetUsers: 'Target Users',
+                rampUpTime: 'Ramp-up Time',
+                testDuration: 'Test Duration',
+                priority: 'Priority',
+                testStepsTitle: 'Test Steps:',
+                successCriteriaTitle: 'Success Criteria:'
+            },
+            ar: {
+                headerTitle: '🤖 مولد سيناريوهات اختبار الأداء الذكي',
+                headerSubtitle: 'توليد سيناريوهات اختبار الأداء باستخدام الذكاء الاصطناعي',
+                secBasicInfo: '📊 معلومات النظام الأساسية',
+                labelSystemType: 'نوع النظام:',
+                optSystemPlaceholder: 'اختر نوع النظام',
+                optSystemEcom: 'متجر إلكتروني',
+                optSystemBank: 'نظام مصرفي',
+                optSystemHealth: 'نظام صحي',
+                optSystemEdu: 'نظام تعليمي',
+                optSystemGov: 'نظام حكومي',
+                optSystemSocial: 'وسائل التواصل الاجتماعي',
+                optSystemGaming: 'نظام ألعاب',
+                optSystemEnterprise: 'نظام مؤسسي',
+                labelExpectedUsers: 'عدد المستخدمين المتوقعين:',
+                labelDataVolume: 'حجم البيانات (عدد السجلات):',
+                labelEnv: 'بيئة النشر:',
+                optEnvPlaceholder: 'اختر بيئة النشر',
+                optEnvDev: 'بيئة التطوير',
+                optEnvStaging: 'بيئة الاختبار',
+                optEnvProdLike: 'بيئة مشابهة للإنتاج',
+                optEnvProd: 'بيئة الإنتاج',
+                secCommonOps: '🔄 العمليات الشائعة',
+                labelOpLogin: 'تسجيل الدخول',
+                labelOpSearch: 'البحث',
+                labelOpAddProduct: 'إضافة منتج',
+                labelOpViewPage: 'عرض الصفحة',
+                labelOpUploadFile: 'تحميل ملف',
+                secPeakTimes: '⏰ أوقات الذروة',
+                labelPeakMorning: 'ذروة الصباح (عدد المستخدمين):',
+                labelPeakAfternoon: 'ذروة الظهر (عدد المستخدمين):',
+                labelPeakEvening: 'ذروة المساء (عدد المستخدمين):',
+                generateBtn: '🚀 توليد سيناريوهات اختبار الأداء',
+                loadingText: 'جاري توليد سيناريوهات اختبار الأداء...',
+                resultsTitle: '📋 خطة اختبار الأداء المولدة',
+                planTag: 'خطة شاملة',
+                labelPlanId: 'معرف الخطة',
+                labelSystem: 'النظام',
+                labelCreatedDate: 'تاريخ الإنشاء',
+                labelEstimatedDuration: 'المدة المتوقعة',
+                targetUsers: 'المستخدمين المستهدفين',
+                rampUpTime: 'وقت الزيادة التدريجية (دقيقة)',
+                testDuration: 'مدة الاختبار (دقيقة)',
+                priority: 'الأولوية',
+                testStepsTitle: 'خطوات الاختبار:',
+                successCriteriaTitle: 'معايير النجاح:'
+            }
+        };
+
+        function applyLanguage(lang) {
+            window.currentLang = lang;
+            document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            const t = translations[lang];
+            const setText = (id, key) => { const el = document.getElementById(id); if (el && t[key]) el.textContent = t[key]; };
+
+            setText('headerTitle', 'headerTitle');
+            setText('headerSubtitle', 'headerSubtitle');
+            setText('secBasicInfo', 'secBasicInfo');
+            setText('labelSystemType', 'labelSystemType');
+            setText('optSystemPlaceholder', 'optSystemPlaceholder');
+            setText('optSystemEcom', 'optSystemEcom');
+            setText('optSystemBank', 'optSystemBank');
+            setText('optSystemHealth', 'optSystemHealth');
+            setText('optSystemEdu', 'optSystemEdu');
+            setText('optSystemGov', 'optSystemGov');
+            setText('optSystemSocial', 'optSystemSocial');
+            setText('optSystemGaming', 'optSystemGaming');
+            setText('optSystemEnterprise', 'optSystemEnterprise');
+            setText('labelExpectedUsers', 'labelExpectedUsers');
+            setText('labelDataVolume', 'labelDataVolume');
+            setText('labelEnv', 'labelEnv');
+            setText('optEnvPlaceholder', 'optEnvPlaceholder');
+            setText('optEnvDev', 'optEnvDev');
+            setText('optEnvStaging', 'optEnvStaging');
+            setText('optEnvProdLike', 'optEnvProdLike');
+            setText('optEnvProd', 'optEnvProd');
+            setText('secCommonOps', 'secCommonOps');
+            setText('labelOpLogin', 'labelOpLogin');
+            setText('labelOpSearch', 'labelOpSearch');
+            setText('labelOpAddProduct', 'labelOpAddProduct');
+            setText('labelOpViewPage', 'labelOpViewPage');
+            setText('labelOpUploadFile', 'labelOpUploadFile');
+            setText('secPeakTimes', 'secPeakTimes');
+            setText('labelPeakMorning', 'labelPeakMorning');
+            setText('labelPeakAfternoon', 'labelPeakAfternoon');
+            setText('labelPeakEvening', 'labelPeakEvening');
+            setText('generateBtn', 'generateBtn');
+            setText('loadingText', 'loadingText');
+            setText('resultsTitle', 'resultsTitle');
+            setText('planTag', 'planTag');
+            setText('labelPlanId', 'labelPlanId');
+            setText('labelSystem', 'labelSystem');
+            setText('labelCreatedDate', 'labelCreatedDate');
+            setText('labelEstimatedDuration', 'labelEstimatedDuration');
+
+            // Update details labels in scenario cards (created dynamically)
+            document.querySelectorAll('[data-i18n="targetUsers"]').forEach(el => el.textContent = t.targetUsers);
+            document.querySelectorAll('[data-i18n="rampUpTime"]').forEach(el => el.textContent = t.rampUpTime);
+            document.querySelectorAll('[data-i18n="testDuration"]').forEach(el => el.textContent = t.testDuration);
+            document.querySelectorAll('[data-i18n="priority"]').forEach(el => el.textContent = t.priority);
+            const stepsTitle = document.getElementById('testStepsTitle'); if (stepsTitle) stepsTitle.textContent = t.testStepsTitle;
+            const succTitle = document.getElementById('successCriteriaTitle'); if (succTitle) succTitle.textContent = t.successCriteriaTitle;
+            localStorage.setItem('perfLang', lang);
+        }
+
+        const langSelect = document.getElementById('langSelect');
+        const savedLang = localStorage.getItem('perfLang') || 'en';
+        if (langSelect) {
+            langSelect.value = savedLang;
+            applyLanguage(savedLang);
+            langSelect.addEventListener('change', (e) => applyLanguage(e.target.value));
+        } else {
+            applyLanguage(savedLang);
         }
     </script>
 </body>
