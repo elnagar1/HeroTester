@@ -50,6 +50,8 @@
         .nav-tabs .nav-link { color: #cbd5e1; border: 0; }
         .nav-tabs .nav-link.active { color: #fff; background: rgba(59,130,246,.15); border-bottom: 2px solid #3b82f6; }
         .tab-pane { padding-top: 20px; }
+        .card.bg-dark { background: rgba(17, 24, 39, 0.8) !important; border: 1px solid rgba(148, 163, 184, 0.2) !important; }
+        .card.bg-dark:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
     </style>
 </head>
 <body>
@@ -92,6 +94,11 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-ai-tab" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button" role="tab" aria-controls="tab-ai" aria-selected="false">
                                     <i class="fas fa-robot"></i> AI Model
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-performance-tab" data-bs-toggle="tab" data-bs-target="#tab-performance" type="button" role="tab" aria-controls="tab-performance" aria-selected="false">
+                                    <i class="fas fa-tachometer-alt"></i> Performance Test Generator
                                 </button>
                             </li>
                         </ul>
@@ -224,6 +231,55 @@
                                 </div>
                                 <div class="d-grid">
                                     <a href="/ai" class="btn btn-primary"><i class="fas fa-terminal"></i> Open AI Model Console</a>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tab-performance" role="tabpanel" aria-labelledby="tab-performance-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-tachometer-alt icon-large text-warning"></i>
+                                    <h3>Performance Test Generator</h3>
+                                    <p class="text-muted">Generate intelligent performance test scenarios using AI</p>
+                                </div>
+                                <div class="d-grid">
+                                    <a href="/performance" class="btn btn-primary"><i class="fas fa-rocket"></i> Open Performance Test Generator</a>
+                                </div>
+                                <div class="mt-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><i class="fas fa-brain text-info"></i> AI-Powered Analysis</h5>
+                                                    <p class="card-text text-muted">Intelligent analysis of system requirements to generate comprehensive test scenarios.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><i class="fas fa-chart-line text-success"></i> Multiple Test Types</h5>
+                                                    <p class="card-text text-muted">Generate Stress, Soak, Volume, Spike, and Scalability test scenarios.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><i class="fas fa-calculator text-warning"></i> Smart Calculations</h5>
+                                                    <p class="card-text text-muted">Automatic calculation of breakpoints, ramp-up times, and resource requirements.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><i class="fas fa-shield-alt text-danger"></i> Risk Assessment</h5>
+                                                    <p class="card-text text-muted">Comprehensive risk assessment and mitigation strategies for each test scenario.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
