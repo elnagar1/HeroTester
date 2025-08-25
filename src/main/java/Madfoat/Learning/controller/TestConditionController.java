@@ -168,6 +168,21 @@ public class TestConditionController {
         return apiScenarioService.setScenarioAssertion(id, expected);
     }
 
+    @PostMapping("/api/scenario-assertions")
+    @ResponseBody
+    public Map<String, String> setScenarioAssertions(@RequestBody Map<String, Object> payload) {
+        String id = String.valueOf(payload.getOrDefault("id", ""));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> assertions = (Map<String, Object>) payload.get("assertions");
+        Integer expectedStatus = null;
+        Object exp = payload.get("expectedStatus");
+        if (exp instanceof Number n) expectedStatus = n.intValue();
+        else if (exp != null) {
+            try { expectedStatus = Integer.parseInt(String.valueOf(exp)); } catch (Exception ignored) {}
+        }
+        return apiScenarioService.setScenarioAssertions(id, assertions, expectedStatus);
+    }
+
     @GetMapping("/api/health")
     @ResponseBody
     public String health() {

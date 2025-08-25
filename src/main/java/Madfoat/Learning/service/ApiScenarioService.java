@@ -230,8 +230,10 @@ public class ApiScenarioService {
         String curl = (String) scenario.get("curl");
         Integer expected = (Integer) scenario.getOrDefault("expectedStatus", 200);
         String assertContains = (String) scenario.getOrDefault("assertContains", null);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> assertions = (Map<String, Object>) scenario.get("assertions");
         RequestParts parts = parseCurl(curl);
-        String code = buildRestAssuredCode(parts, expected == null ? 200 : expected, assertContains);
+        String code = buildRestAssuredCode(parts, expected == null ? 200 : expected, assertContains, assertions);
         return Map.of("status", "ok", "code", code);
     }
 
@@ -250,6 +252,9 @@ public class ApiScenarioService {
         detail.put("headers", p.headers);
         detail.put("body", p.body);
         detail.put("expectedStatus", scenario.getOrDefault("expectedStatus", 200));
+        if (scenario.containsKey("assertions")) {
+            detail.put("assertions", scenario.get("assertions"));
+        }
         return detail;
     }
 
@@ -308,6 +313,141 @@ public class ApiScenarioService {
         return b.toString();
     }
 
+    private String buildRestAssuredCode(RequestParts p, int expectedStatus, String assertContains, Map<String, Object> assertions) {
+        // Fallback to legacy single contains assertion if no structured assertions provided
+        if (assertions == null || assertions.isEmpty()) {
+            return buildRestAssuredCode(p, expectedStatus, assertContains);
+        }
+
+        StringBuilder b = new StringBuilder();
+        b.append("import io.restassured.RestAssured;\n");
+        b.append("import io.restassured.http.ContentType;\n");
+        b.append("import static io.restassured.RestAssured.*;\n");
+        b.append("import static org.hamcrest.Matchers.*;\n\n");
+        b.append("public class ApiScenarioTest {\n");
+        b.append("    public void run() {\n");
+        b.append("        given()\n");
+        if (p.headers != null && !p.headers.isEmpty()) {
+            for (Map.Entry<String, String> e : p.headers.entrySet()) {
+                b.append("            .header(\"").append(escapeJava(e.getKey())).append("\", \"")
+                        .append(escapeJava(e.getValue())).append("\")\n");
+            }
+        }
+        if (p.body != null && !p.body.isBlank()) {
+            boolean hasCt = p.headers.keySet().stream().map(String::toLowerCase).anyMatch(h -> h.equals("content-type"));
+            if (!hasCt) {
+                String ct = looksLikeXml(p.body) ? "application/xml" : "application/json";
+                b.append("            .contentType(\"").append(ct).append("\")\n");
+            }
+            b.append("            .body(\n");
+            String prettyBody = p.body;
+            if (!looksLikeXml(p.body)) {
+                try {
+                    prettyBody = new com.fasterxml.jackson.databind.ObjectMapper().readTree(p.body).toPrettyString();
+                } catch (Exception ignored) {}
+            }
+            String[] bodyLines = prettyBody.split("\n", -1);
+            for (int i = 0; i < bodyLines.length; i++) {
+                String line = bodyLines[i];
+                b.append("                \"").append(escapeJava(line)).append("\"");
+                if (i < bodyLines.length - 1) {
+                    b.append(" +");
+                }
+                b.append("\n");
+            }
+            b.append("            )\n");
+        }
+        b.append("        .when()\n");
+        String method = p.method == null ? "GET" : p.method.toUpperCase(Locale.ROOT);
+        b.append("            .").append(method.toLowerCase(Locale.ROOT)).append("(\"")
+                .append(escapeJava(p.url)).append("\")\n");
+        b.append("        .then()\n");
+        // Status code
+        b.append("            .statusCode(").append(extractInt(assertions.getOrDefault("expectedStatus", expectedStatus))).append(")\n");
+
+        // Content-Type
+        Object ctAssert = assertions.get("contentType");
+        if (ctAssert instanceof String s && !s.isBlank()) {
+            b.append("            .contentType(\"").append(escapeJava(s)).append("\")\n");
+        }
+
+        // Time less than
+        Object timeLt = assertions.get("timeLessThanMs");
+        if (timeLt instanceof Number num) {
+            b.append("            .time(lessThan(").append(num.longValue()).append("L))\n");
+        }
+
+        // Headers equals
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> headerEquals = (List<Map<String, Object>>) assertions.get("headerEquals");
+        if (headerEquals != null) {
+            for (Map<String, Object> h : headerEquals) {
+                String name = String.valueOf(h.getOrDefault("name", ""));
+                String value = String.valueOf(h.getOrDefault("value", ""));
+                if (!name.isBlank()) {
+                    b.append("            .header(\"").append(escapeJava(name)).append("\", \"")
+                            .append(escapeJava(value)).append("\")\n");
+                }
+            }
+        }
+
+        // Body contains (multiple)
+        @SuppressWarnings("unchecked")
+        List<String> containsList = (List<String>) assertions.get("containsText");
+        if (containsList != null) {
+            for (String s : containsList) {
+                if (s != null && !s.isBlank()) {
+                    b.append("            .body(containsString(\"").append(escapeJava(s)).append("\"))\n");
+                }
+            }
+        } else if (assertContains != null && !assertContains.isBlank()) {
+            b.append("            .body(containsString(\"").append(escapeJava(assertContains)).append("\"))\n");
+        }
+
+        // JSONPath equals
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> jsonPathEquals = (List<Map<String, Object>>) assertions.get("jsonPathEquals");
+        if (jsonPathEquals != null) {
+            for (Map<String, Object> j : jsonPathEquals) {
+                String path = String.valueOf(j.getOrDefault("path", ""));
+                Object value = j.get("value");
+                if (!path.isBlank()) {
+                    b.append("            .body(\"").append(escapeJava(path)).append("\", ");
+                    if (value instanceof Number || value instanceof Boolean) {
+                        b.append("equalTo(").append(String.valueOf(value)).append(")");
+                    } else if (value == null || "null".equals(String.valueOf(value))) {
+                        b.append("equalTo(null)");
+                    } else {
+                        b.append("equalTo(\"").append(escapeJava(String.valueOf(value))).append("\")");
+                    }
+                    b.append(")\n");
+                }
+            }
+        }
+
+        // JSONPath exists
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> jsonPathExists = (List<Map<String, Object>>) assertions.get("jsonPathExists");
+        if (jsonPathExists != null) {
+            for (Map<String, Object> j : jsonPathExists) {
+                String path = String.valueOf(j.getOrDefault("path", ""));
+                if (!path.isBlank()) {
+                    b.append("            .body(\"").append(escapeJava(path)).append("\", notNullValue())\n");
+                }
+            }
+        }
+
+        b.append("        ;\n");
+        b.append("    }\n");
+        b.append("}\n");
+        return b.toString();
+    }
+
+    private int extractInt(Object val) {
+        if (val instanceof Number n) return n.intValue();
+        try { return Integer.parseInt(String.valueOf(val)); } catch (Exception ignored) { return 200; }
+    }
+
     public Map<String, String> setScenarioAssertion(String id, String expectedContains) {
         Map<String, Object> scenario = idToScenario.get(id);
         if (scenario == null) {
@@ -315,6 +455,23 @@ public class ApiScenarioService {
         }
         if (expectedContains == null) expectedContains = "";
         scenario.put("assertContains", expectedContains);
+        return Map.of("status", "ok");
+    }
+
+    public Map<String, String> setScenarioAssertions(String id, Map<String, Object> assertions, Integer expectedStatus) {
+        Map<String, Object> scenario = idToScenario.get(id);
+        if (scenario == null) {
+            return Map.of("status", "error", "message", "Scenario not found");
+        }
+        if (assertions == null) assertions = new LinkedHashMap<>();
+        // Normalize containsText if provided as single string
+        Object contains = assertions.get("containsText");
+        if (contains instanceof String s) {
+            if (s.isBlank()) assertions.remove("containsText");
+            else assertions.put("containsText", java.util.List.of(s));
+        }
+        scenario.put("assertions", assertions);
+        if (expectedStatus != null) scenario.put("expectedStatus", expectedStatus);
         return Map.of("status", "ok");
     }
 
