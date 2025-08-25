@@ -11,7 +11,7 @@ public class WebController {
         return "performance-test";
     }
 
-    @GetMapping("/")
+    @GetMapping("/performance")
     public String homePage() {
         return "performance-test";
     }
