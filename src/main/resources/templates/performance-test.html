@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولد سيناريوهات اختبار الأداء الذكي</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .scenario-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .scenario-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .scenario-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .scenario-type {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .scenario-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9em;
+        }
+
+        .detail-value {
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #fcc;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 مولد سيناريوهات اختبار الأداء الذكي</h1>
+            <p>توليد سيناريوهات اختبار الأداء باستخدام الذكاء الاصطناعي</p>
+        </div>
+
+        <div class="content">
+            <form id="performanceTestForm">
+                <div class="form-section">
+                    <h3>📊 معلومات النظام الأساسية</h3>
+                    
+                    <div class="form-group">
+                        <label for="systemType">نوع النظام:</label>
+                        <select id="systemType" name="systemType" required>
+                            <option value="">اختر نوع النظام</option>
+                            <option value="E_COMMERCE">متجر إلكتروني</option>
+                            <option value="BANKING">نظام مصرفي</option>
+                            <option value="HEALTHCARE">نظام صحي</option>
+                            <option value="EDUCATION">نظام تعليمي</option>
+                            <option value="GOVERNMENT">نظام حكومي</option>
+                            <option value="SOCIAL_MEDIA">وسائل التواصل الاجتماعي</option>
+                            <option value="GAMING">نظام ألعاب</option>
+                            <option value="ENTERPRISE">نظام مؤسسي</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expectedUsers">عدد المستخدمين المتوقعين:</label>
+                        <input type="number" id="expectedUsers" name="expectedUsers" min="1" max="100000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dataVolume">حجم البيانات (عدد السجلات):</label>
+                        <input type="number" id="dataVolume" name="dataVolume" min="1000" max="10000000" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="deploymentEnvironment">بيئة النشر:</label>
+                        <select id="deploymentEnvironment" name="deploymentEnvironment" required>
+                            <option value="">اختر بيئة النشر</option>
+                            <option value="DEVELOPMENT">بيئة التطوير</option>
+                            <option value="STAGING">بيئة الاختبار</option>
+                            <option value="PRODUCTION_LIKE">بيئة مشابهة للإنتاج</option>
+                            <option value="PRODUCTION">بيئة الإنتاج</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>🔄 العمليات الشائعة</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="login" name="commonOperations" value="تسجيل الدخول">
+                            <label for="login">تسجيل الدخول</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="search" name="commonOperations" value="البحث">
+                            <label for="search">البحث</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addProduct" name="commonOperations" value="إضافة منتج">
+                            <label for="addProduct">إضافة منتج</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="viewPage" name="commonOperations" value="عرض الصفحة">
+                            <label for="viewPage">عرض الصفحة</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uploadFile" name="commonOperations" value="تحميل ملف">
+                            <label for="uploadFile">تحميل ملف</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>⏰ أوقات الذروة</h3>
+                    <div class="form-group">
+                        <label for="peakTimeMorning">ذروة الصباح (عدد المستخدمين):</label>
+                        <input type="number" id="peakTimeMorning" name="peakTimes" placeholder="مثال: 500" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="peakTimeAfternoon">ذروة الظهر (عدد المستخدمين):</label>
+                        <input type="number" id="peakTimeAfternoon" name="peakTimes" placeholder="مثال: 800" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="peakTimeEvening">ذروة المساء (عدد المستخدمين):</label>
+                        <input type="number" id="peakTimeEvening" name="peakTimes" placeholder="مثال: 1200" min="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" id="generateBtn">
+                    🚀 توليد سيناريوهات اختبار الأداء
+                </button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>جاري توليد سيناريوهات اختبار الأداء...</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="results" class="results">
+                <h3>📋 خطة اختبار الأداء المولدة</h3>
+                <div id="scenariosList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('performanceTestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const requestData = {
+                systemType: formData.get('systemType'),
+                expectedUsers: parseInt(formData.get('expectedUsers')),
+                dataVolume: parseInt(formData.get('dataVolume')),
+                deploymentEnvironment: formData.get('deploymentEnvironment'),
+                commonOperations: Array.from(formData.getAll('commonOperations')),
+                peakTimes: {
+                    morning: parseInt(formData.get('peakTimeMorning')) || 0,
+                    afternoon: parseInt(formData.get('peakTimeAfternoon')) || 0,
+                    evening: parseInt(formData.get('peakTimeEvening')) || 0
+                }
+            };
+
+            // إظهار حالة التحميل
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                const response = await fetch('/api/performance-test/generate-scenarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('خطأ في استجابة الخادم');
+                }
+
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                document.getElementById('error').textContent = 'خطأ: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('generateBtn').disabled = false;
+            }
+        });
+
+        function displayResults(plan) {
+            const resultsDiv = document.getElementById('results');
+            const scenariosList = document.getElementById('scenariosList');
+            
+            scenariosList.innerHTML = `
+                <div class="scenario-card">
+                    <div class="scenario-header">
+                        <div class="scenario-title">${plan.planName}</div>
+                        <div class="scenario-type">خطة شاملة</div>
+                    </div>
+                    <div class="scenario-details">
+                        <div class="detail-item">
+                            <div class="detail-label">معرف الخطة</div>
+                            <div class="detail-value">${plan.planId}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">النظام</div>
+                            <div class="detail-value">${plan.systemName}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">تاريخ الإنشاء</div>
+                            <div class="detail-value">${new Date(plan.createdDate).toLocaleString('ar-SA')}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">المدة المتوقعة</div>
+                            <div class="detail-value">${plan.estimatedDuration}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            plan.scenarios.forEach(scenario => {
+                const scenarioCard = document.createElement('div');
+                scenarioCard.className = 'scenario-card';
+                scenarioCard.innerHTML = `
+                    <div class="scenario-header">
+                        <div class="scenario-title">${scenario.scenarioName}</div>
+                        <div class="scenario-type">${getScenarioTypeName(scenario.scenarioType)}</div>
+                    </div>
+                    <p style="margin-bottom: 15px; color: #666;">${scenario.description}</p>
+                    <div class="scenario-details">
+                        <div class="detail-item">
+                            <div class="detail-label">المستخدمين المستهدفين</div>
+                            <div class="detail-value">${scenario.targetUsers}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">وقت الزيادة التدريجية</div>
+                            <div class="detail-value">${scenario.rampUpTime} دقيقة</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">مدة الاختبار</div>
+                            <div class="detail-value">${scenario.testDuration} دقيقة</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">الأولوية</div>
+                            <div class="detail-value">${scenario.priority}/5</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <strong style="color: #667eea;">خطوات الاختبار:</strong>
+                        <ul style="margin-top: 10px; padding-right: 20px;">
+                            ${scenario.testSteps.map(step => `<li>${step}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <strong style="color: #667eea;">معايير النجاح:</strong>
+                        <ul style="margin-top: 10px; padding-right: 20px;">
+                            ${scenario.successCriteria.map(criteria => `<li>${criteria}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                scenariosList.appendChild(scenarioCard);
+            });
+
+            resultsDiv.style.display = 'block';
+        }
+
+        function getScenarioTypeName(type) {
+            const types = {
+                'STRESS': 'اختبار الضغط',
+                'SOAK': 'اختبار التحمل',
+                'VOLUME': 'اختبار الحجم',
+                'SPIKE': 'اختبار الذروة',
+                'SCALABILITY': 'اختبار التوسع'
+            };
+            return types[type] || type;
+        }
+    </script>
+</body>
+</html>
