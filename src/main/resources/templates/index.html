@@ -60,6 +60,13 @@
             <a class="navbar-brand text-white fw-bold" href="/">
                 <i class="fa-solid fa-flask-vial me-2"></i> HeroTester
             </a>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="text-white-50 small">Language:</span>
+                <select id="siteLang" class="form-select form-select-sm" style="width:auto;">
+                    <option value="en" selected>English</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
         </div>
     </nav>
 
@@ -251,7 +258,7 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label">System Type
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="System Type" data-bs-content="Overall category of your system (e.g., e-commerce, banking, healthcare)"></i>
+                                                <i id="popSystemType" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="System Type" data-bs-content="Overall category of your system (e.g., e-commerce, banking, healthcare)"></i>
                                             </label>
                                             <select class="form-select" id="pfSystemType" required>
                                                 <option value="">Select system type</option>
@@ -267,13 +274,13 @@
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">Expected Users
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Expected Users" data-bs-content="Estimated concurrent users during normal load (e.g., 500)"></i>
+                                                <i id="popExpectedUsers" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Expected Users" data-bs-content="Estimated concurrent users during normal load (e.g., 500)"></i>
                                             </label>
                                             <input type="number" class="form-control" id="pfExpectedUsers" min="1" max="100000" placeholder="e.g. 500" required>
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label">Data Volume (records)
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Data Volume" data-bs-content="Approximate number of records the system handles (e.g., 100000)"></i>
+                                                <i id="popDataVolume" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Data Volume" data-bs-content="Approximate number of records the system handles (e.g., 100000)"></i>
                                             </label>
                                             <input type="number" class="form-control" id="pfDataVolume" min="1000" max="10000000" placeholder="e.g. 100000" required>
                                         </div>
@@ -282,7 +289,7 @@
                                     <div class="row g-3 mt-1">
                                         <div class="col-md-6">
                                             <label class="form-label">Deployment Environment
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Deployment Environment" data-bs-content="Target environment where the test will run (Dev/Staging/Prod-like/Prod)"></i>
+                                                <i id="popEnv" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Deployment Environment" data-bs-content="Target environment where the test will run (Dev/Staging/Prod-like/Prod)"></i>
                                             </label>
                                             <select class="form-select" id="pfEnv" required>
                                                 <option value="">Select environment</option>
@@ -294,7 +301,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Common Operations
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Common Operations" data-bs-content="Main user actions to include in performance scenarios (e.g., login, search)"></i>
+                                                <i id="popCommonOps" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Common Operations" data-bs-content="Main user actions to include in performance scenarios (e.g., login, search)"></i>
                                             </label>
                                             <div class="row row-cols-2 g-2">
                                                 <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="تسجيل الدخول" id="pfOpLogin"><label class="form-check-label" for="pfOpLogin">Login</label></div></div>
@@ -309,19 +316,19 @@
                                     <div class="row g-3 mt-1">
                                         <div class="col-md-4">
                                             <label class="form-label">Morning peak (users)
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Morning Peak" data-bs-content="Concurrent users during morning peak (e.g., 500)"></i>
+                                                <i id="popPeakMorning" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Morning Peak" data-bs-content="Concurrent users during morning peak (e.g., 500)"></i>
                                             </label>
                                             <input type="number" class="form-control" id="pfPeakMorning" min="0" placeholder="e.g. 500">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Afternoon peak (users)
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Afternoon Peak" data-bs-content="Concurrent users during afternoon peak (e.g., 800)"></i>
+                                                <i id="popPeakAfternoon" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Afternoon Peak" data-bs-content="Concurrent users during afternoon peak (e.g., 800)"></i>
                                             </label>
                                             <input type="number" class="form-control" id="pfPeakAfternoon" min="0" placeholder="e.g. 800">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label">Evening peak (users)
-                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Evening Peak" data-bs-content="Concurrent users during evening peak (e.g., 1200)"></i>
+                                                <i id="popPeakEvening" class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Evening Peak" data-bs-content="Concurrent users during evening peak (e.g., 1200)"></i>
                                             </label>
                                             <input type="number" class="form-control" id="pfPeakEvening" min="0" placeholder="e.g. 1200">
                                         </div>
@@ -331,6 +338,7 @@
                                         <button type="submit" class="btn btn-primary"><i class="fas fa-rocket"></i> Generate Plan</button>
                                     </div>
                                 </form>
+                                <div id="perfError" class="alert alert-danger d-none"></div>
                                 <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i> The next screen will show your generated plan with details and steps.</div>
                                 <div class="mt-4">
                                     <div class="row">
@@ -449,6 +457,7 @@
         };
 
         function setPopover(el, title, content) {
+            if (!el) return;
             el.setAttribute('data-bs-original-title', title);
             el.setAttribute('title', title);
             el.setAttribute('data-bs-content', content);
@@ -456,19 +465,21 @@
 
         function applyPerfLang(lang) {
             const t = popoverTexts[lang] || popoverTexts.en;
-            const q = sel => document.querySelector(sel);
-            setPopover(q('label:has(#pfSystemType) i'), t.systemType.title, t.systemType.content);
-            setPopover(q('label:has(+ #pfExpectedUsers) i'), t.expectedUsers.title, t.expectedUsers.content);
-            setPopover(q('label:has(+ #pfDataVolume) i'), t.dataVolume.title, t.dataVolume.content);
-            setPopover(q('label:has(+ #pfEnv) i'), t.env.title, t.env.content);
-            setPopover(q('label:has(+ .row.row-cols-2) i'), t.commonOps.title, t.commonOps.content);
-            setPopover(q('label:has(+ #pfPeakMorning) i'), t.peakMorning.title, t.peakMorning.content);
-            setPopover(q('label:has(+ #pfPeakAfternoon) i'), t.peakAfternoon.title, t.peakAfternoon.content);
-            setPopover(q('label:has(+ #pfPeakEvening) i'), t.peakEvening.title, t.peakEvening.content);
+            setPopover(document.getElementById('popSystemType'), t.systemType.title, t.systemType.content);
+            setPopover(document.getElementById('popExpectedUsers'), t.expectedUsers.title, t.expectedUsers.content);
+            setPopover(document.getElementById('popDataVolume'), t.dataVolume.title, t.dataVolume.content);
+            setPopover(document.getElementById('popEnv'), t.env.title, t.env.content);
+            setPopover(document.getElementById('popCommonOps'), t.commonOps.title, t.commonOps.content);
+            setPopover(document.getElementById('popPeakMorning'), t.peakMorning.title, t.peakMorning.content);
+            setPopover(document.getElementById('popPeakAfternoon'), t.peakAfternoon.title, t.peakAfternoon.content);
+            setPopover(document.getElementById('popPeakEvening'), t.peakEvening.title, t.peakEvening.content);
             // refresh all existing popovers
             popovers.forEach(p => p.dispose());
             [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]')).forEach(el => new bootstrap.Popover(el));
             localStorage.setItem('perfFormLang', lang);
+            localStorage.setItem('perfLang', lang);
+            document.documentElement.lang = (lang === 'ar') ? 'ar' : 'en';
+            document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
         }
 
         const perfLangSel = document.getElementById('perfLang');
@@ -479,11 +490,24 @@
             perfLangSel.addEventListener('change', e => applyPerfLang(e.target.value));
         }
 
+        // Site-level language selector syncs with perf form
+        const siteLangSel = document.getElementById('siteLang');
+        if (siteLangSel) {
+            const savedSite = localStorage.getItem('siteLang') || (localStorage.getItem('perfFormLang') || 'en');
+            siteLangSel.value = savedSite;
+            siteLangSel.addEventListener('change', e => {
+                const lang = e.target.value;
+                localStorage.setItem('siteLang', lang);
+                applyPerfLang(lang);
+            });
+        }
+
         // Performance form submit -> generate then redirect to /performance
         const perfForm = document.getElementById('perfForm');
         if (perfForm) {
             perfForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const err = document.getElementById('perfError'); if (err) { err.classList.add('d-none'); err.textContent = ''; }
                 const payload = {
                     systemType: document.getElementById('pfSystemType').value,
                     expectedUsers: Number(document.getElementById('pfExpectedUsers').value || 0),
@@ -502,13 +526,20 @@
                         evening: Number(document.getElementById('pfPeakEvening').value || 0)
                     }
                 };
-                const res = await fetch('/api/performance-test/generate-scenarios', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                });
-                if (!res.ok) { alert('Failed to generate plan'); return; }
-                const plan = await res.json();
-                try { localStorage.setItem('perfPlan', JSON.stringify(plan)); } catch {}
-                window.location.href = '/performance';
+                try {
+                    const res = await fetch('/api/performance-test/generate-scenarios', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                        const txt = await res.text();
+                        throw new Error(txt || 'Failed to generate plan');
+                    }
+                    const plan = await res.json();
+                    try { localStorage.setItem('perfPlan', JSON.stringify(plan)); } catch {}
+                    window.location.href = '/performance';
+                } catch (ex) {
+                    if (err) { err.textContent = ex.message; err.classList.remove('d-none'); }
+                }
             });
         }
     </script>
