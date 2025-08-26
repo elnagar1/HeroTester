@@ -239,6 +239,13 @@
                                     <i class="fas fa-tachometer-alt icon-large text-warning"></i>
                                     <h3>Performance Test Generator</h3>
                                     <p class="text-muted">Generate intelligent performance test scenarios using AI</p>
+                                    <div class="d-inline-flex align-items-center gap-2 mt-2">
+                                        <span class="text-muted">Language:</span>
+                                        <select id="perfLang" class="form-select form-select-sm" style="width:auto;">
+                                            <option value="en" selected>English</option>
+                                            <option value="ar">العربية</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <form id="perfForm" class="mb-4">
                                     <div class="row g-3">
@@ -415,7 +422,62 @@
 
         // Init popovers
         const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-        popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+        const popovers = popoverTriggerList.map(el => new bootstrap.Popover(el));
+
+        // Localize popovers (EN/AR)
+        const popoverTexts = {
+            en: {
+                systemType: { title: 'System Type', content: 'Overall category of your system (e.g., e-commerce, banking, healthcare)' },
+                expectedUsers: { title: 'Expected Users', content: 'Estimated concurrent users during normal load (e.g., 500)' },
+                dataVolume: { title: 'Data Volume', content: 'Approximate number of records the system handles (e.g., 100000)' },
+                env: { title: 'Deployment Environment', content: 'Target environment where the test will run (Dev/Staging/Prod-like/Prod)' },
+                commonOps: { title: 'Common Operations', content: 'Main user actions to include (e.g., login, search, add item, navigation, upload)' },
+                peakMorning: { title: 'Morning Peak', content: 'Concurrent users during morning peak (e.g., 500)' },
+                peakAfternoon: { title: 'Afternoon Peak', content: 'Concurrent users during afternoon peak (e.g., 800)' },
+                peakEvening: { title: 'Evening Peak', content: 'Concurrent users during evening peak (e.g., 1200)' }
+            },
+            ar: {
+                systemType: { title: 'نوع النظام', content: 'الفئة العامة للنظام (مثل متجر إلكتروني، مصرفي، صحي)' },
+                expectedUsers: { title: 'المستخدمون المتوقعون', content: 'عدد المستخدمين المتزامنين المتوقع أثناء الحمل الطبيعي (مثال: 500)' },
+                dataVolume: { title: 'حجم البيانات', content: 'العدد التقريبي للسجلات التي يتعامل معها النظام (مثال: 100000)' },
+                env: { title: 'بيئة النشر', content: 'البيئة المستهدفة لتنفيذ الاختبار (تطوير/اختبار/مشابهة للإنتاج/الإنتاج)' },
+                commonOps: { title: 'العمليات الشائعة', content: 'العمليات الرئيسية للمستخدم (مثل تسجيل الدخول، البحث، إضافة عنصر، التنقل، التحميل)' },
+                peakMorning: { title: 'ذروة الصباح', content: 'المستخدمون المتزامنون في ذروة الصباح (مثال: 500)' },
+                peakAfternoon: { title: 'ذروة الظهر', content: 'المستخدمون المتزامنون في ذروة الظهر (مثال: 800)' },
+                peakEvening: { title: 'ذروة المساء', content: 'المستخدمون المتزامنون في ذروة المساء (مثال: 1200)' }
+            }
+        };
+
+        function setPopover(el, title, content) {
+            el.setAttribute('data-bs-original-title', title);
+            el.setAttribute('title', title);
+            el.setAttribute('data-bs-content', content);
+        }
+
+        function applyPerfLang(lang) {
+            const t = popoverTexts[lang] || popoverTexts.en;
+            const q = sel => document.querySelector(sel);
+            setPopover(q('label:has(#pfSystemType) i'), t.systemType.title, t.systemType.content);
+            setPopover(q('label:has(+ #pfExpectedUsers) i'), t.expectedUsers.title, t.expectedUsers.content);
+            setPopover(q('label:has(+ #pfDataVolume) i'), t.dataVolume.title, t.dataVolume.content);
+            setPopover(q('label:has(+ #pfEnv) i'), t.env.title, t.env.content);
+            setPopover(q('label:has(+ .row.row-cols-2) i'), t.commonOps.title, t.commonOps.content);
+            setPopover(q('label:has(+ #pfPeakMorning) i'), t.peakMorning.title, t.peakMorning.content);
+            setPopover(q('label:has(+ #pfPeakAfternoon) i'), t.peakAfternoon.title, t.peakAfternoon.content);
+            setPopover(q('label:has(+ #pfPeakEvening) i'), t.peakEvening.title, t.peakEvening.content);
+            // refresh all existing popovers
+            popovers.forEach(p => p.dispose());
+            [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]')).forEach(el => new bootstrap.Popover(el));
+            localStorage.setItem('perfFormLang', lang);
+        }
+
+        const perfLangSel = document.getElementById('perfLang');
+        if (perfLangSel) {
+            const saved = localStorage.getItem('perfFormLang') || 'en';
+            perfLangSel.value = saved;
+            applyPerfLang(saved);
+            perfLangSel.addEventListener('change', e => applyPerfLang(e.target.value));
+        }
 
         // Performance form submit -> generate then redirect to /performance
         const perfForm = document.getElementById('perfForm');
