@@ -239,6 +239,7 @@
                     
                     <div class="form-group">
                         <label id="labelSystemType" for="systemType">System Type:</label>
+                        <span id="tipSystemType" class="info" title="Overall category of your system (e.g., e-commerce, banking)">ℹ️</span>
                         <select id="systemType" name="systemType" required>
                             <option id="optSystemPlaceholder" value="">Select system type</option>
                             <option id="optSystemEcom" value="E_COMMERCE">E-commerce</option>
@@ -254,16 +255,19 @@
 
                     <div class="form-group">
                         <label id="labelExpectedUsers" for="expectedUsers">Expected Users:</label>
+                        <span id="tipExpectedUsers" class="info" title="Estimated concurrent users during normal load">ℹ️</span>
                         <input type="number" id="expectedUsers" name="expectedUsers" min="1" max="100000" required>
                     </div>
 
                     <div class="form-group">
                         <label id="labelDataVolume" for="dataVolume">Data Volume (records):</label>
+                        <span id="tipDataVolume" class="info" title="Approximate number of records your system handles">ℹ️</span>
                         <input type="number" id="dataVolume" name="dataVolume" min="1000" max="10000000" required>
                     </div>
 
                     <div class="form-group">
                         <label id="labelEnv" for="deploymentEnvironment">Deployment Environment:</label>
+                        <span id="tipEnv" class="info" title="Target environment where the test will run">ℹ️</span>
                         <select id="deploymentEnvironment" name="deploymentEnvironment" required>
                             <option id="optEnvPlaceholder" value="">Select environment</option>
                             <option id="optEnvDev" value="DEVELOPMENT">Development</option>
@@ -276,42 +280,52 @@
 
                 <div class="form-section">
                     <h3 id="secCommonOps">🔄 Common Operations</h3>
+                    <div class="form-text" id="tipCommonOps">Choose main user operations to include in scenarios</div>
                     <div class="checkbox-group">
                         <div class="checkbox-item">
                             <input type="checkbox" id="login" name="commonOperations" value="تسجيل الدخول">
                             <label id="labelOpLogin" for="login">Login</label>
+                            <span class="info" id="tipOpLogin" title="User authentication and sign-in flow">ℹ️</span>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="search" name="commonOperations" value="البحث">
                             <label id="labelOpSearch" for="search">Search</label>
+                            <span class="info" id="tipOpSearch" title="Searching or querying content or products">ℹ️</span>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="addProduct" name="commonOperations" value="إضافة منتج">
                             <label id="labelOpAddProduct" for="addProduct">Add Product</label>
+                            <span class="info" id="tipOpAddProduct" title="Create or update items/records">ℹ️</span>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="viewPage" name="commonOperations" value="عرض الصفحة">
                             <label id="labelOpViewPage" for="viewPage">View Page</label>
+                            <span class="info" id="tipOpViewPage" title="General page view/navigation">ℹ️</span>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" id="uploadFile" name="commonOperations" value="تحميل ملف">
                             <label id="labelOpUploadFile" for="uploadFile">Upload File</label>
+                            <span class="info" id="tipOpUploadFile" title="File upload or attachments handling">ℹ️</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
                     <h3 id="secPeakTimes">⏰ Peak Times</h3>
+                    <div class="form-text" id="tipPeakTimes">Expected users during specific peak periods</div>
                     <div class="form-group">
                         <label id="labelPeakMorning" for="peakTimeMorning">Morning peak (users):</label>
+                        <span id="tipPeakMorning" class="info" title="Concurrent users in the morning peak window">ℹ️</span>
                         <input type="number" id="peakTimeMorning" name="peakTimes" placeholder="e.g. 500" min="0">
                     </div>
                     <div class="form-group">
                         <label id="labelPeakAfternoon" for="peakTimeAfternoon">Afternoon peak (users):</label>
+                        <span id="tipPeakAfternoon" class="info" title="Concurrent users in the afternoon peak window">ℹ️</span>
                         <input type="number" id="peakTimeAfternoon" name="peakTimes" placeholder="e.g. 800" min="0">
                     </div>
                     <div class="form-group">
                         <label id="labelPeakEvening" for="peakTimeEvening">Evening peak (users):</label>
+                        <span id="tipPeakEvening" class="info" title="Concurrent users in the evening peak window">ℹ️</span>
                         <input type="number" id="peakTimeEvening" name="peakTimes" placeholder="e.g. 1200" min="0">
                     </div>
                 </div>
@@ -336,6 +350,12 @@
     </div>
 
     <script>
+        // style for info icon
+        (function(){
+            const css = '.info{margin-left:6px; cursor:help; font-weight:bold; color:#667eea;}';
+            const s = document.createElement('style'); s.textContent = css; document.head.appendChild(s);
+        })();
+
         document.getElementById('performanceTestForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -529,7 +549,21 @@
                 testDuration: 'Test Duration',
                 priority: 'Priority',
                 testStepsTitle: 'Test Steps:',
-                successCriteriaTitle: 'Success Criteria:'
+                successCriteriaTitle: 'Success Criteria:',
+                tipSystemType: 'Overall category of your system (e.g., e-commerce, banking)',
+                tipExpectedUsers: 'Estimated concurrent users during normal load',
+                tipDataVolume: 'Approximate number of records your system handles',
+                tipEnv: 'Target environment where the test will run',
+                tipCommonOps: 'Choose main user operations to include in scenarios',
+                tipOpLogin: 'User authentication and sign-in flow',
+                tipOpSearch: 'Searching or querying content or products',
+                tipOpAddProduct: 'Create or update items/records',
+                tipOpViewPage: 'General page view/navigation',
+                tipOpUploadFile: 'File upload or attachments handling',
+                tipPeakTimes: 'Expected users during specific peak periods',
+                tipPeakMorning: 'Concurrent users in the morning peak window',
+                tipPeakAfternoon: 'Concurrent users in the afternoon peak window',
+                tipPeakEvening: 'Concurrent users in the evening peak window'
             },
             ar: {
                 headerTitle: '🤖 مولد سيناريوهات اختبار الأداء الذكي',
@@ -576,7 +610,21 @@
                 testDuration: 'مدة الاختبار (دقيقة)',
                 priority: 'الأولوية',
                 testStepsTitle: 'خطوات الاختبار:',
-                successCriteriaTitle: 'معايير النجاح:'
+                successCriteriaTitle: 'معايير النجاح:',
+                tipSystemType: 'الفئة العامة للنظام (مثل متجر إلكتروني، مصرفي)',
+                tipExpectedUsers: 'عدد المستخدمين المتزامنين المتوقع أثناء الحمل الطبيعي',
+                tipDataVolume: 'العدد التقريبي للسجلات التي يتعامل معها النظام',
+                tipEnv: 'بيئة التنفيذ المستهدفة للاختبار',
+                tipCommonOps: 'اختر العمليات الرئيسية للمستخدم لإدراجها في السيناريوهات',
+                tipOpLogin: 'تدفق المصادقة وتسجيل الدخول',
+                tipOpSearch: 'البحث أو الاستعلام عن المحتوى أو المنتجات',
+                tipOpAddProduct: 'إنشاء أو تحديث العناصر/السجلات',
+                tipOpViewPage: 'عرض الصفحة أو التنقل العام',
+                tipOpUploadFile: 'تحميل الملفات أو المرفقات',
+                tipPeakTimes: 'عدد المستخدمين المتوقع في فترات الذروة',
+                tipPeakMorning: 'المستخدمون المتزامنون في ذروة الصباح',
+                tipPeakAfternoon: 'المستخدمون المتزامنون في ذروة الظهر',
+                tipPeakEvening: 'المستخدمون المتزامنون في ذروة المساء'
             }
         };
 
@@ -586,6 +634,7 @@
             document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
             const t = translations[lang];
             const setText = (id, key) => { const el = document.getElementById(id); if (el && t[key]) el.textContent = t[key]; };
+            const setTitle = (id, key) => { const el = document.getElementById(id); if (el && t[key]) el.setAttribute('title', t[key]); };
 
             setText('headerTitle', 'headerTitle');
             setText('headerSubtitle', 'headerSubtitle');
@@ -634,6 +683,22 @@
             document.querySelectorAll('[data-i18n="priority"]').forEach(el => el.textContent = t.priority);
             const stepsTitle = document.getElementById('testStepsTitle'); if (stepsTitle) stepsTitle.textContent = t.testStepsTitle;
             const succTitle = document.getElementById('successCriteriaTitle'); if (succTitle) succTitle.textContent = t.successCriteriaTitle;
+
+            // tooltips
+            setTitle('tipSystemType', 'tipSystemType');
+            setTitle('tipExpectedUsers', 'tipExpectedUsers');
+            setTitle('tipDataVolume', 'tipDataVolume');
+            setTitle('tipEnv', 'tipEnv');
+            setText('tipCommonOps', 'tipCommonOps');
+            setTitle('tipOpLogin', 'tipOpLogin');
+            setTitle('tipOpSearch', 'tipOpSearch');
+            setTitle('tipOpAddProduct', 'tipOpAddProduct');
+            setTitle('tipOpViewPage', 'tipOpViewPage');
+            setTitle('tipOpUploadFile', 'tipOpUploadFile');
+            setText('tipPeakTimes', 'tipPeakTimes');
+            setTitle('tipPeakMorning', 'tipPeakMorning');
+            setTitle('tipPeakAfternoon', 'tipPeakAfternoon');
+            setTitle('tipPeakEvening', 'tipPeakEvening');
             localStorage.setItem('perfLang', lang);
         }
 
