@@ -240,9 +240,91 @@
                                     <h3>Performance Test Generator</h3>
                                     <p class="text-muted">Generate intelligent performance test scenarios using AI</p>
                                 </div>
-                                <div class="d-grid">
-                                    <a href="/performance" class="btn btn-primary"><i class="fas fa-rocket"></i> Open Performance Test Generator</a>
-                                </div>
+                                <form id="perfForm" class="mb-4">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">System Type
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="System Type" data-bs-content="Overall category of your system (e.g., e-commerce, banking, healthcare)"></i>
+                                            </label>
+                                            <select class="form-select" id="pfSystemType" required>
+                                                <option value="">Select system type</option>
+                                                <option value="E_COMMERCE">E-commerce</option>
+                                                <option value="BANKING">Banking</option>
+                                                <option value="HEALTHCARE">Healthcare</option>
+                                                <option value="EDUCATION">Education</option>
+                                                <option value="GOVERNMENT">Government</option>
+                                                <option value="SOCIAL_MEDIA">Social Media</option>
+                                                <option value="GAMING">Gaming</option>
+                                                <option value="ENTERPRISE">Enterprise</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Expected Users
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Expected Users" data-bs-content="Estimated concurrent users during normal load (e.g., 500)"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="pfExpectedUsers" min="1" max="100000" placeholder="e.g. 500" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Data Volume (records)
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Data Volume" data-bs-content="Approximate number of records the system handles (e.g., 100000)"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="pfDataVolume" min="1000" max="10000000" placeholder="e.g. 100000" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Deployment Environment
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Deployment Environment" data-bs-content="Target environment where the test will run (Dev/Staging/Prod-like/Prod)"></i>
+                                            </label>
+                                            <select class="form-select" id="pfEnv" required>
+                                                <option value="">Select environment</option>
+                                                <option value="DEVELOPMENT">Development</option>
+                                                <option value="STAGING">Staging</option>
+                                                <option value="PRODUCTION_LIKE">Production-like</option>
+                                                <option value="PRODUCTION">Production</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Common Operations
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Common Operations" data-bs-content="Main user actions to include in performance scenarios (e.g., login, search)"></i>
+                                            </label>
+                                            <div class="row row-cols-2 g-2">
+                                                <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="تسجيل الدخول" id="pfOpLogin"><label class="form-check-label" for="pfOpLogin">Login</label></div></div>
+                                                <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="البحث" id="pfOpSearch"><label class="form-check-label" for="pfOpSearch">Search</label></div></div>
+                                                <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="إضافة منتج" id="pfOpAdd"><label class="form-check-label" for="pfOpAdd">Add Product</label></div></div>
+                                                <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="عرض الصفحة" id="pfOpView"><label class="form-check-label" for="pfOpView">View Page</label></div></div>
+                                                <div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" value="تحميل ملف" id="pfOpUpload"><label class="form-check-label" for="pfOpUpload">Upload File</label></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Morning peak (users)
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Morning Peak" data-bs-content="Concurrent users during morning peak (e.g., 500)"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="pfPeakMorning" min="0" placeholder="e.g. 500">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Afternoon peak (users)
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Afternoon Peak" data-bs-content="Concurrent users during afternoon peak (e.g., 800)"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="pfPeakAfternoon" min="0" placeholder="e.g. 800">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Evening peak (users)
+                                                <i class="fa-regular fa-circle-question ms-1 text-info" tabindex="0" data-bs-toggle="popover" data-bs-trigger="focus hover" data-bs-placement="top" title="Evening Peak" data-bs-content="Concurrent users during evening peak (e.g., 1200)"></i>
+                                            </label>
+                                            <input type="number" class="form-control" id="pfPeakEvening" min="0" placeholder="e.g. 1200">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid mt-3">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-rocket"></i> Generate Plan</button>
+                                    </div>
+                                </form>
+                                <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i> The next screen will show your generated plan with details and steps.</div>
                                 <div class="mt-4">
                                     <div class="row">
                                         <div class="col-md-6">
@@ -329,6 +411,43 @@
         if (genTypes) {
             genTypes.addEventListener('change', () => toggleOptions(genTypes, userStoryOptions, testTypesOptions));
             toggleOptions(genTypes, userStoryOptions, testTypesOptions);
+        }
+
+        // Init popovers
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.forEach(el => new bootstrap.Popover(el));
+
+        // Performance form submit -> generate then redirect to /performance
+        const perfForm = document.getElementById('perfForm');
+        if (perfForm) {
+            perfForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    systemType: document.getElementById('pfSystemType').value,
+                    expectedUsers: Number(document.getElementById('pfExpectedUsers').value || 0),
+                    dataVolume: Number(document.getElementById('pfDataVolume').value || 0),
+                    deploymentEnvironment: document.getElementById('pfEnv').value,
+                    commonOperations: [
+                        ...(document.getElementById('pfOpLogin').checked ? [document.getElementById('pfOpLogin').value] : []),
+                        ...(document.getElementById('pfOpSearch').checked ? [document.getElementById('pfOpSearch').value] : []),
+                        ...(document.getElementById('pfOpAdd').checked ? [document.getElementById('pfOpAdd').value] : []),
+                        ...(document.getElementById('pfOpView').checked ? [document.getElementById('pfOpView').value] : []),
+                        ...(document.getElementById('pfOpUpload').checked ? [document.getElementById('pfOpUpload').value] : [])
+                    ],
+                    peakTimes: {
+                        morning: Number(document.getElementById('pfPeakMorning').value || 0),
+                        afternoon: Number(document.getElementById('pfPeakAfternoon').value || 0),
+                        evening: Number(document.getElementById('pfPeakEvening').value || 0)
+                    }
+                };
+                const res = await fetch('/api/performance-test/generate-scenarios', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                if (!res.ok) { alert('Failed to generate plan'); return; }
+                const plan = await res.json();
+                try { localStorage.setItem('perfPlan', JSON.stringify(plan)); } catch {}
+                window.location.href = '/performance';
+            });
         }
     </script>
 </body>
