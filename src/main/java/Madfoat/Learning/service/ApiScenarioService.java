@@ -365,6 +365,15 @@ public class ApiScenarioService {
         // Status code
         b.append("            .statusCode(").append(extractInt(assertions.getOrDefault("expectedStatus", expectedStatus))).append(")\n");
 
+        // Status family range
+        Object statusFamily = assertions.get("expectedStatusRange");
+        if (statusFamily instanceof String s && !s.isBlank()) {
+            if (s.startsWith("2")) b.append("            .statusCode(greaterThanOrEqualTo(200)).statusCode(lessThan(300))\n");
+            else if (s.startsWith("3")) b.append("            .statusCode(greaterThanOrEqualTo(300)).statusCode(lessThan(400))\n");
+            else if (s.startsWith("4")) b.append("            .statusCode(greaterThanOrEqualTo(400)).statusCode(lessThan(500))\n");
+            else if (s.startsWith("5")) b.append("            .statusCode(greaterThanOrEqualTo(500)).statusCode(lessThan(600))\n");
+        }
+
         // Content-Type
         Object ctAssert = assertions.get("contentType");
         if (ctAssert instanceof String s && !s.isBlank()) {
@@ -391,6 +400,31 @@ public class ApiScenarioService {
             }
         }
 
+        // Header exists
+        @SuppressWarnings("unchecked")
+        List<String> headerExists = (List<String>) assertions.get("headerExists");
+        if (headerExists != null) {
+            for (String name : headerExists) {
+                if (name != null && !name.isBlank()) {
+                    b.append("            .header(\"").append(escapeJava(name)).append("\", notNullValue())\n");
+                }
+            }
+        }
+
+        // Header contains substring
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> headerContains = (List<Map<String, Object>>) assertions.get("headerContains");
+        if (headerContains != null) {
+            for (Map<String, Object> h : headerContains) {
+                String name = String.valueOf(h.getOrDefault("name", ""));
+                String substring = String.valueOf(h.getOrDefault("substring", ""));
+                if (!name.isBlank() && !substring.isBlank()) {
+                    b.append("            .header(\"").append(escapeJava(name)).append("\", containsString(\"")
+                            .append(escapeJava(substring)).append("\"))\n");
+                }
+            }
+        }
+
         // Body contains (multiple)
         @SuppressWarnings("unchecked")
         List<String> containsList = (List<String>) assertions.get("containsText");
@@ -402,6 +436,17 @@ public class ApiScenarioService {
             }
         } else if (assertContains != null && !assertContains.isBlank()) {
             b.append("            .body(containsString(\"").append(escapeJava(assertContains)).append("\"))\n");
+        }
+
+        // Body NOT contains
+        @SuppressWarnings("unchecked")
+        List<String> notContains = (List<String>) assertions.get("notContainsText");
+        if (notContains != null) {
+            for (String s : notContains) {
+                if (s != null && !s.isBlank()) {
+                    b.append("            .body(not(containsString(\"").append(escapeJava(s)).append("\")))\n");
+                }
+            }
         }
 
         // JSONPath equals
@@ -425,14 +470,65 @@ public class ApiScenarioService {
             }
         }
 
-        // JSONPath exists
+        // JSONPath size equals
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> jsonPathExists = (List<Map<String, Object>>) assertions.get("jsonPathExists");
-        if (jsonPathExists != null) {
-            for (Map<String, Object> j : jsonPathExists) {
+        List<Map<String, Object>> jsonPathSizeEquals = (List<Map<String, Object>>) assertions.get("jsonPathSizeEquals");
+        if (jsonPathSizeEquals != null) {
+            for (Map<String, Object> j : jsonPathSizeEquals) {
                 String path = String.valueOf(j.getOrDefault("path", ""));
+                Object size = j.get("size");
+                if (!path.isBlank() && size instanceof Number num) {
+                    b.append("            .body(\"").append(escapeJava(path)).append(".size()\", equalTo(")
+                            .append(num.intValue()).append("))\n");
+                }
+            }
+        }
+
+        // JSONPath contains item
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> jsonPathContains = (List<Map<String, Object>>) assertions.get("jsonPathContains");
+        if (jsonPathContains != null) {
+            for (Map<String, Object> j : jsonPathContains) {
+                String path = String.valueOf(j.getOrDefault("path", ""));
+                Object value = j.get("value");
                 if (!path.isBlank()) {
-                    b.append("            .body(\"").append(escapeJava(path)).append("\", notNullValue())\n");
+                    b.append("            .body(\"").append(escapeJava(path)).append("\", hasItem(");
+                    if (value instanceof Number || value instanceof Boolean) {
+                        b.append(String.valueOf(value));
+                    } else if (value == null || "null".equals(String.valueOf(value))) {
+                        b.append("null");
+                    } else {
+                        b.append("\"").append(escapeJava(String.valueOf(value))).append("\"");
+                    }
+                    b.append("))\n");
+                }
+            }
+        }
+
+        // XPath assertions (basic): if content looks like XML
+        boolean looksXml = looksLikeXml(p.body != null ? p.body : "<x/>");
+        if (looksXml) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> xPathExists = (List<Map<String, Object>>) assertions.get("xPathExists");
+            if (xPathExists != null) {
+                for (Map<String, Object> x : xPathExists) {
+                    String path = String.valueOf(x.getOrDefault("path", ""));
+                    if (!path.isBlank()) {
+                        // Rest Assured supports XML path via body
+                        b.append("            .body(hasXPath(\"").append(escapeJava(path)).append("\"))\n");
+                    }
+                }
+            }
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> xPathEquals = (List<Map<String, Object>>) assertions.get("xPathEquals");
+            if (xPathEquals != null) {
+                for (Map<String, Object> x : xPathEquals) {
+                    String path = String.valueOf(x.getOrDefault("path", ""));
+                    Object value = x.get("value");
+                    if (!path.isBlank()) {
+                        b.append("            .body(hasXPath(\"").append(escapeJava(path)).append("\", containsString(\"")
+                                .append(escapeJava(String.valueOf(value))).append("\")))\n");
+                    }
                 }
             }
         }

@@ -113,34 +113,85 @@
                         <label class="form-label">Expected Status</label>
                         <input type="number" class="form-control" id="asExpectedStatus" min="100" max="599" placeholder="e.g. 200">
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-4">
+                        <label class="form-label">Status Family</label>
+                        <select class="form-select" id="asStatusFamily">
+                            <option value="">-- none --</option>
+                            <option value="2xx">2xx (Success)</option>
+                            <option value="3xx">3xx (Redirect)</option>
+                            <option value="4xx">4xx (Client Error)</option>
+                            <option value="5xx">5xx (Server Error)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Content-Type</label>
-                        <input type="text" class="form-control" id="asContentType" placeholder="e.g. application/json">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="asContentType" placeholder="e.g. application/json">
+                            <button class="btn btn-outline-secondary" type="button" id="btnFillCt">Use Current</button>
+                        </div>
                     </div>
                 </div>
                 <hr/>
-                <div class="mb-2">
-                    <label class="form-label">Response time less than (ms)</label>
-                    <input type="number" class="form-control" id="asTimeLt" placeholder="e.g. 1000">
-                </div>
-                <div class="mb-2">
-                    <label class="form-label">Body must contain (one per line)</label>
-                    <textarea class="form-control" id="asContains" rows="3" placeholder="token\nsuccess\n...\n"></textarea>
-                </div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Header equals (name=value per line)</label>
-                        <textarea class="form-control" id="asHeaderEquals" rows="4" placeholder="X-Request-Id=123\nServer=nginx\n..."></textarea>
+                        <label class="form-label">Response time less than (ms)</label>
+                        <input type="number" class="form-control" id="asTimeLt" placeholder="e.g. 1000">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">JSONPath equals (path=value per line)</label>
-                        <textarea class="form-control" id="asJsonPathEquals" rows="4" placeholder="data.id=123\nsuccess=true\n..."></textarea>
-                        <div class="form-text">Strings should not contain newlines; booleans and numbers are auto-detected.</div>
+                        <label class="form-label">Body must contain (one per line)</label>
+                        <textarea class="form-control" id="asContains" rows="2" placeholder="token\nsuccess\n...\n"></textarea>
                     </div>
                 </div>
-                <div class="mt-3">
-                    <label class="form-label">JSONPath exists (one path per line)</label>
-                    <textarea class="form-control" id="asJsonPathExists" rows="3" placeholder="data.items\nmeta.total\n..."></textarea>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">Body must NOT contain (one per line)</label>
+                        <textarea class="form-control" id="asNotContains" rows="2" placeholder="error\nstacktrace\n...\n"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Header equals (name=value per line)</label>
+                        <textarea class="form-control" id="asHeaderEquals" rows="2" placeholder="X-Request-Id=123\nServer=nginx\n..."></textarea>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">Header exists (one header name per line)</label>
+                        <textarea class="form-control" id="asHeaderExists" rows="2" placeholder="Content-Type\nX-Trace\n..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Header contains (name=substring per line)</label>
+                        <textarea class="form-control" id="asHeaderContains" rows="2" placeholder="Server=nginx\nVia=cache\n..."></textarea>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">JSONPath equals (path=value per line)</label>
+                        <textarea class="form-control" id="asJsonPathEquals" rows="3" placeholder="data.id=123\nsuccess=true\n..."></textarea>
+                        <div class="form-text">Booleans and numbers are auto-detected; use null for null.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">JSONPath size equals (path=size per line)</label>
+                        <textarea class="form-control" id="asJsonPathSize" rows="3" placeholder="data.items=3\nerrors=0\n..."></textarea>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">JSONPath contains item (path=value per line)</label>
+                        <textarea class="form-control" id="asJsonPathContains" rows="3" placeholder="roles=admin\nids=123\n..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">JSONPath exists (one path per line)</label>
+                        <textarea class="form-control" id="asJsonPathExists" rows="3" placeholder="data.items\nmeta.total\n..."></textarea>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label">XPath exists (one path per line)</label>
+                        <textarea class="form-control" id="asXPathExists" rows="3" placeholder="/response/status\n/response/items/item\n..."></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">XPath equals (path=value per line)</label>
+                        <textarea class="form-control" id="asXPathEquals" rows="3" placeholder="/response/status=OK\n/response/count=3\n..."></textarea>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -156,6 +207,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
 <script th:inline="none">
     let currentScenarioId = null;
+    let lastResponseMeta = null; // { httpStatus, contentType }
     async function runScenario(btn) {
         const id = btn.getAttribute('data-id');
         currentScenarioId = id;
@@ -195,6 +247,9 @@
         // Wire assertion button to current scenario id
         const btn = document.getElementById('btnAssert');
         if (btn) btn.onclick = () => openAssertModal();
+
+        // save meta for quick-fill
+        lastResponseMeta = { httpStatus: json.httpStatus, contentType: json.contentType };
     }
 
     async function viewCode(btnOrRow) {
@@ -278,9 +333,17 @@
         document.getElementById('asContentType').value = '';
         document.getElementById('asTimeLt').value = '';
         document.getElementById('asContains').value = '';
+        document.getElementById('asNotContains').value = '';
         document.getElementById('asHeaderEquals').value = '';
+        document.getElementById('asHeaderExists').value = '';
+        document.getElementById('asHeaderContains').value = '';
         document.getElementById('asJsonPathEquals').value = '';
+        document.getElementById('asJsonPathSize').value = '';
+        document.getElementById('asJsonPathContains').value = '';
         document.getElementById('asJsonPathExists').value = '';
+        document.getElementById('asXPathExists').value = '';
+        document.getElementById('asXPathEquals').value = '';
+        document.getElementById('asStatusFamily').value = '';
         // Prefill from scenario-detail if available
         prefillAssertions().finally(() => assertionsModal.show());
     }
@@ -295,14 +358,43 @@
             if (as.contentType) document.getElementById('asContentType').value = as.contentType;
             if (as.timeLessThanMs) document.getElementById('asTimeLt').value = as.timeLessThanMs;
             if (Array.isArray(as.containsText)) document.getElementById('asContains').value = as.containsText.join('\n');
+            if (Array.isArray(as.notContainsText)) document.getElementById('asNotContains').value = as.notContainsText.join('\n');
             if (Array.isArray(as.headerEquals)) {
                 document.getElementById('asHeaderEquals').value = as.headerEquals.map(h => `${h.name}=${h.value}`).join('\n');
+            }
+            if (Array.isArray(as.headerExists)) {
+                document.getElementById('asHeaderExists').value = as.headerExists.join('\n');
+            }
+            if (Array.isArray(as.headerContains)) {
+                document.getElementById('asHeaderContains').value = as.headerContains.map(h => `${h.name}=${h.substring}`).join('\n');
             }
             if (Array.isArray(as.jsonPathEquals)) {
                 document.getElementById('asJsonPathEquals').value = as.jsonPathEquals.map(j => `${j.path}=${j.value}`).join('\n');
             }
+            if (Array.isArray(as.jsonPathSizeEquals)) {
+                document.getElementById('asJsonPathSize').value = as.jsonPathSizeEquals.map(j => `${j.path}=${j.size}`).join('\n');
+            }
+            if (Array.isArray(as.jsonPathContains)) {
+                document.getElementById('asJsonPathContains').value = as.jsonPathContains.map(j => `${j.path}=${j.value}`).join('\n');
+            }
             if (Array.isArray(as.jsonPathExists)) {
                 document.getElementById('asJsonPathExists').value = as.jsonPathExists.map(j => j.path).join('\n');
+            }
+            if (typeof as.expectedStatusRange === 'string') {
+                document.getElementById('asStatusFamily').value = as.expectedStatusRange;
+            }
+            if (Array.isArray(as.xPathExists)) {
+                document.getElementById('asXPathExists').value = as.xPathExists.map(x => x.path).join('\n');
+            }
+            if (Array.isArray(as.xPathEquals)) {
+                document.getElementById('asXPathEquals').value = as.xPathEquals.map(x => `${x.path}=${x.value}`).join('\n');
+            }
+            // if empty and last response available, quick fill
+            if (!document.getElementById('asExpectedStatus').value && lastResponseMeta && lastResponseMeta.httpStatus) {
+                document.getElementById('asExpectedStatus').value = lastResponseMeta.httpStatus;
+            }
+            if (!document.getElementById('asContentType').value && lastResponseMeta && lastResponseMeta.contentType) {
+                document.getElementById('asContentType').value = lastResponseMeta.contentType;
             }
         } catch (e) { /* ignore */ }
     }
@@ -315,6 +407,19 @@
                 const name = line.substring(0, idx).trim();
                 const valueRaw = line.substring(idx + 1).trim();
                 out.push({ name, value: valueRaw });
+            }
+        });
+        return out;
+    }
+
+    function parseNameSubstringLines(text) {
+        const out = [];
+        (text || '').split('\n').map(l => l.trim()).filter(Boolean).forEach(line => {
+            const idx = line.indexOf('=');
+            if (idx > 0) {
+                const name = line.substring(0, idx).trim();
+                const substring = line.substring(idx + 1).trim();
+                out.push({ name, substring });
             }
         });
         return out;
@@ -350,9 +455,17 @@
                 contentType: document.getElementById('asContentType').value || undefined,
                 timeLessThanMs: document.getElementById('asTimeLt').value ? Number(document.getElementById('asTimeLt').value) : undefined,
                 containsText: parseLines(document.getElementById('asContains').value),
+                notContainsText: parseLines(document.getElementById('asNotContains').value),
                 headerEquals: parseKeyValueLines(document.getElementById('asHeaderEquals').value),
+                headerExists: parseLines(document.getElementById('asHeaderExists').value),
+                headerContains: parseNameSubstringLines(document.getElementById('asHeaderContains').value),
                 jsonPathEquals: parseJsonPathEquals(document.getElementById('asJsonPathEquals').value),
-                jsonPathExists: parseLines(document.getElementById('asJsonPathExists').value).map(p => ({ path: p }))
+                jsonPathSizeEquals: (function(){ const arr = []; (document.getElementById('asJsonPathSize').value || '').split('\n').map(l=>l.trim()).filter(Boolean).forEach(line=>{ const i=line.indexOf('='); if(i>0){ const path=line.substring(0,i).trim(); const size=Number(line.substring(i+1).trim()); if(!isNaN(size)) arr.push({ path, size }); }}); return arr; })(),
+                jsonPathContains: parseJsonPathEquals(document.getElementById('asJsonPathContains').value),
+                jsonPathExists: parseLines(document.getElementById('asJsonPathExists').value).map(p => ({ path: p })),
+                xPathExists: parseLines(document.getElementById('asXPathExists').value).map(p => ({ path: p })),
+                xPathEquals: parseJsonPathEquals(document.getElementById('asXPathEquals').value),
+                expectedStatusRange: document.getElementById('asStatusFamily').value || undefined
             }
         };
         const res = await fetch('/api/scenario-assertions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -374,6 +487,12 @@
     document.addEventListener('DOMContentLoaded', () => {
         const btn = document.getElementById('btnSaveAssertions');
         if (btn) btn.addEventListener('click', saveAssertions);
+        const fillCt = document.getElementById('btnFillCt');
+        if (fillCt) fillCt.addEventListener('click', () => {
+            if (lastResponseMeta && lastResponseMeta.contentType) {
+                document.getElementById('asContentType').value = lastResponseMeta.contentType;
+            }
+        });
     });
 </script>
 </body>
