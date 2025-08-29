@@ -9,6 +9,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import Madfoat.Learning.model.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +45,19 @@ public class AIService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final UserService userService;
 
-    public AIService() {
+    @Autowired
+    public AIService(UserService userService) {
         this.webClient = WebClient.builder().build();
         this.objectMapper = new ObjectMapper();
+        this.userService = userService;
     }
 
     public String generateTestConditions(String input, String inputType) {
+        if (!deductRequest()) {
+            return "You have exceeded your free trial limit. Please contact support for more options.";
+        }
         switch (aiProvider.toLowerCase()) {
             case "openai":
                 return generateWithOpenAI(input, inputType);
@@ -57,6 +75,9 @@ public class AIService {
 
     // New unified generator supporting different generation types and options
     public String generateContent(String input, String inputType, String generationType, boolean includeAcceptance, List<String> selectedTypes) {
+        if (!deductRequest()) {
+            return "You have exceeded your free trial limit. Please contact support for more options.";
+        }
         String prompt = buildPromptAdvanced(input, inputType, generationType, includeAcceptance, selectedTypes);
         switch (aiProvider.toLowerCase()) {
             case "openai":
@@ -75,6 +96,9 @@ public class AIService {
 
     // Automation script generator
     public String generateAutomationScripts(String description) {
+        if (!deductRequest()) {
+            return "You have exceeded your free trial limit. Please contact support for more options.";
+        }
         switch (aiProvider.toLowerCase()) {
             case "openai":
                 return generateAutomationWithOpenAI(description);
@@ -92,6 +116,9 @@ public class AIService {
 
     // Generic prompt-based generation (for row Q&A and custom asks)
     public String generateWithPrompt(String prompt) {
+        if (!deductRequest()) {
+            return "You have exceeded your free trial limit. Please contact support for more options.";
+        }
         switch (aiProvider.toLowerCase()) {
             case "openai":
                 return generateWithOpenAIPrompt(prompt);
@@ -107,6 +134,35 @@ public class AIService {
                         "Prompt Summary:\n" + prompt + "\n\n" +
                         "This is a demo response. Configure a free provider like Ollama/HuggingFace or Gemini for real answers.";
         }
+    }
+
+    private boolean deductRequest() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            // If not authenticated, assume it's a demo or public access which might not require deduction, or handle as error
+            // For now, let's allow it to proceed for unauthenticated users, but ideally, this would be locked down.
+            // Or, you could return false and force login.
+            return true; // Or false, depending on your public access policy
+        }
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            // Should not happen if user is authenticated but not found in DB
+            return false;
+        }
+
+        if (user.isFreeTrial()) {
+            if (user.getRemainingRequests() > 0) {
+                user.setRemainingRequests(user.getRemainingRequests() - 1);
+                userService.saveUser(user);
+                return true;
+            } else {
+                return false; // Free trial requests exhausted
+            }
+        }
+        return true; // Not on free trial, allow unlimited requests (or according to paid plan)
     }
 
     private String generateWithOpenAI(String input, String inputType) {

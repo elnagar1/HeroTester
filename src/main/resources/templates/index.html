@@ -60,18 +60,6 @@
             <a class="navbar-brand text-white fw-bold" href="/">
                 <i class="fa-solid fa-flask-vial me-2"></i> HeroTester
             </a>
-            <div class="ms-auto d-flex align-items-center gap-2">
-                <div class="dropdown">
-                    <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-globe fa-lg me-2"></i>
-                        <span id="currentLangLabel">EN</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
-                        <li><a class="dropdown-item lang-option" href="#" data-lang="en"><i class="fa-solid fa-language me-2"></i> English</a></li>
-                        <li><a class="dropdown-item lang-option" href="#" data-lang="ar"><i class="fa-solid fa-language me-2"></i> العربية</a></li>
-                    </ul>
-                </div>
-            </div>
         </div>
     </nav>
 
@@ -251,13 +239,6 @@
                                     <i class="fas fa-tachometer-alt icon-large text-warning"></i>
                                     <h3>Performance Test Generator</h3>
                                     <p class="text-muted">Generate intelligent performance test scenarios using AI</p>
-                                    <div class="d-inline-flex align-items-center gap-2 mt-2">
-                                        <span class="text-muted">Language:</span>
-                                        <select id="perfLang" class="form-select form-select-sm" style="width:auto;">
-                                            <option value="en" selected>English</option>
-                                            <option value="ar">العربية</option>
-                                        </select>
-                                    </div>
                                 </div>
                                 <form id="perfForm" class="mb-4">
                                     <div class="row g-3">
@@ -438,61 +419,12 @@
         const popovers = popoverTriggerList.map(el => new bootstrap.Popover(el));
 
         // Localize popovers (EN/AR)
-        const popoverTexts = {
-            en: {
-                systemType: { title: 'System Type', content: 'Overall category of your system (e.g., e-commerce, banking, healthcare)' },
-                expectedUsers: { title: 'Expected Users', content: 'Estimated concurrent users during normal load (e.g., 500)' },
-                dataVolume: { title: 'Data Volume', content: 'Approximate number of records the system handles (e.g., 100000)' },
-                env: { title: 'Deployment Environment', content: 'Target environment where the test will run (Dev/Staging/Prod-like/Prod)' },
-                commonOps: { title: 'Common Operations', content: 'Main user actions to include (e.g., login, search, add item, navigation, upload)' },
-                peakMorning: { title: 'Morning Peak', content: 'Concurrent users during morning peak (e.g., 500)' },
-                peakAfternoon: { title: 'Afternoon Peak', content: 'Concurrent users during afternoon peak (e.g., 800)' },
-                peakEvening: { title: 'Evening Peak', content: 'Concurrent users during evening peak (e.g., 1200)' }
-            },
-            ar: {
-                systemType: { title: 'نوع النظام', content: 'الفئة العامة للنظام (مثل متجر إلكتروني، مصرفي، صحي)' },
-                expectedUsers: { title: 'المستخدمون المتوقعون', content: 'عدد المستخدمين المتزامنين المتوقع أثناء الحمل الطبيعي (مثال: 500)' },
-                dataVolume: { title: 'حجم البيانات', content: 'العدد التقريبي للسجلات التي يتعامل معها النظام (مثال: 100000)' },
-                env: { title: 'بيئة النشر', content: 'البيئة المستهدفة لتنفيذ الاختبار (تطوير/اختبار/مشابهة للإنتاج/الإنتاج)' },
-                commonOps: { title: 'العمليات الشائعة', content: 'العمليات الرئيسية للمستخدم (مثل تسجيل الدخول، البحث، إضافة عنصر، التنقل، التحميل)' },
-                peakMorning: { title: 'ذروة الصباح', content: 'المستخدمون المتزامنون في ذروة الصباح (مثال: 500)' },
-                peakAfternoon: { title: 'ذروة الظهيرة', content: 'المستخدمون المتزامنون في ذروة الظهيرة (مثال: 800)' },
-                peakEvening: { title: 'ذروة المساء', content: 'المستخدمون المتزامنون في ذروة المساء (مثال: 1200)' }
-            }
-        };
 
         function setPopover(el, title, content) {
             if (!el) return;
             el.setAttribute('data-bs-original-title', title);
             el.setAttribute('title', title);
             el.setAttribute('data-bs-content', content);
-        }
-
-        function applyPerfLang(lang) {
-            const t = popoverTexts[lang] || popoverTexts.en;
-            setPopover(document.getElementById('popSystemType'), t.systemType.title, t.systemType.content);
-            setPopover(document.getElementById('popExpectedUsers'), t.expectedUsers.title, t.expectedUsers.content);
-            setPopover(document.getElementById('popDataVolume'), t.dataVolume.title, t.dataVolume.content);
-            setPopover(document.getElementById('popEnv'), t.env.title, t.env.content);
-            setPopover(document.getElementById('popCommonOps'), t.commonOps.title, t.commonOps.content);
-            setPopover(document.getElementById('popPeakMorning'), t.peakMorning.title, t.peakMorning.content);
-            setPopover(document.getElementById('popPeakAfternoon'), t.peakAfternoon.title, t.peakAfternoon.content);
-            setPopover(document.getElementById('popPeakEvening'), t.peakEvening.title, t.peakEvening.content);
-            // refresh all existing popovers
-            popovers.forEach(p => p.dispose());
-            [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]')).forEach(el => new bootstrap.Popover(el));
-            localStorage.setItem('perfFormLang', lang);
-            localStorage.setItem('perfLang', lang);
-            document.documentElement.lang = (lang === 'ar') ? 'ar' : 'en';
-            document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
-        }
-
-        const perfLangSel = document.getElementById('perfLang');
-        if (perfLangSel) {
-            const saved = localStorage.getItem('perfFormLang') || 'en';
-            perfLangSel.value = saved;
-            applyPerfLang(saved);
-            perfLangSel.addEventListener('change', e => applyPerfLang(e.target.value));
         }
 
         // Site-level language selector syncs with perf form
@@ -503,7 +435,7 @@
             siteLangSel.addEventListener('change', e => {
                 const lang = e.target.value;
                 localStorage.setItem('siteLang', lang);
-                applyPerfLang(lang);
+                // applyPerfLang(lang); // Removed as per edit hint
             });
         }
 
@@ -547,308 +479,6 @@
                 }
             });
         }
-    </script>
-    <script>
-        // Add index-specific translations
-        const I18N_INDEX = {
-            en: {
-                pageTitle: 'Test Analyst AI Assistant',
-                pageSubtitle: 'Generate user stories, test cases, automation code, and API scenarios',
-                automationGenTitle: 'Automation Script Generator',
-                automationGenSubtitle: 'Describe a page or scenario to generate Selenium TestNG automation code (POM)',
-                scenarioTextLabel: 'Scenario/Page Description:',
-                generateAutomationBtn: 'Generate Automation Script',
-                unifiedGenTitle: 'Unified Generation',
-                unifiedGenSubtitle: 'Provide text, image, or both. Choose multiple output types.',
-                whatNeedLabel: 'What do you need?',
-                holdCtrlCmdText: 'Hold Ctrl/Cmd to select multiple',
-                includeAcceptanceLabel: 'Include Acceptance Criteria',
-                selectDesiredTypesLabel: 'Select desired types (optional):',
-                businessTextLabel: 'Business Requirements/Text (optional):',
-                optionalImageLabel: 'Optional Image/Document:',
-                dragDropText: 'Drag and drop your file here, or click to browse',
-                chooseFileBtn: 'Choose File',
-                generateBtn: 'Generate',
-                generateTip: 'Tip: You can generate multiple outputs at once (e.g., User Story + Test Cases + Test Scenarios).',
-                apiRunnerTitle: 'API Scenario Runner',
-                apiRunnerSubtitle: 'Paste a cURL, choose case filters, and generate scenarios to run',
-                curlLabel: 'cURL:',
-                numCasesLabel: 'Number of cases:',
-                caseTypesLabel: 'Case types:',
-                ctHappyLabel: 'Happy',
-                ctUnauthorizedLabel: 'Unauthorized',
-                ctInvalidLabel: 'Invalid Payload',
-                ctMissingLabel: 'Missing Required',
-                ctPaginationLabel: 'Pagination',
-                ctNotFoundLabel: 'Not Found',
-                ctConflictLabel: 'Conflict',
-                ctRateLimitLabel: 'Rate Limit',
-                ctXmlLabel: 'XML Response',
-                caseTypesTip: 'Select one or more. Default includes Happy only.',
-                generateApiScenariosBtn: 'Generate Scenarios',
-                aiConsoleTitle: 'AI Knowledge Console',
-                aiConsoleSubtitle: 'Connect data sources (User Stories, Test Cases, Jira, Slack) and ask questions',
-                openAiConsoleBtn: 'Open AI Model Console',
-                perfGenTitle: 'Performance Test Generator',
-                perfGenSubtitle: 'Generate intelligent performance test scenarios using AI',
-                systemTypeLabel: 'System Type',
-                selectSystemTypeOption: 'Select system type',
-                ecomOption: 'E-commerce',
-                bankingOption: 'Banking',
-                healthcareOption: 'Healthcare',
-                educationOption: 'Education',
-                governmentOption: 'Government',
-                socialMediaOption: 'Social Media',
-                gamingOption: 'Gaming',
-                enterpriseOption: 'Enterprise',
-                expectedUsersLabel: 'Expected Users',
-                dataVolumeLabel: 'Data Volume (records)',
-                deploymentEnvLabel: 'Deployment Environment',
-                selectEnvOption: 'Select environment',
-                devEnvOption: 'Development',
-                stagingEnvOption: 'Staging',
-                prodLikeEnvOption: 'Production-like',
-                prodEnvOption: 'Production',
-                commonOpsLabel: 'Common Operations',
-                pfOpLoginLabel: 'Login',
-                pfOpSearchLabel: 'Search',
-                pfOpAddLabel: 'Add Product',
-                pfOpViewLabel: 'View Page',
-                pfOpUploadLabel: 'Upload File',
-                morningPeakLabel: 'Morning peak (users)',
-                afternoonPeakLabel: 'Afternoon peak (users)',
-                eveningPeakLabel: 'Evening peak (users)',
-                generatePlanBtn: 'Generate Plan',
-                perfTipText: 'The next screen will show your generated plan with details and steps.',
-                aiAnalysisTitle: 'AI-Powered Analysis',
-                aiAnalysisText: 'Intelligent analysis of system requirements to generate comprehensive test scenarios.',
-                multipleTestTypesTitle: 'Multiple Test Types',
-                multipleTestTypesText: 'Generate Stress, Soak, Volume, Spike, and Scalability test scenarios.',
-                smartCalcTitle: 'Smart Calculations',
-                smartCalcText: 'Automatic calculation of breakpoints, ramp-up times, and resource requirements.',
-                riskAssessmentTitle: 'Risk Assessment',
-                riskAssessmentText: 'Comprehensive risk assessment and mitigation strategies for each test scenario.',
-                navAutomation: 'Automation Generator',
-                navTests: 'Test Generator',
-                navApi: 'API Scenario Runner',
-                navAi: 'AI Model',
-                navPerf: 'Performance Test Generator'
-            },
-            ar: {
-                pageTitle: 'مساعد محلل الاختبار بالذكاء الاصطناعي',
-                pageSubtitle: 'توليد قصص المستخدم، حالات الاختبار، كود الأتمتة، وسيناريوهات API',
-                automationGenTitle: 'مولد سكريبت الأتمتة',
-                automationGenSubtitle: 'صفحة أو سيناريو لتوليد كود أتمتة Selenium TestNG (POM)',
-                scenarioTextLabel: 'وصف السيناريو/الصفحة:',
-                generateAutomationBtn: 'توليد سكريبت الأتمتة',
-                unifiedGenTitle: 'توليد موحد',
-                unifiedGenSubtitle: 'توفير نص، صورة، أو كليهما. اختر أنواع إخراج متعددة.',
-                whatNeedLabel: 'ماذا تحتاج؟',
-                holdCtrlCmdText: 'اضغط Ctrl/Cmd للاختيار المتعدد',
-                includeAcceptanceLabel: 'تضمين معايير القبول',
-                selectDesiredTypesLabel: 'اختر الأنواع المطلوبة (اختياري):',
-                businessTextLabel: 'متطلبات العمل/النص (اختياري):',
-                optionalImageLabel: 'صورة/مستند اختياري:',
-                dragDropText: 'اسحب وأفلت ملفك هنا، أو انقر للتصفح',
-                chooseFileBtn: 'اختيار ملف',
-                generateBtn: 'توليد',
-                generateTip: 'نصيحة: يمكنك توليد مخرجات متعددة في وقت واحد (مثال: قصة مستخدم + حالات اختبار + سيناريوهات اختبار).',
-                apiRunnerTitle: 'مشغل سيناريوهات API',
-                apiRunnerSubtitle: 'الصق cURL، اختر فلاتر الحالات، وولّد سيناريوهات للتشغيل',
-                curlLabel: 'cURL:',
-                numCasesLabel: 'عدد الحالات:',
-                caseTypesLabel: 'أنواع الحالات:',
-                ctHappyLabel: 'سعيد',
-                ctUnauthorizedLabel: 'غير مصرح به',
-                ctInvalidLabel: 'حمولة غير صالحة',
-                ctMissingLabel: 'مطلوب مفقود',
-                ctPaginationLabel: 'ترقيم الصفحات',
-                ctNotFoundLabel: 'غير موجود',
-                ctConflictLabel: 'تعارض',
-                ctRateLimitLabel: 'حد المعدل',
-                ctXmlLabel: 'استجابة XML',
-                caseTypesTip: 'اختر واحدًا أو أكثر. الافتراضي يشمل Happy فقط.',
-                generateApiScenariosBtn: 'توليد سيناريوهات',
-                aiConsoleTitle: 'وحدة تحكم معرفة الذكاء الاصطناعي',
-                aiConsoleSubtitle: 'ربط مصادر البيانات (قصص المستخدم، حالات الاختبار، Jira, Slack) وطرح الأسئلة',
-                openAiConsoleBtn: 'فتح وحدة تحكم نموذج الذكاء الاصطناعي',
-                perfGenTitle: 'مولد اختبار الأداء',
-                perfGenSubtitle: 'توليد سيناريوهات اختبار أداء ذكية باستخدام الذكاء الاصطناعي',
-                systemTypeLabel: 'نوع النظام',
-                selectSystemTypeOption: 'اختر نوع النظام',
-                ecomOption: 'التجارة الإلكترونية',
-                bankingOption: 'الخدمات المصرفية',
-                healthcareOption: 'الرعاية الصحية',
-                educationOption: 'التعليم',
-                governmentOption: 'الحكومية',
-                socialMediaOption: 'وسائل التواصل الاجتماعي',
-                gamingOption: 'الألعاب',
-                enterpriseOption: 'المؤسسات',
-                expectedUsersLabel: 'المستخدمون المتوقعون',
-                dataVolumeLabel: 'حجم البيانات (السجلات)',
-                deploymentEnvLabel: 'بيئة النشر',
-                selectEnvOption: 'اختر بيئة النشر',
-                devEnvOption: 'التطوير',
-                stagingEnvOption: 'الاستضافة المرحلية',
-                prodLikeEnvOption: 'شبه الإنتاج',
-                prodEnvOption: 'الإنتاج',
-                commonOpsLabel: 'العمليات الشائعة',
-                pfOpLoginLabel: 'تسجيل الدخول',
-                pfOpSearchLabel: 'البحث',
-                pfOpAddLabel: 'إضافة منتج',
-                pfOpViewLabel: 'عرض الصفحة',
-                pfOpUploadLabel: 'تحميل ملف',
-                morningPeakLabel: 'ذروة الصباح (المستخدمون)',
-                afternoonPeakLabel: 'ذروة الظهيرة (المستخدمون)',
-                eveningPeakLabel: 'ذروة المساء (المستخدمون)',
-                generatePlanBtn: 'توليد الخطة',
-                perfTipText: 'ستعرض الشاشة التالية خطتك المولدة بالتفاصيل والخطوات.',
-                aiAnalysisTitle: 'تحليل مدعوم بالذكاء الاصطناعي',
-                aiAnalysisText: 'تحليل ذكي لمتطلبات النظام لتوليد سيناريوهات اختبار شاملة.',
-                multipleTestTypesTitle: 'أنواع اختبار متعددة',
-                multipleTestTypesText: 'توليد سيناريوهات اختبار الضغط، التحمل، الحجم، الذروة، وقابلية التوسع.',
-                smartCalcTitle: 'حسابات ذكية',
-                smartCalcText: 'حساب تلقائي لنقاط الانهيار، أوقات التصعيد، ومتطلبات الموارد.',
-                riskAssessmentTitle: 'تقييم المخاطر',
-                riskAssessmentText: 'تقييم شامل للمخاطر واستراتيجيات التخفيف لكل سيناريو اختبار.',
-                navAutomation: 'مولد الأتمتة',
-                navTests: 'مولد الاختبارات',
-                navApi: 'مشغل سيناريوهات API',
-                navAi: 'نموذج الذكاء الاصطناعي',
-                navPerf: 'مولد اختبار الأداء'
-            }
-        };
-
-        function applyIndexLang(lang) {
-            const t = I18N_INDEX[lang] || I18N_INDEX.en;
-
-            // Page header
-            document.querySelector('.hero h1').textContent = t.pageTitle;
-            document.querySelector('.hero p').textContent = t.pageSubtitle;
-
-            // Nav tabs
-            document.getElementById('tab-automation-tab').querySelector('i').nextSibling.textContent = ' ' + t.navAutomation;
-            document.getElementById('tab-tests-tab').querySelector('i').nextSibling.textContent = ' ' + t.navTests;
-            document.getElementById('tab-api-tab').querySelector('i').nextSibling.textContent = ' ' + t.navApi;
-            document.getElementById('tab-ai-tab').querySelector('i').nextSibling.textContent = ' ' + t.navAi;
-            document.getElementById('tab-performance-tab').querySelector('i').nextSibling.textContent = ' ' + t.navPerf;
-
-            // Automation tab
-            document.getElementById('automationGenTitle').textContent = t.automationGenTitle;
-            document.getElementById('automationGenSubtitle').textContent = t.automationGenSubtitle;
-            document.getElementById('scenarioTextLabel').textContent = t.scenarioTextLabel;
-            document.getElementById('generateAutomationBtn').querySelector('i').nextSibling.textContent = ' ' + t.generateAutomationBtn;
-
-            // Unified Generation tab
-            document.getElementById('unifiedGenTitle').textContent = t.unifiedGenTitle;
-            document.getElementById('unifiedGenSubtitle').textContent = t.unifiedGenSubtitle;
-            document.getElementById('whatNeedLabel').textContent = t.whatNeedLabel;
-            document.getElementById('holdCtrlCmdText').textContent = t.holdCtrlCmdText;
-            document.getElementById('includeAcceptanceLabel').textContent = t.includeAcceptanceLabel;
-            document.getElementById('selectDesiredTypesLabel').textContent = t.selectDesiredTypesLabel;
-            document.getElementById('businessTextLabel').textContent = t.businessTextLabel;
-            document.getElementById('optionalImageLabel').textContent = t.optionalImageLabel;
-            document.getElementById('dragDropText').textContent = t.dragDropText;
-            document.getElementById('chooseFileBtn').querySelector('i').nextSibling.textContent = ' ' + t.chooseFileBtn;
-            document.getElementById('generateBtn').querySelector('i').nextSibling.textContent = ' ' + t.generateBtn;
-            document.getElementById('generateTip').querySelector('i').nextSibling.textContent = ' ' + t.generateTip;
-
-            // API Scenario Runner tab
-            document.getElementById('apiRunnerTitle').textContent = t.apiRunnerTitle;
-            document.getElementById('apiRunnerSubtitle').textContent = t.apiRunnerSubtitle;
-            document.getElementById('curlLabel').textContent = t.curlLabel;
-            document.getElementById('numCasesLabel').textContent = t.numCasesLabel;
-            document.getElementById('caseTypesLabel').textContent = t.caseTypesLabel;
-            document.getElementById('ctHappyLabel').textContent = t.ctHappyLabel;
-            document.getElementById('ctUnauthorizedLabel').textContent = t.ctUnauthorizedLabel;
-            document.getElementById('ctInvalidLabel').textContent = t.ctInvalidLabel;
-            document.getElementById('ctMissingLabel').textContent = t.ctMissingLabel;
-            document.getElementById('ctPaginationLabel').textContent = t.ctPaginationLabel;
-            document.getElementById('ctNotFoundLabel').textContent = t.ctNotFoundLabel;
-            document.getElementById('ctConflictLabel').textContent = t.ctConflictLabel;
-            document.getElementById('ctRateLimitLabel').textContent = t.ctRateLimitLabel;
-            document.getElementById('ctXmlLabel').textContent = t.ctXmlLabel;
-            document.getElementById('caseTypesTip').textContent = t.caseTypesTip;
-            document.getElementById('generateApiScenariosBtn').querySelector('i').nextSibling.textContent = ' ' + t.generateApiScenariosBtn;
-
-            // AI Knowledge Console tab
-            document.getElementById('aiConsoleTitle').textContent = t.aiConsoleTitle;
-            document.getElementById('aiConsoleSubtitle').textContent = t.aiConsoleSubtitle;
-            document.getElementById('openAiConsoleBtn').querySelector('i').nextSibling.textContent = ' ' + t.openAiConsoleBtn;
-
-            // Performance Test Generator tab
-            document.getElementById('perfGenTitle').textContent = t.perfGenTitle;
-            document.getElementById('perfGenSubtitle').textContent = t.perfGenSubtitle;
-            document.getElementById('systemTypeLabel').textContent = t.systemTypeLabel;
-            document.getElementById('selectSystemTypeOption').textContent = t.selectSystemTypeOption;
-            document.getElementById('ecomOption').textContent = t.ecomOption;
-            document.getElementById('bankingOption').textContent = t.bankingOption;
-            document.getElementById('healthcareOption').textContent = t.healthcareOption;
-            document.getElementById('educationOption').textContent = t.educationOption;
-            document.getElementById('governmentOption').textContent = t.governmentOption;
-            document.getElementById('socialMediaOption').textContent = t.socialMediaOption;
-            document.getElementById('gamingOption').textContent = t.gamingOption;
-            document.getElementById('enterpriseOption').textContent = t.enterpriseOption;
-            document.getElementById('expectedUsersLabel').textContent = t.expectedUsersLabel;
-            document.getElementById('dataVolumeLabel').textContent = t.dataVolumeLabel;
-            document.getElementById('deploymentEnvLabel').textContent = t.deploymentEnvLabel;
-            document.getElementById('selectEnvOption').textContent = t.selectEnvOption;
-            document.getElementById('devEnvOption').textContent = t.devEnvOption;
-            document.getElementById('stagingEnvOption').textContent = t.stagingEnvOption;
-            document.getElementById('prodLikeEnvOption').textContent = t.prodLikeEnvOption;
-            document.getElementById('prodEnvOption').textContent = t.prodEnvOption;
-            document.getElementById('commonOpsLabel').textContent = t.commonOpsLabel;
-            document.getElementById('pfOpLoginLabel').textContent = t.pfOpLoginLabel;
-            document.getElementById('pfOpSearchLabel').textContent = t.pfOpSearchLabel;
-            document.getElementById('pfOpAddLabel').textContent = t.pfOpAddLabel;
-            document.getElementById('pfOpViewLabel').textContent = t.pfOpViewLabel;
-            document.getElementById('pfOpUploadLabel').textContent = t.pfOpUploadLabel;
-            document.getElementById('morningPeakLabel').textContent = t.morningPeakLabel;
-            document.getElementById('afternoonPeakLabel').textContent = t.afternoonPeakLabel;
-            document.getElementById('eveningPeakLabel').textContent = t.eveningPeakLabel;
-            document.getElementById('generatePlanBtn').querySelector('i').nextSibling.textContent = ' ' + t.generatePlanBtn;
-            document.getElementById('perfTipText').querySelector('i').nextSibling.textContent = ' ' + t.perfTipText;
-            document.getElementById('aiAnalysisTitle').querySelector('i').nextSibling.textContent = ' ' + t.aiAnalysisTitle;
-            document.getElementById('aiAnalysisText').textContent = t.aiAnalysisText;
-            document.getElementById('multipleTestTypesTitle').querySelector('i').nextSibling.textContent = ' ' + t.multipleTestTypesTitle;
-            document.getElementById('multipleTestTypesText').textContent = t.multipleTestTypesText;
-            document.getElementById('smartCalcTitle').querySelector('i').nextSibling.textContent = ' ' + t.smartCalcTitle;
-            document.getElementById('smartCalcText').textContent = t.smartCalcText;
-            document.getElementById('riskAssessmentTitle').querySelector('i').nextSibling.textContent = ' ' + t.riskAssessmentTitle;
-            document.getElementById('riskAssessmentText').textContent = t.riskAssessmentText;
-        }
-
-        function setLangUI(lang) {
-            document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            var label = document.getElementById('currentLangLabel');
-            if (label) label.textContent = lang === 'ar' ? 'AR' : 'EN';
-            
-            // Sync the perfLang select if it exists
-            var perfSel = document.getElementById('perfLang');
-            if (perfSel && perfSel.value !== lang) { 
-                try { perfSel.value = lang; } catch(e) { console.error("Error setting perfLang select:", e); } 
-            }
-
-            // Call all relevant language update functions
-            if (typeof applyPerfLang === 'function') applyPerfLang(lang);
-            if (typeof applyLanguage === 'function') applyLanguage(lang); // for performance-test.html
-            if (typeof applyLang === 'function') applyLang(lang); // for results.html
-            if (typeof applyApiLang === 'function') applyApiLang(lang); // for api-scenarios.html
-            if (typeof applyIndexLang === 'function') applyIndexLang(lang); // for index.html
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedLang = localStorage.getItem('siteLang') || localStorage.getItem('perfFormLang') || 'en';
-            setLangUI(savedLang);
-            document.querySelectorAll('.lang-option').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const lang = this.getAttribute('data-lang');
-                    localStorage.setItem('siteLang', lang);
-                    setLangUI(lang);
-                });
-            });
-        });
     </script>
 </body>
 </html>

@@ -1,283 +1,175 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intelligent Performance Test Scenario Generator</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .form-section {
-            margin-bottom: 30px;
-        }
-
-        .form-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid #e1e5e9;
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: auto;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            width: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .results {
-            margin-top: 40px;
-            display: none;
-        }
-
-        .scenario-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 5px solid #667eea;
-        }
-
-        .scenario-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .scenario-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .scenario-type {
-            background: #667eea;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-        }
-
-        .scenario-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .detail-item {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #e1e5e9;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #667eea;
-            font-size: 0.9em;
-        }
-
-        .detail-value {
-            color: #333;
-            margin-top: 5px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #fcc;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="d-flex justify-content-end mb-3">
-            <div class="dropdown">
-                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-globe fa-lg me-2"></i>
-                    <span id="currentLangLabel">EN</span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
-                    <li><a class="dropdown-item lang-option" href="#" data-lang="en"><i class="fa-solid fa-language me-2"></i> English</a></li>
-                    <li><a class="dropdown-item lang-option" href="#" data-lang="ar"><i class="fa-solid fa-language me-2"></i> العربية</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="header">
-            <h1 id="headerTitle">🤖 Intelligent Performance Test Scenario Generator</h1>
-            <p id="headerSubtitle">Generate performance test scenarios using AI</p>
+    <div class="container mt-5 mb-5">
+        <div class="header text-center py-4 bg-primary text-white rounded-top shadow-sm">
+            <h1 class="display-4">🤖 Intelligent Performance Test Scenario Generator</h1>
+            <p class="lead">Generate performance test scenarios using AI</p>
         </div>
 
-        <div class="content">
-            <div id="results" class="results" style="display:block;">
-                <h3 id="resultsTitle">📋 Generated Performance Test Plan</h3>
+        <div class="content bg-white p-4 rounded-bottom shadow-sm">
+            <!-- Form Section for Generating a New Performance Test Plan -->
+            <div class="form-section card card-body mb-4">
+                <h3 class="card-title text-primary text-center mb-4">Generate New Performance Test Plan</h3>
+                <form id="generatePlanForm">
+                    <div class="mb-3">
+                        <label for="systemName" class="form-label">System Name:</label>
+                        <input type="text" id="systemName" name="systemName" class="form-control" placeholder="e.g., E-commerce Platform" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="applicationDescription" class="form-label">Application Description:</label>
+                        <textarea id="applicationDescription" name="applicationDescription" rows="4" class="form-control" placeholder="Briefly describe your application and its key functionalities, e.g., 'An online retail application allowing users to browse products, add to cart, and checkout. It handles user authentication and payment processing.'" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="keyFeatures" class="form-label">Key Features/Modules to Test:</label>
+                        <textarea id="keyFeatures" name="keyFeatures" rows="3" class="form-control" placeholder="List the most critical features or modules you want to performance test, e.g., 'Product Catalog, User Login, Shopping Cart, Checkout Process, Search Functionality.'" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loadCharacteristics" class="form-label">Expected Load Characteristics:</label>
+                        <textarea id="loadCharacteristics" name="loadCharacteristics" rows="3" class="form-control" placeholder="Describe the expected user load, e.g., 'Typical load: 1000 concurrent users, Peak load: 5000 concurrent users during promotions. Average transaction rate: 50 TPS, Peak: 200 TPS.'" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="performanceGoals" class="form-label">Performance Goals (e.g., Response Time, Throughput):</label>
+                        <textarea id="performanceGoals" name="performanceGoals" rows="3" class="form-control" placeholder="Specify your performance objectives, e.g., 'All critical transactions should have a response time under 3 seconds. System should sustain 200 TPS with 99% uptime.'" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="additionalNotes" class="form-label">Additional Notes/Considerations:</label>
+                        <textarea id="additionalNotes" name="additionalNotes" rows="3" class="form-control" placeholder="Any other relevant information, e.g., 'Database is PostgreSQL, running on AWS EC2. Application uses microservices architecture.'"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Generate Performance Plan</button>
+                </form>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading-spinner text-center py-5" style="display:none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Generating performance test plan. Please wait...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message alert alert-danger" role="alert" style="display:none;"></div>
+
+            <!-- Results Section for Displaying Generated Plan -->
+            <div id="results" class="results" style="display:none;">
+                <h3 class="text-primary text-center mb-4">Generated Performance Test Plan</h3>
+                <div id="planOverview" class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0" id="planName"></h4>
+                        <span class="badge bg-info">Comprehensive Plan</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">Plan ID</div>
+                                <div id="planId"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">System</div>
+                                <div id="systemOutput"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">Created</div>
+                                <div id="createdDate"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">Estimated Duration</div>
+                                <div id="estimatedDuration"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="scenariosList"></div>
-                <div class="mt-3">
-                    <a href="/" class="btn" style="background:#333"><i class="fas fa-arrow-left"></i> Back</a>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button type="button" class="btn btn-success" onclick="copyToClipboard()">Copy Plan to Clipboard</button>
+                    <a href="/" class="btn btn-secondary">Back to Home</a>
                 </div>
             </div>
-            <div id="noData" class="error" style="display:none;">No generated plan found. Please generate a plan from the previous screen.</div>
         </div>
     </div>
 
     <script>
+        document.getElementById('generatePlanForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            const formData = new FormData(event.target);
+            const requestBody = {
+                systemName: formData.get('systemName'),
+                applicationDescription: formData.get('applicationDescription'),
+                keyFeatures: formData.get('keyFeatures'),
+                loadCharacteristics: formData.get('loadCharacteristics'),
+                performanceGoals: formData.get('performanceGoals'),
+                additionalNotes: formData.get('additionalNotes')
+            };
+
+            try {
+                const response = await fetch('/api/performance/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to generate plan');
+                }
+
+                const plan = await response.json();
+                displayResults(plan);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').innerText = `Error: ${error.message}`;
+                document.getElementById('errorMessage').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
 
         function displayResults(plan) {
-            const resultsDiv = document.getElementById('results');
+            document.getElementById('planName').innerText = plan.planName;
+            document.getElementById('planId').innerText = plan.planId;
+            document.getElementById('systemOutput').innerText = plan.systemName;
+            document.getElementById('createdDate').innerText = new Date(plan.createdDate).toLocaleString('en-US');
+            document.getElementById('estimatedDuration').innerText = plan.estimatedDuration;
+
             const scenariosList = document.getElementById('scenariosList');
-            
-            const locale = (window.currentLang || 'en') === 'ar' ? 'ar-SA' : 'en-US';
             scenariosList.innerHTML = `
-                <div class="scenario-card">
-                    <div class="scenario-header">
-                        <div class="scenario-title">${plan.planName}</div>
-                        <div id="planTag" class="scenario-type">Comprehensive Plan</div>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">${plan.planName}</h4>
+                        <span class="badge bg-info">Comprehensive Plan</span>
                     </div>
-                    <div class="scenario-details">
-                        <div class="detail-item">
-                            <div id="labelPlanId" class="detail-label">Plan ID</div>
-                            <div class="detail-value">${plan.planId}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div id="labelSystem" class="detail-label">System</div>
-                            <div class="detail-value">${plan.systemName}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div id="labelCreatedDate" class="detail-label">Created</div>
-                            <div class="detail-value">${new Date(plan.createdDate).toLocaleString(locale)}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div id="labelEstimatedDuration" class="detail-label">Estimated Duration</div>
-                            <div class="detail-value">${plan.estimatedDuration}</div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">Plan ID</div>
+                                <div>${plan.planId}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">System</div>
+                                <div>${plan.systemName}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">Created</div>
+                                <div>${new Date(plan.createdDate).toLocaleString('en-US')}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="fw-bold text-muted">Estimated Duration</div>
+                                <div>${plan.estimatedDuration}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -285,304 +177,76 @@
 
             plan.scenarios.forEach(scenario => {
                 const scenarioCard = document.createElement('div');
-                scenarioCard.className = 'scenario-card';
+                scenarioCard.className = 'card mb-3 shadow-sm';
                 scenarioCard.innerHTML = `
-                    <div class="scenario-header">
-                        <div class="scenario-title">${scenario.scenarioName}</div>
-                        <div class="scenario-type">${getScenarioTypeName(scenario.scenarioType)}</div>
-                    </div>
-                    <p style="margin-bottom: 15px; color: #666;">${scenario.description}</p>
-                    <div class="scenario-details">
-                        <div class="detail-item">
-                            <div class="detail-label" data-i18n="targetUsers">Target Users</div>
-                            <div class="detail-value">${scenario.targetUsers}</div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">${scenario.scenarioName}</h5>
+                            <span class="badge bg-secondary">${getScenarioTypeName(scenario.scenarioType)}</span>
                         </div>
-                        <div class="detail-item">
-                            <div class="detail-label" data-i18n="rampUpTime">Ramp-up Time</div>
-                            <div class="detail-value">${scenario.rampUpTime}</div>
+                        <p class="card-text text-muted">${scenario.description}</p>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-3"><div class="fw-bold text-muted">Target Users</div><div>${scenario.targetUsers}</div></div>
+                            <div class="col-md-3"><div class="fw-bold text-muted">Ramp-up Time</div><div>${scenario.rampUpTime}</div></div>
+                            <div class="col-md-3"><div class="fw-bold text-muted">Test Duration</div><div>${scenario.testDuration}</div></div>
+                            <div class="col-md-3"><div class="fw-bold text-muted">Priority</div><div>${scenario.priority}/5</div></div>
                         </div>
-                        <div class="detail-item">
-                            <div class="detail-label" data-i18n="testDuration">Test Duration</div>
-                            <div class="detail-value">${scenario.testDuration}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label" data-i18n="priority">Priority</div>
-                            <div class="detail-value">${scenario.priority}/5</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <strong id="testStepsTitle" style="color: #667eea;">Test Steps:</strong>
-                        <ul style="margin-top: 10px; padding-right: 20px;">
-                            ${scenario.testSteps.map(step => `<li>${step}</li>`).join('')}
+                        <h6 class="text-primary">Test Steps:</h6>
+                        <ul class="list-group list-group-flush mb-3">
+                            ${scenario.testSteps.map(step => `<li class="list-group-item">${step}</li>`).join('')}
                         </ul>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <strong id="successCriteriaTitle" style="color: #667eea;">Success Criteria:</strong>
-                        <ul style="margin-top: 10px; padding-right: 20px;">
-                            ${scenario.successCriteria.map(criteria => `<li>${criteria}</li>`).join('')}
+                        <h6 class="text-primary">Success Criteria:</h6>
+                        <ul class="list-group list-group-flush">
+                            ${scenario.successCriteria.map(criteria => `<li class="list-group-item">${criteria}</li>`).join('')}
                         </ul>
                     </div>
                 `;
                 scenariosList.appendChild(scenarioCard);
             });
 
-            resultsDiv.style.display = 'block';
-            document.getElementById('noData').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
         }
 
         function getScenarioTypeName(type) {
-            const lang = window.currentLang || 'en';
             const types = {
-                en: {
-                    'STRESS': 'Stress Test',
-                    'SOAK': 'Soak Test',
-                    'VOLUME': 'Volume Test',
-                    'SPIKE': 'Spike Test',
-                    'SCALABILITY': 'Scalability Test'
-                },
-                ar: {
-                    'STRESS': 'اختبار الضغط',
-                    'SOAK': 'اختبار التحمل',
-                    'VOLUME': 'اختبار الحجم',
-                    'SPIKE': 'اختبار الذروة',
-                    'SCALABILITY': 'اختبار التوسع'
-                }
+                'STRESS': 'Stress Test',
+                'SOAK': 'Soak Test',
+                'VOLUME': 'Volume Test',
+                'SPIKE': 'Spike Test',
+                'SCALABILITY': 'Scalability Test'
             };
-            return (types[lang] && types[lang][type]) ? types[lang][type] : type;
+            return types[type] || type;
         }
 
-        // Load plan from localStorage
-        (function(){
-            try {
-                const s = localStorage.getItem('perfPlan');
-                if (!s) { document.getElementById('noData').style.display = 'block'; return; }
-                const plan = JSON.parse(s);
-                displayResults(plan);
-            } catch (e) {
-                document.getElementById('noData').style.display = 'block';
+        async function copyToClipboard() {
+            const plan = JSON.parse(localStorage.getItem('perfPlan'));
+            if (plan) {
+                const planText = JSON.stringify(plan, null, 2);
+                try {
+                    await navigator.clipboard.writeText(planText);
+                    alert('Performance plan copied to clipboard!');
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                    alert('Failed to copy performance plan.');
+                }
             }
-        })();
+        }
 
-        // Simple language toggle (EN default with AR option)
-        const translations = {
-            en: {
-                headerTitle: '🤖 Intelligent Performance Test Scenario Generator',
-                headerSubtitle: 'Generate performance test scenarios using AI',
-                secBasicInfo: '📊 Basic System Information',
-                labelSystemType: 'System Type:',
-                optSystemPlaceholder: 'Select system type',
-                optSystemEcom: 'E-commerce',
-                optSystemBank: 'Banking',
-                optSystemHealth: 'Healthcare',
-                optSystemEdu: 'Education',
-                optSystemGov: 'Government',
-                optSystemSocial: 'Social Media',
-                optSystemGaming: 'Gaming',
-                optSystemEnterprise: 'Enterprise',
-                labelExpectedUsers: 'Expected Users:',
-                labelDataVolume: 'Data Volume (records):',
-                labelEnv: 'Deployment Environment:',
-                optEnvPlaceholder: 'Select environment',
-                optEnvDev: 'Development',
-                optEnvStaging: 'Staging',
-                optEnvProdLike: 'Production-like',
-                optEnvProd: 'Production',
-                secCommonOps: '🔄 Common Operations',
-                labelOpLogin: 'Login',
-                labelOpSearch: 'Search',
-                labelOpAddProduct: 'Add Product',
-                labelOpViewPage: 'View Page',
-                labelOpUploadFile: 'Upload File',
-                secPeakTimes: '⏰ Peak Times',
-                labelPeakMorning: 'Morning peak (users):',
-                labelPeakAfternoon: 'Afternoon peak (users):',
-                labelPeakEvening: 'Evening peak (users):',
-                generateBtn: '🚀 Generate Performance Test Scenarios',
-                loadingText: 'Generating performance test scenarios...',
-                resultsTitle: '📋 Generated Performance Test Plan',
-                planTag: 'Comprehensive Plan',
-                labelPlanId: 'Plan ID',
-                labelSystem: 'System',
-                labelCreatedDate: 'Created',
-                labelEstimatedDuration: 'Estimated Duration',
-                targetUsers: 'Target Users',
-                rampUpTime: 'Ramp-up Time',
-                testDuration: 'Test Duration',
-                priority: 'Priority',
-                testStepsTitle: 'Test Steps:',
-                successCriteriaTitle: 'Success Criteria:',
-                tipSystemType: 'Overall category of your system (e.g., e-commerce, banking)',
-                tipExpectedUsers: 'Estimated concurrent users during normal load',
-                tipDataVolume: 'Approximate number of records your system handles',
-                tipEnv: 'Target environment where the test will run',
-                tipCommonOps: 'Choose main user operations to include in scenarios',
-                tipOpLogin: 'User authentication and sign-in flow',
-                tipOpSearch: 'Searching or querying content or products',
-                tipOpAddProduct: 'Create or update items/records',
-                tipOpViewPage: 'General page view/navigation',
-                tipOpUploadFile: 'File upload or attachments handling',
-                tipPeakTimes: 'Expected users during specific peak periods',
-                tipPeakMorning: 'Concurrent users in the morning peak window',
-                tipPeakAfternoon: 'Concurrent users in the afternoon peak window',
-                tipPeakEvening: 'Concurrent users in the evening peak window'
-            },
-            ar: {
-                headerTitle: '🤖 مولد سيناريوهات اختبار الأداء الذكي',
-                headerSubtitle: 'توليد سيناريوهات اختبار الأداء باستخدام الذكاء الاصطناعي',
-                secBasicInfo: '📊 معلومات النظام الأساسية',
-                labelSystemType: 'نوع النظام:',
-                optSystemPlaceholder: 'اختر نوع النظام',
-                optSystemEcom: 'متجر إلكتروني',
-                optSystemBank: 'نظام مصرفي',
-                optSystemHealth: 'نظام صحي',
-                optSystemEdu: 'نظام تعليمي',
-                optSystemGov: 'نظام حكومي',
-                optSystemSocial: 'وسائل التواصل الاجتماعي',
-                optSystemGaming: 'نظام ألعاب',
-                optSystemEnterprise: 'نظام مؤسسي',
-                labelExpectedUsers: 'عدد المستخدمين المتوقعين:',
-                labelDataVolume: 'حجم البيانات (عدد السجلات):',
-                labelEnv: 'بيئة النشر:',
-                optEnvPlaceholder: 'اختر بيئة النشر',
-                optEnvDev: 'بيئة التطوير',
-                optEnvStaging: 'بيئة الاختبار',
-                optEnvProdLike: 'بيئة مشابهة للإنتاج',
-                optEnvProd: 'بيئة الإنتاج',
-                secCommonOps: '🔄 العمليات الشائعة',
-                labelOpLogin: 'تسجيل الدخول',
-                labelOpSearch: 'البحث',
-                labelOpAddProduct: 'إضافة منتج',
-                labelOpViewPage: 'عرض الصفحة',
-                labelOpUploadFile: 'تحميل ملف',
-                secPeakTimes: '⏰ أوقات الذروة',
-                labelPeakMorning: 'ذروة الصباح (عدد المستخدمين):',
-                labelPeakAfternoon: 'ذروة الظهر (عدد المستخدمين):',
-                labelPeakEvening: 'ذروة المساء (عدد المستخدمين):',
-                generateBtn: '🚀 توليد سيناريوهات اختبار الأداء',
-                loadingText: 'جاري توليد سيناريوهات اختبار الأداء...',
-                resultsTitle: '📋 خطة اختبار الأداء المولدة',
-                planTag: 'خطة شاملة',
-                labelPlanId: 'معرف الخطة',
-                labelSystem: 'النظام',
-                labelCreatedDate: 'تاريخ الإنشاء',
-                labelEstimatedDuration: 'المدة المتوقعة',
-                targetUsers: 'المستخدمين المستهدفين',
-                rampUpTime: 'وقت الزيادة التدريجية (دقيقة)',
-                testDuration: 'مدة الاختبار (دقيقة)',
-                priority: 'الأولوية',
-                testStepsTitle: 'خطوات الاختبار:',
-                successCriteriaTitle: 'معايير النجاح:',
-                tipSystemType: 'الفئة العامة للنظام (مثل متجر إلكتروني، مصرفي)',
-                tipExpectedUsers: 'عدد المستخدمين المتزامنين المتوقع أثناء الحمل الطبيعي',
-                tipDataVolume: 'العدد التقريبي للسجلات التي يتعامل معها النظام',
-                tipEnv: 'بيئة التنفيذ المستهدفة للاختبار',
-                tipCommonOps: 'اختر العمليات الرئيسية للمستخدم لإدراجها في السيناريوهات',
-                tipOpLogin: 'تدفق المصادقة وتسجيل الدخول',
-                tipOpSearch: 'البحث أو الاستعلام عن المحتوى أو المنتجات',
-                tipOpAddProduct: 'إنشاء أو تحديث العناصر/السجلات',
-                tipOpViewPage: 'عرض الصفحة أو التنقل العام',
-                tipOpUploadFile: 'تحميل الملفات أو المرفقات',
-                tipPeakTimes: 'عدد المستخدمين المتوقع في فترات الذروة',
-                tipPeakMorning: 'المستخدمون المتزامنون في ذروة الصباح',
-                tipPeakAfternoon: 'المستخدمون المتزامنون في ذروة الظهر',
-                tipPeakEvening: 'المستخدمون المتزامنون في ذروة المساء'
+        // Script for initial load check for existing plan (if coming from a redirect or refresh)
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedPlan = localStorage.getItem('perfPlan');
+            if (savedPlan) {
+                try {
+                    const plan = JSON.parse(savedPlan);
+                    displayResults(plan);
+                } catch (e) {
+                    console.error("Error parsing stored plan:", e);
+                    document.getElementById('errorMessage').innerText = 'Error loading saved plan. Please generate a new one.';
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
             }
-        };
-
-        function applyLanguage(lang) {
-            window.currentLang = lang;
-            document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            const t = translations[lang];
-            const setText = (id, key) => { const el = document.getElementById(id); if (el && t[key]) el.textContent = t[key]; };
-            const setTitle = (id, key) => { const el = document.getElementById(id); if (el && t[key]) el.setAttribute('title', t[key]); };
-
-            setText('headerTitle', 'headerTitle');
-            setText('headerSubtitle', 'headerSubtitle');
-            setText('secBasicInfo', 'secBasicInfo');
-            setText('labelSystemType', 'labelSystemType');
-            setText('optSystemPlaceholder', 'optSystemPlaceholder');
-            setText('optSystemEcom', 'optSystemEcom');
-            setText('optSystemBank', 'optSystemBank');
-            setText('optSystemHealth', 'optSystemHealth');
-            setText('optSystemEdu', 'optSystemEdu');
-            setText('optSystemGov', 'optSystemGov');
-            setText('optSystemSocial', 'optSystemSocial');
-            setText('optSystemGaming', 'optSystemGaming');
-            setText('optSystemEnterprise', 'optSystemEnterprise');
-            setText('labelExpectedUsers', 'labelExpectedUsers');
-            setText('labelDataVolume', 'labelDataVolume');
-            setText('labelEnv', 'labelEnv');
-            setText('optEnvPlaceholder', 'optEnvPlaceholder');
-            setText('optEnvDev', 'optEnvDev');
-            setText('optEnvStaging', 'optEnvStaging');
-            setText('optEnvProdLike', 'optEnvProdLike');
-            setText('optEnvProd', 'optEnvProd');
-            setText('secCommonOps', 'secCommonOps');
-            setText('labelOpLogin', 'labelOpLogin');
-            setText('labelOpSearch', 'labelOpSearch');
-            setText('labelOpAddProduct', 'labelOpAddProduct');
-            setText('labelOpViewPage', 'labelOpViewPage');
-            setText('labelOpUploadFile', 'labelOpUploadFile');
-            setText('secPeakTimes', 'secPeakTimes');
-            setText('labelPeakMorning', 'labelPeakMorning');
-            setText('labelPeakAfternoon', 'labelPeakAfternoon');
-            setText('labelPeakEvening', 'labelPeakEvening');
-            setText('generateBtn', 'generateBtn');
-            setText('loadingText', 'loadingText');
-            setText('resultsTitle', 'resultsTitle');
-            setText('planTag', 'planTag');
-            setText('labelPlanId', 'labelPlanId');
-            setText('labelSystem', 'labelSystem');
-            setText('labelCreatedDate', 'labelCreatedDate');
-            setText('labelEstimatedDuration', 'labelEstimatedDuration');
-
-            // Update details labels in scenario cards (created dynamically)
-            document.querySelectorAll('[data-i18n="targetUsers"]').forEach(el => el.textContent = t.targetUsers);
-            document.querySelectorAll('[data-i18n="rampUpTime"]').forEach(el => el.textContent = t.rampUpTime);
-            document.querySelectorAll('[data-i18n="testDuration"]').forEach(el => el.textContent = t.testDuration);
-            document.querySelectorAll('[data-i18n="priority"]').forEach(el => el.textContent = t.priority);
-            const stepsTitle = document.getElementById('testStepsTitle'); if (stepsTitle) stepsTitle.textContent = t.testStepsTitle;
-            const succTitle = document.getElementById('successCriteriaTitle'); if (succTitle) succTitle.textContent = t.successCriteriaTitle;
-
-            // tooltips
-            setTitle('tipSystemType', 'tipSystemType');
-            setTitle('tipExpectedUsers', 'tipExpectedUsers');
-            setTitle('tipDataVolume', 'tipDataVolume');
-            setTitle('tipEnv', 'tipEnv');
-            setText('tipCommonOps', 'tipCommonOps');
-            setTitle('tipOpLogin', 'tipOpLogin');
-            setTitle('tipOpSearch', 'tipOpSearch');
-            setTitle('tipOpAddProduct', 'tipOpAddProduct');
-            setTitle('tipOpViewPage', 'tipOpViewPage');
-            setTitle('tipOpUploadFile', 'tipOpUploadFile');
-            setText('tipPeakTimes', 'tipPeakTimes');
-            setTitle('tipPeakMorning', 'tipPeakMorning');
-            setTitle('tipPeakAfternoon', 'tipPeakAfternoon');
-            setTitle('tipPeakEvening', 'tipPeakEvening');
-            localStorage.setItem('perfLang', lang);
-        }
-
-        function setLangUI(lang) {
-            document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
-            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('currentLangLabel').textContent = lang === 'ar' ? 'AR' : 'EN';
-            if (typeof applyPerfLang === 'function') applyPerfLang(lang);
-            if (typeof applyLanguage === 'function') applyLanguage(lang);
-            if (typeof applyLang === 'function') applyLang(lang);
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedLang = localStorage.getItem('siteLang') || 'en';
-            setLangUI(savedLang);
-            document.querySelectorAll('.lang-option').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const lang = this.getAttribute('data-lang');
-                    localStorage.setItem('siteLang', lang);
-                    setLangUI(lang);
-                });
-            });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

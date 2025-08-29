@@ -3,6 +3,11 @@ package Madfoat.Learning.service;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import Madfoat.Learning.model.User;
+import Madfoat.Learning.service.UserService;
 
 import java.net.URI;
 import java.util.*;
@@ -12,8 +17,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ApiScenarioService {
 
     private final Map<String, Map<String, Object>> idToScenario = new ConcurrentHashMap<>();
+    private final UserService userService;
+
+    @Autowired
+    public ApiScenarioService(UserService userService) {
+        this.userService = userService;
+    }
 
     public List<Map<String, Object>> generateScenarios(String curl, Integer limit, List<String> caseTypes) {
+        if (!deductRequest()) {
+            return List.of(Map.of("id", "error", "title", "Free Trial Exhausted", "description", "You have exceeded your free trial limit. Please contact support for more options."));
+        }
+
         int max = limit == null ? 5 : Math.max(1, Math.min(50, limit));
         Set<String> wanted = (caseTypes == null || caseTypes.isEmpty())
                 ? Set.of("happy")
@@ -658,5 +673,31 @@ public class ApiScenarioService {
     private String escapeXml(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private boolean deductRequest() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            // If not authenticated, assume it's a demo or public access which might not require deduction, or handle as error
+            return true; // Or false, depending on your public access policy
+        }
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            return false;
+        }
+
+        if (user.isFreeTrial()) {
+            if (user.getRemainingRequests() > 0) {
+                user.setRemainingRequests(user.getRemainingRequests() - 1);
+                userService.saveUser(user);
+                return true;
+            } else {
+                return false; // Free trial requests exhausted
+            }
+        }
+        return true; // Not on free trial, allow unlimited requests (or according to paid plan)
     }
 }

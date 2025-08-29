@@ -6,349 +6,234 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: left; /* Ensure left-to-right text alignment */
+  direction: ltr; /* Ensure left-to-right text direction */
+}
+
+.container {
+  /* Bootstrap's .container handles max-width and margin auto */
+  background: #1a2a47; /* Darker background for the container */
+  border-radius: 15px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  width: 100%;
+  text-align: left; /* Ensure left-to-right text alignment for container content */
+  direction: ltr; /* Ensure left-to-right text direction for container content */
+}
+
+/* Explicitly set text direction for all relevant text elements */
+h1, h2, h3, h4, h5, h6,
+p,
+label,
+input,
+textarea,
+ul,
+ol,
+li,
+span,
+div {
+  text-align: left;
+  direction: ltr;
 }
 
 .header {
-  width: 100%;
-  padding: 2rem 0 1rem 0;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  /* Bootstrap classes handle most of this: text-center, py-4, bg-primary, text-white, rounded-top, shadow-sm */
+  border-bottom: 5px solid #0a1833;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  margin-left: 3rem;
-  gap: 0.7rem;
-  position: relative;
-}
-
-.logo-circle {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #3ecbf7 0%, #1e90ff 100%);
-  border-radius: 50%;
-  margin-right: 0.75rem;
-  display: inline-block;
-  box-shadow: 0 0 0 4px rgba(62,203,247,0.08);
-}
-
-.logo-text {
-  font-size: 1.7rem;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: #fff;
-  text-transform: lowercase;
-}
-
-.logo-subtext {
-  font-size: 0.95rem;
-  color: #3ecbf7;
-  font-weight: 400;
-  margin-left: 1.2rem;
+.header h1 {
+  /* Bootstrap's .display-4 handles font-size and font-weight */
+  margin-bottom: 10px;
   letter-spacing: 1px;
-  opacity: 0.7;
 }
 
-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.header p {
+  /* Bootstrap's .lead handles font-size */
+  opacity: 0.9;
+  font-weight: 300;
 }
 
-.hero {
-  text-align: center;
-  margin-top: 3rem;
-  margin-bottom: 4rem;
-  position: relative;
-  min-height: 420px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero h1 {
-  font-size: 2.8rem;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 1.2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.gradient-text {
-  background: linear-gradient(90deg, #3ecbf7 0%, #1e90ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
-}
-
-.hero-subtitle {
-  font-size: 1.2rem;
-  color: #b0c4de;
-  margin-bottom: 2.5rem;
-  max-width: 420px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-cta {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 1.15rem;
-  padding: 1rem 2.5rem;
-  border-radius: 32px;
-  box-shadow: 0 4px 24px 0 rgba(62,203,247,0.18);
-  text-decoration: none;
-  display: inline-block;
-  background: linear-gradient(90deg, #3ecbf7 0%, #1e90ff 100%);
-  color: #0a1833;
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.hero-cta:hover {
-  background: linear-gradient(90deg, #1e90ff 0%, #3ecbf7 100%);
-  color: #fff;
-}
-
-.mouse-scroll {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2.5rem;
-}
-
-.mouse {
-  width: 28px;
-  height: 44px;
-  border: 2px solid #3ecbf7;
-  border-radius: 16px;
-  position: relative;
-  margin-bottom: 0.3rem;
-}
-
-.mouse-wheel {
-  width: 6px;
-  height: 10px;
-  background: #3ecbf7;
-  border-radius: 3px;
-  position: absolute;
-  left: 50%;
-  top: 10px;
-  transform: translateX(-50%);
-  animation: wheel-move 1.2s infinite;
-}
-
-@keyframes wheel-move {
-  0% { top: 10px; opacity: 1; }
-  80% { top: 22px; opacity: 0.5; }
-  100% { top: 10px; opacity: 1; }
-}
-
-.arrow {
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 12px solid #3ecbf7;
-  margin-top: 2px;
-  opacity: 0.7;
-}
-
-.line-illustration {
-  position: absolute;
-  pointer-events: none;
-}
-
-.top-left {
-  top: -30px;
-  left: -30px;
-}
-
-.bottom-right {
-  bottom: -30px;
-  right: -30px;
-}
-
-.features {
-  display: flex;
-  justify-content: center;
-  gap: 2.5rem;
-  margin: 4rem 0 5rem 0;
-}
-
-.feature {
-  background: rgba(255,255,255,0.03);
-  border-radius: 18px;
-  padding: 2.2rem 2rem 2.2rem 2rem;
-  min-width: 210px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 2px 16px 0 rgba(62,203,247,0.07);
-  gap: 0.7rem;
-}
-
-.feature-icon {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-}
-
-.feature-title {
-  font-size: 1.18rem;
-  font-weight: 600;
+.content {
+  /* Bootstrap classes handle: bg-white, p-4, rounded-bottom, shadow-sm */
   color: #e0f7fa;
-  text-align: center;
-  margin-bottom: 0.2rem;
 }
 
-.feature-desc {
-  font-size: 1rem;
+.form-section,
+.results {
+  /* Bootstrap's .card, .card-body, .mb-4, .shadow-sm handle most of this */
+  background: #1a2a47; /* Consistent with container for seamless look */
+  border-radius: 10px; /* Adjust if Bootstrap's card-body has different radius */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Keep custom shadow if desired */
+  margin-bottom: 30px; /* Use Bootstrap spacing utilities if possible (e.g., mb-4) */
+}
+
+.form-section h3,
+.results h3 {
+  /* Bootstrap's .card-title, .text-primary, .text-center, .mb-4 handle most of this */
+  border-bottom: 2px solid #1e90ff; /* Keep custom border */
+  padding-bottom: 10px; /* Keep custom padding */
+}
+
+label {
+  /* Bootstrap's .form-label handles most of this */
+  font-weight: 600;
   color: #b0c4de;
-  margin-top: 0.2rem;
-  text-align: center;
-  min-height: 38px;
+  font-size: 1.1em;
 }
 
-.pricing {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 5rem;
+input[type="text"],
+textarea {
+  /* Bootstrap's .form-control handles most of this */
+  border: 1px solid #0e2340;
+  background-color: #0e2340;
+  color: #e0f7fa;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.pricing-card {
-  background: linear-gradient(120deg, rgba(62,203,247,0.10) 0%, rgba(10,24,51,0.95) 100%);
-  border: 2px solid #3ecbf7;
-  border-radius: 22px;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
-  box-shadow: 0 4px 32px 0 rgba(62,203,247,0.13);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 320px;
-  position: relative;
-  overflow: hidden;
+input[type="text"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3ecbf7;
+  box-shadow: 0 0 8px rgba(62, 203, 247, 0.5);
 }
 
-.pricing-label {
-  position: absolute;
-  top: 1.1rem;
-  right: -2.2rem;
+textarea {
+  resize: vertical;
+}
+
+.btn {
+  /* Bootstrap's .btn, .btn-primary, .btn-success, .btn-secondary, .w-100 handle most of this */
   background: linear-gradient(90deg, #3ecbf7 0%, #1e90ff 100%);
   color: #0a1833;
-  font-size: 0.95rem;
   font-weight: 700;
-  padding: 0.4rem 2.8rem;
-  border-radius: 18px;
-  transform: rotate(18deg);
-  box-shadow: 0 2px 12px 0 rgba(62,203,247,0.18);
-  letter-spacing: 1px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.pricing-price {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #3ecbf7;
-  margin-bottom: 1rem;
-  margin-top: 1.5rem;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(62, 203, 247, 0.2);
 }
 
-.per-month {
-  font-size: 1.1rem;
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(62, 203, 247, 0.2);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.loading-spinner {
+  /* Bootstrap's .spinner-border, .text-primary, .visually-hidden, .mt-2, .text-muted handle most of this */
+  text-align: center;
+  padding: 50px;
+}
+
+/* The spinner animation is handled by Bootstrap now */
+/* @keyframes spin { ... } */
+
+.error-message {
+  /* Bootstrap's .alert, .alert-danger handle most of this */
+  text-align: center;
+  font-weight: 600;
+}
+
+.results {
+  margin-top: 40px;
+}
+
+.scenario-card {
+  /* Bootstrap's .card, .mb-3, .shadow-sm handle most of this */
+  background: #0e2340;
+  border-left: 6px solid #3ecbf7;
+}
+
+.scenario-header {
+  /* Bootstrap's .card-header, .bg-primary, .text-white, .d-flex, .justify-content-between, .align-items-center handle most of this */
+  margin-bottom: 0; /* Handled by Bootstrap's mb-2 on inner elements */
+}
+
+.scenario-title {
+  /* Bootstrap's .card-title, .mb-0 handle most of this */
+  color: #e0f7fa;
+}
+
+.scenario-type {
+  /* Bootstrap's .badge, .bg-info, .bg-secondary handle most of this */
+  background: linear-gradient(90deg, #3ecbf7 0%, #1e90ff 100%);
+  color: #0a1833;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.scenario-card p {
+  /* Bootstrap's .card-text, .text-muted handle most of this */
   color: #b0c4de;
-  margin-left: 0.2rem;
+  line-height: 1.6;
 }
 
-.pricing-features {
+.detail-item {
+  /* This might be redundant with Bootstrap's row/col structure, keep if specific custom look is needed */
+  background: #0a1833;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #0e2340;
+}
+
+.detail-label {
+  /* Bootstrap's .fw-bold, .text-muted handle most of this */
+  color: #3ecbf7;
+}
+
+.detail-value {
+  color: #e0f7fa;
+}
+
+.scenario-card strong {
+  /* Bootstrap's .text-primary, .mb-3 handle most of this */
+  color: #3ecbf7;
+}
+
+.scenario-card ul {
+  /* Bootstrap's .list-group, .list-group-flush handle most of this */
   list-style: none;
   padding: 0;
-  margin: 0 0 2rem 0;
-  color: #e0f7fa;
-  font-size: 1.05rem;
-  text-align: center;
 }
 
-.pricing-features li {
-  margin-bottom: 0.7rem;
-}
-
-.cta-button {
-  background: linear-gradient(90deg, #3ecbf7 0%, #1e90ff 100%);
-  color: #0a1833;
-  border: none;
-  border-radius: 28px;
-  padding: 0.9rem 2.2rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  box-shadow: 0 2px 12px 0 rgba(62,203,247,0.18);
-  margin-bottom: 0.7rem;
-}
-
-.cta-button:active {
-  transform: scale(0.97);
-}
-
-.pricing-note {
-  color: #3ecbf7;
-  font-size: 0.98rem;
-  margin-top: 0.7rem;
-  opacity: 0.8;
-}
-
-.footer {
-  text-align: center;
+.scenario-card ul li {
+  /* Bootstrap's .list-group-item handle most of this */
+  background: #0a1833;
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border-left: 3px solid #1e90ff;
   color: #b0c4de;
-  font-size: 1rem;
-  padding: 2rem 0 1rem 0;
-  letter-spacing: 1px;
-  margin-top: 2rem;
 }
 
-@media (max-width: 900px) {
-  .features {
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: center;
-  }
-  .feature {
-    min-width: 180px;
-    padding: 1.5rem 1rem;
-  }
-  .pricing-card {
-    min-width: 220px;
-    padding: 2rem 1.2rem 1.5rem 1.2rem;
-  }
+/* Redundant now with Bootstrap's spacing */
+/* .mt-3 { margin-top: 1.5rem; } */
+
+/* Responsive Adjustments - mostly handled by Bootstrap grid now */
+@media (max-width: 768px) {
+  /* .content { padding: 20px; } */
+  /* .header h1 { font-size: 2em; } */
+  /* .header p { font-size: 1em; } */
+  /* .form-section h3, .results h3 { font-size: 1.5em; } */
+  /* .scenario-details { grid-template-columns: 1fr; } */
+  /* .scenario-title { font-size: 1.3em; } */
 }
 
-@media (max-width: 600px) {
-  .header {
-    padding-left: 1rem;
-  }
-  .logo {
-    margin-left: 0.5rem;
-  }
-  .logo-subtext {
-    display: none;
-  }
-  .hero h1 {
-    font-size: 1.4rem;
-  }
-  .feature {
-    min-width: 120px;
-    padding: 1.2rem 0.5rem;
-  }
-  .pricing-card {
-    min-width: 140px;
-    padding: 1.2rem 0.5rem 1rem 0.5rem;
-  }
+@media (max-width: 480px) {
+  /* .content { padding: 15px; } */
+  /* .header h1 { font-size: 1.5em; } */
+  /* .header p { font-size: 0.9em; } */
+  /* .btn { padding: 12px 20px; font-size: 1em; } */
+  /* .scenario-card { padding: 15px; } */
+  /* .scenario-title { font-size: 1.1em; } */
 }
