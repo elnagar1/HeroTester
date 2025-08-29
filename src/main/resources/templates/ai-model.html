@@ -9,6 +9,18 @@
 </head>
 <body class="bg-light">
 <div class="container py-4">
+    <div class="d-flex justify-content-end mb-3">
+        <div class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-globe fa-lg me-2"></i>
+                <span id="currentLangLabel">EN</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                <li><a class="dropdown-item lang-option" href="#" data-lang="en"><i class="fa-solid fa-language me-2"></i> English</a></li>
+                <li><a class="dropdown-item lang-option" href="#" data-lang="ar"><i class="fa-solid fa-language me-2"></i> العربية</a></li>
+            </ul>
+        </div>
+    </div>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0"><i class="fas fa-robot me-2"></i>AI Knowledge Console</h4>
         <a href="/" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
@@ -78,5 +90,27 @@
         </div>
     </div>
 </div>
+<script>
+    function setLangUI(lang) {
+        document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.getElementById('currentLangLabel').textContent = lang === 'ar' ? 'AR' : 'EN';
+        if (typeof applyPerfLang === 'function') applyPerfLang(lang);
+        if (typeof applyLanguage === 'function') applyLanguage(lang);
+        if (typeof applyLang === 'function') applyLang(lang);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedLang = localStorage.getItem('siteLang') || 'en';
+        setLangUI(savedLang);
+        document.querySelectorAll('.lang-option').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lang = this.getAttribute('data-lang');
+                localStorage.setItem('siteLang', lang);
+                setLangUI(lang);
+            });
+        });
+    });
+</script>
 </body>
 </html>

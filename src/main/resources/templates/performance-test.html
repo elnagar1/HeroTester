@@ -220,16 +220,21 @@
 </head>
 <body>
     <div class="container">
+        <div class="d-flex justify-content-end mb-3">
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-globe fa-lg me-2"></i>
+                    <span id="currentLangLabel">EN</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                    <li><a class="dropdown-item lang-option" href="#" data-lang="en"><i class="fa-solid fa-language me-2"></i> English</a></li>
+                    <li><a class="dropdown-item lang-option" href="#" data-lang="ar"><i class="fa-solid fa-language me-2"></i> العربية</a></li>
+                </ul>
+            </div>
+        </div>
         <div class="header">
             <h1 id="headerTitle">🤖 Intelligent Performance Test Scenario Generator</h1>
             <p id="headerSubtitle">Generate performance test scenarios using AI</p>
-            <div style="margin-top:12px;">
-                <label for="langSelect" style="font-weight:600; margin-right:8px;">Language:</label>
-                <select id="langSelect" style="padding:6px 10px; border-radius:8px; border:1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.15); color: #fff;">
-                    <option value="en" selected>English</option>
-                    <option value="ar">العربية</option>
-                </select>
-            </div>
         </div>
 
         <div class="content">
@@ -558,15 +563,26 @@
             localStorage.setItem('perfLang', lang);
         }
 
-        const langSelect = document.getElementById('langSelect');
-        const savedLang = localStorage.getItem('perfLang') || 'en';
-        if (langSelect) {
-            langSelect.value = savedLang;
-            applyLanguage(savedLang);
-            langSelect.addEventListener('change', (e) => applyLanguage(e.target.value));
-        } else {
-            applyLanguage(savedLang);
+        function setLangUI(lang) {
+            document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('currentLangLabel').textContent = lang === 'ar' ? 'AR' : 'EN';
+            if (typeof applyPerfLang === 'function') applyPerfLang(lang);
+            if (typeof applyLanguage === 'function') applyLanguage(lang);
+            if (typeof applyLang === 'function') applyLang(lang);
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('siteLang') || 'en';
+            setLangUI(savedLang);
+            document.querySelectorAll('.lang-option').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const lang = this.getAttribute('data-lang');
+                    localStorage.setItem('siteLang', lang);
+                    setLangUI(lang);
+                });
+            });
+        });
     </script>
 </body>
 </html>

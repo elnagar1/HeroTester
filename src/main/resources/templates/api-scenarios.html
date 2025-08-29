@@ -10,10 +10,22 @@
 </head>
 <body class="bg-light">
 <div class="container py-4">
+    <div class="d-flex justify-content-end mb-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle d-flex align-items-center" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-globe fa-lg me-2"></i>
+                <span id="currentLangLabel">EN</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                <li><a class="dropdown-item lang-option" href="#" data-lang="en"><i class="fa-solid fa-language me-2"></i> English</a></li>
+                <li><a class="dropdown-item lang-option" href="#" data-lang="ar"><i class="fa-solid fa-language me-2"></i> العربية</a></li>
+            </ul>
+        </div>
+    </div>
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-plug"></i> API Scenarios</h5>
-            <div class="ms-2 small">Click a row to view Rest Assured code</div>
+            <h5 class="mb-0"><i class="fas fa-plug"></i> <span id="hdrTitle">API Scenarios</span></h5>
+            <div class="ms-2 small" id="hdrHint">Click a row to view Rest Assured code</div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -94,7 +106,7 @@
                 </div>
             </div>
             <div class="text-center mt-3">
-                <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> <span id="btnBack">Back</span></a>
             </div>
         </div>
     </div>
@@ -492,6 +504,45 @@
             if (lastResponseMeta && lastResponseMeta.contentType) {
                 document.getElementById('asContentType').value = lastResponseMeta.contentType;
             }
+        });
+    });
+</script>
+<script>
+    const I18N_API = {
+        en: { hdrTitle: 'API Scenarios', hdrHint: 'Click a row to view Rest Assured code', title: 'Title', expected: 'Expected', actions: 'Actions', run: 'Run', code: 'Code', request: 'Request', response: 'Response', headers: 'Headers', requestDetails: 'Request Details', back: 'Back' },
+        ar: { hdrTitle: 'سيناريوهات API', hdrHint: 'اضغط على صف لعرض كود Rest Assured', title: 'العنوان', expected: 'المتوقع', actions: 'الإجراءات', run: 'تشغيل', code: 'الكود', request: 'الطلب', response: 'الاستجابة', headers: 'الرؤوس', requestDetails: 'تفاصيل الطلب', back: 'رجوع' }
+    };
+    function applyApiLang(lang) {
+        const t = I18N_API[lang] || I18N_API.en;
+        document.getElementById('hdrTitle').textContent = t.hdrTitle;
+        document.getElementById('hdrHint').textContent = t.hdrHint;
+        const ths = document.querySelectorAll('thead th');
+        if (ths[0]) ths[0].textContent = t.title; if (ths[1]) ths[1].textContent = t.expected; if (ths[2]) ths[2].textContent = t.actions;
+        document.querySelectorAll('button[onclick^="runScenario"]').forEach(b => { const i=b.querySelector('i'); b.innerHTML = ''; b.appendChild(i); b.append(' ' + t.run); });
+        document.querySelectorAll('button[onclick^="viewCode"]').forEach(b => { const i=b.querySelector('i'); b.innerHTML = ''; b.appendChild(i); b.append(' ' + t.code); });
+        document.querySelectorAll('button[onclick^="viewRequest"]').forEach(b => { const i=b.querySelector('i'); b.innerHTML = ''; b.appendChild(i); b.append(' ' + t.request); });
+        const back = document.getElementById('btnBack'); if (back) back.textContent = t.back;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    }
+    function setLangUI(lang) {
+        document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        const lbl = document.getElementById('currentLangLabel'); if (lbl) lbl.textContent = lang === 'ar' ? 'AR' : 'EN';
+        if (typeof applyApiLang === 'function') applyApiLang(lang);
+        if (typeof applyPerfLang === 'function') applyPerfLang(lang);
+        if (typeof applyLanguage === 'function') applyLanguage(lang);
+        if (typeof applyLang === 'function') applyLang(lang);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const saved = localStorage.getItem('siteLang') || 'en';
+        setLangUI(saved);
+        document.querySelectorAll('.lang-option').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lang = this.getAttribute('data-lang');
+                localStorage.setItem('siteLang', lang);
+                setLangUI(lang);
+            });
         });
     });
 </script>

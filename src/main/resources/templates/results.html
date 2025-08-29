@@ -62,11 +62,17 @@
     <div class="container page-container">
         <div class="row justify-content-center">
             <div class="col-xl-10 col-lg-11">
-                <div class="d-flex justify-content-end mb-2">
-                    <ul class="nav nav-pills" id="langTabs" role="tablist">
-                        <li class="nav-item" role="presentation"><button class="nav-link active" data-lang="en" type="button">EN</button></li>
-                        <li class="nav-item ms-2" role="presentation"><button class="nav-link" data-lang="ar" type="button">AR</button></li>
-                    </ul>
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle d-flex align-items-center" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-globe fa-lg me-2"></i>
+                            <span id="currentLangLabel">EN</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                            <li><a class="dropdown-item lang-option" href="#" data-lang="en"><i class="fa-solid fa-language me-2"></i> English</a></li>
+                            <li><a class="dropdown-item lang-option" href="#" data-lang="ar"><i class="fa-solid fa-language me-2"></i> العربية</a></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="card card-glass mb-3">
                     <div class="card-header-gradient">
@@ -460,6 +466,15 @@
             }
         }
 
+        function setLangUI(lang) {
+            document.documentElement.lang = lang === 'ar' ? 'ar' : 'en';
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('currentLangLabel').textContent = lang === 'ar' ? 'AR' : 'EN';
+            if (typeof applyPerfLang === 'function') applyPerfLang(lang);
+            if (typeof applyLanguage === 'function') applyLanguage(lang);
+            if (typeof applyLang === 'function') applyLang(lang);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Dynamic titles based on initial generation type
             const genType = (document.getElementById('generationTypeInitial').textContent || 'test_scenarios').toLowerCase();
@@ -478,11 +493,12 @@
             appendResultCard({ generationType: genType, includeAcceptance: false }, document.getElementById('rawText').textContent);
 
             // Language switching
-            document.querySelectorAll('#langTabs .nav-link').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('#langTabs .nav-link').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    applyLang(btn.getAttribute('data-lang'));
+            document.querySelectorAll('.lang-option').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const lang = this.getAttribute('data-lang');
+                    localStorage.setItem('siteLang', lang);
+                    setLangUI(lang);
                 });
             });
             applyLang('en');
