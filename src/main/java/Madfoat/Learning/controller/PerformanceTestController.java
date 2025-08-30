@@ -32,18 +32,18 @@ public class PerformanceTestController {
     public ResponseEntity<Map<String, Object>> getScenarioTypes() {
         Map<String, Object> response = new HashMap<>();
         response.put("scenarioTypes", Map.of(
-            "STRESS", "اختبار الضغط - تحديد نقطة الانهيار",
-            "SOAK", "اختبار التحمل - اختبار الاستقرار على المدى الطويل",
-            "VOLUME", "اختبار الحجم - اختبار مع البيانات الضخمة",
-            "SPIKE", "اختبار الذروة - اختبار الاستجابة للزيادة المفاجئة",
-            "SCALABILITY", "اختبار قابلية التوسع - اختبار الأداء مع إضافة موارد"
+            "STRESS", "Stress Test - Breakpoint Identification",
+            "SOAK", "Soak Test - Long-term Stability",
+            "VOLUME", "Volume Test - Large Data Handling",
+            "SPIKE", "Spike Test - Sudden Load Response",
+            "SCALABILITY", "Scalability Test - Performance with Resource Addition"
         ));
         response.put("commonOperations", Map.of(
-            "تسجيل الدخول", "عمليات تسجيل الدخول والمصادقة",
-            "البحث", "عمليات البحث والاستعلام",
-            "إضافة منتج", "عمليات إضافة وتعديل البيانات",
-            "عرض الصفحة", "عمليات عرض الصفحات والواجهات",
-            "تحميل ملف", "عمليات رفع وتحميل الملفات"
+            "Login", "Login and Authentication Operations",
+            "Search", "Search and Query Operations",
+            "Add Product", "Data Addition and Modification Operations",
+            "View Page", "Page and Interface Viewing Operations",
+            "File Upload", "File Upload and Download Operations"
         ));
         return ResponseEntity.ok(response);
     }
@@ -51,24 +51,24 @@ public class PerformanceTestController {
     @GetMapping("/system-types")
     public ResponseEntity<Map<String, String>> getSystemTypes() {
         Map<String, String> systemTypes = new HashMap<>();
-        systemTypes.put("E_COMMERCE", "متجر إلكتروني");
-        systemTypes.put("BANKING", "نظام مصرفي");
-        systemTypes.put("HEALTHCARE", "نظام صحي");
-        systemTypes.put("EDUCATION", "نظام تعليمي");
-        systemTypes.put("GOVERNMENT", "نظام حكومي");
-        systemTypes.put("SOCIAL_MEDIA", "وسائل التواصل الاجتماعي");
-        systemTypes.put("GAMING", "نظام ألعاب");
-        systemTypes.put("ENTERPRISE", "نظام مؤسسي");
+        systemTypes.put("E_COMMERCE", "E-Commerce Platform");
+        systemTypes.put("BANKING", "Banking System");
+        systemTypes.put("HEALTHCARE", "Healthcare System");
+        systemTypes.put("EDUCATION", "Educational System");
+        systemTypes.put("GOVERNMENT", "Government System");
+        systemTypes.put("SOCIAL_MEDIA", "Social Media Platform");
+        systemTypes.put("GAMING", "Gaming System");
+        systemTypes.put("ENTERPRISE", "Enterprise System");
         return ResponseEntity.ok(systemTypes);
     }
 
     @GetMapping("/deployment-environments")
     public ResponseEntity<Map<String, String>> getDeploymentEnvironments() {
         Map<String, String> environments = new HashMap<>();
-        environments.put("DEVELOPMENT", "بيئة التطوير");
-        environments.put("STAGING", "بيئة الاختبار");
-        environments.put("PRODUCTION_LIKE", "بيئة مشابهة للإنتاج");
-        environments.put("PRODUCTION", "بيئة الإنتاج");
+        environments.put("DEVELOPMENT", "Development Environment");
+        environments.put("STAGING", "Staging Environment");
+        environments.put("PRODUCTION_LIKE", "Production-like Environment");
+        environments.put("PRODUCTION", "Production Environment");
         return ResponseEntity.ok(environments);
     }
 }

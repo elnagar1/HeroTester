@@ -16,35 +16,35 @@ public class PerformanceTestScenarioGenerator {
     private static final Map<String, Map<String, Object>> OPERATION_WEIGHTS = new HashMap<>();
 
     static {
-        // تعريف قوالب السيناريوهات
+        // Scenario templates definition
         SCENARIO_TEMPLATES.put("STRESS", Arrays.asList(
-            "زيادة تدريجية في عدد المستخدمين حتى نقطة الانهيار",
-            "اختبار استقرار النظام تحت الضغط العالي",
-            "قياس أداء النظام عند الحد الأقصى للمستخدمين"
+            "Gradually increase the number of users until the system breaks",
+            "Test system stability under high load",
+            "Measure system performance at maximum user capacity"
         ));
         
         SCENARIO_TEMPLATES.put("SOAK", Arrays.asList(
-            "اختبار النظام لفترة طويلة (24 ساعة)",
-            "مراقبة تسرب الذاكرة والموارد",
-            "اختبار استقرار الأداء على المدى الطويل"
+            "Test the system for an extended period (24 hours)",
+            "Monitor for memory and resource leaks",
+            "Test long-term performance stability"
         ));
         
         SCENARIO_TEMPLATES.put("VOLUME", Arrays.asList(
-            "اختبار النظام مع كميات كبيرة من البيانات",
-            "قياس أداء قاعدة البيانات تحت الحمل العالي",
-            "اختبار استجابة النظام للبيانات الضخمة"
+            "Test the system with large volumes of data",
+            "Measure database performance under heavy load",
+            "Test system response to big data"
         ));
         
         SCENARIO_TEMPLATES.put("SPIKE", Arrays.asList(
-            "زيادة مفاجئة في عدد المستخدمين",
-            "اختبار استجابة النظام للذروات المفاجئة",
-            "قياس وقت التعافي من الذروات"
+            "Sudden increase in the number of users",
+            "Test system response to sudden spikes",
+            "Measure recovery time after spikes"
         ));
         
         SCENARIO_TEMPLATES.put("SCALABILITY", Arrays.asList(
-            "اختبار قابلية التوسع الأفقي للنظام",
-            "قياس الأداء مع إضافة موارد جديدة",
-            "اختبار توزيع الحمل على الخوادم"
+            "Test horizontal scalability of the system",
+            "Measure performance with added resources",
+            "Test load distribution across servers"
         ));
 
         // تعريف أوزان العمليات المختلفة
@@ -58,7 +58,7 @@ public class PerformanceTestScenarioGenerator {
     public PerformanceTestPlan generateTestPlan(PerformanceTestRequest request) {
         PerformanceTestPlan plan = new PerformanceTestPlan();
         plan.setPlanId(generatePlanId());
-        plan.setPlanName("خطة اختبار الأداء - " + request.getSystemType());
+        plan.setPlanName("Performance Test Plan - " + request.getSystemType());
         plan.setSystemName(request.getSystemType());
         plan.setCreatedBy("AI Generator");
         
@@ -91,20 +91,20 @@ public class PerformanceTestScenarioGenerator {
         
         PerformanceTestScenario stressScenario = new PerformanceTestScenario();
         stressScenario.setScenarioId("STRESS_001");
-        stressScenario.setScenarioName("اختبار الضغط - نقطة الانهيار");
+        stressScenario.setScenarioName("Stress Test - Breakpoint");
         stressScenario.setScenarioType("STRESS");
-        stressScenario.setDescription("اختبار النظام تحت ضغط عالي حتى نقطة الانهيار");
+        stressScenario.setDescription("Test the system under high load until the breakpoint is reached");
         stressScenario.setTargetUsers(breakpoint);
         stressScenario.setRampUpTime(calculateRampUpTime(breakpoint));
-        stressScenario.setTestDuration(30); // 30 دقيقة
+        stressScenario.setTestDuration(30); // 30 minutes
         stressScenario.setPriority(5);
         
         List<String> steps = new ArrayList<>();
-        steps.add("بدء بـ " + (breakpoint * 0.2) + " مستخدم");
-        steps.add("زيادة تدريجية إلى " + (breakpoint * 0.5) + " مستخدم");
-        steps.add("زيادة إلى " + (breakpoint * 0.8) + " مستخدم");
-        steps.add("زيادة إلى " + breakpoint + " مستخدم (نقطة الانهيار المتوقعة)");
-        steps.add("مراقبة استجابة النظام");
+        steps.add("Start with " + (breakpoint * 0.2) + " users");
+        steps.add("Gradually increase to " + (breakpoint * 0.5) + " users");
+        steps.add("Increase to " + (breakpoint * 0.8) + " users");
+        steps.add("Increase to " + breakpoint + " users (expected breakpoint)");
+        steps.add("Monitor system response");
         stressScenario.setTestSteps(steps);
         
         Map<String, Object> params = new HashMap<>();
@@ -114,22 +114,22 @@ public class PerformanceTestScenarioGenerator {
         stressScenario.setParameters(params);
         
         List<String> successCriteria = Arrays.asList(
-            "تحديد نقطة الانهيار بدقة",
-            "قياس وقت الاستجابة عند كل مستوى",
-            "تحديد أول مؤشر للتراجع في الأداء"
+            "Accurately identify the system's breakpoint",
+            "Measure response time at each level",
+            "Detect the first sign of performance degradation"
         );
         stressScenario.setSuccessCriteria(successCriteria);
         
         List<String> monitoringPoints = Arrays.asList(
-            "استخدام CPU",
-            "استخدام الذاكرة",
-            "وقت الاستجابة",
-            "معدل الأخطاء",
-            "استخدام الشبكة"
+            "CPU usage",
+            "Memory usage",
+            "Response time",
+            "Error rate",
+            "Network usage"
         );
         stressScenario.setMonitoringPoints(monitoringPoints);
         
-        stressScenario.setExpectedOutcome("تحديد الحد الأقصى للمستخدمين المتزامنين");
+        stressScenario.setExpectedOutcome("Determine the maximum number of concurrent users the system can handle");
         
         scenarios.add(stressScenario);
         return scenarios;
@@ -140,19 +140,19 @@ public class PerformanceTestScenarioGenerator {
         
         PerformanceTestScenario soakScenario = new PerformanceTestScenario();
         soakScenario.setScenarioId("SOAK_001");
-        soakScenario.setScenarioName("اختبار التحمل - 24 ساعة");
+        soakScenario.setScenarioName("Soak Test - 24 Hours");
         soakScenario.setScenarioType("SOAK");
-        soakScenario.setDescription("اختبار استقرار النظام على المدى الطويل");
-        soakScenario.setTargetUsers((int) (request.getExpectedUsers() * 0.7)); // 70% من المستخدمين المتوقعين
-        soakScenario.setRampUpTime(30); // 30 دقيقة
-        soakScenario.setTestDuration(1440); // 24 ساعة
+        soakScenario.setDescription("Test the system's stability over a long period");
+        soakScenario.setTargetUsers((int) (request.getExpectedUsers() * 0.7)); // 70% of expected users
+        soakScenario.setRampUpTime(30); // 30 minutes
+        soakScenario.setTestDuration(1440); // 24 hours
         soakScenario.setPriority(4);
         
         List<String> steps = new ArrayList<>();
-        steps.add("بدء بـ " + (soakScenario.getTargetUsers() * 0.5) + " مستخدم");
-        steps.add("زيادة إلى " + soakScenario.getTargetUsers() + " مستخدم");
-        steps.add("الحفاظ على الحمل لمدة 24 ساعة");
-        steps.add("مراقبة استهلاك الموارد");
+        steps.add("Start with " + (soakScenario.getTargetUsers() * 0.5) + " users");
+        steps.add("Increase to " + soakScenario.getTargetUsers() + " users");
+        steps.add("Maintain load for 24 hours");
+        steps.add("Monitor resource consumption");
         soakScenario.setTestSteps(steps);
         
         Map<String, Object> params = new HashMap<>();
@@ -162,22 +162,22 @@ public class PerformanceTestScenarioGenerator {
         soakScenario.setParameters(params);
         
         List<String> successCriteria = Arrays.asList(
-            "عدم وجود تسرب في الذاكرة",
-            "استقرار استجابة النظام",
-            "عدم وجود أخطاء متزايدة"
+            "No memory leaks detected",
+            "Stable system response",
+            "No increasing error rate"
         );
         soakScenario.setSuccessCriteria(successCriteria);
         
         List<String> monitoringPoints = Arrays.asList(
-            "استخدام الذاكرة مع مرور الوقت",
-            "استخدام CPU",
-            "عدد الأخطاء",
-            "وقت الاستجابة",
-            "استخدام القرص"
+            "Memory usage over time",
+            "CPU usage",
+            "Error count",
+            "Response time",
+            "Disk usage"
         );
         soakScenario.setMonitoringPoints(monitoringPoints);
         
-        soakScenario.setExpectedOutcome("تأكيد استقرار النظام على المدى الطويل");
+        soakScenario.setExpectedOutcome("Confirm system stability over a long period");
         
         scenarios.add(soakScenario);
         return scenarios;
@@ -188,19 +188,19 @@ public class PerformanceTestScenarioGenerator {
         
         PerformanceTestScenario volumeScenario = new PerformanceTestScenario();
         volumeScenario.setScenarioId("VOLUME_001");
-        volumeScenario.setScenarioName("اختبار الحجم - البيانات الضخمة");
+        volumeScenario.setScenarioName("Volume Test - Big Data");
         volumeScenario.setScenarioType("VOLUME");
-        volumeScenario.setDescription("اختبار أداء النظام مع كميات كبيرة من البيانات");
+        volumeScenario.setDescription("Test system performance with large volumes of data");
         volumeScenario.setTargetUsers(request.getExpectedUsers());
         volumeScenario.setRampUpTime(20);
         volumeScenario.setTestDuration(60);
         volumeScenario.setPriority(4);
         
         List<String> steps = new ArrayList<>();
-        steps.add("تحميل " + (request.getDataVolume() * 0.5) + " سجل في قاعدة البيانات");
-        steps.add("بدء الاختبار بـ " + request.getExpectedUsers() + " مستخدم");
-        steps.add("تنفيذ عمليات البحث والقراءة");
-        steps.add("مراقبة أداء قاعدة البيانات");
+        steps.add("Load " + (request.getDataVolume() * 0.5) + " records into the database");
+        steps.add("Start the test with " + request.getExpectedUsers() + " users");
+        steps.add("Perform search and read operations");
+        steps.add("Monitor database performance");
         volumeScenario.setTestSteps(steps);
         
         Map<String, Object> params = new HashMap<>();
@@ -210,22 +210,22 @@ public class PerformanceTestScenarioGenerator {
         volumeScenario.setParameters(params);
         
         List<String> successCriteria = Arrays.asList(
-            "وقت استجابة البحث أقل من 2 ثانية",
-            "استخدام قاعدة البيانات أقل من 80%",
-            "عدم وجود أخطاء في الاستعلامات"
+            "Search response time less than 2 seconds",
+            "Database usage below 80%",
+            "No query errors"
         );
         volumeScenario.setSuccessCriteria(successCriteria);
         
         List<String> monitoringPoints = Arrays.asList(
-            "وقت استجابة قاعدة البيانات",
-            "استخدام القرص",
-            "استخدام الذاكرة",
-            "عدد الاستعلامات في الثانية",
-            "وقت تنفيذ الاستعلامات المعقدة"
+            "Database response time",
+            "Disk usage",
+            "Memory usage",
+            "Queries per second",
+            "Complex query execution time"
         );
         volumeScenario.setMonitoringPoints(monitoringPoints);
         
-        volumeScenario.setExpectedOutcome("تأكيد قدرة النظام على التعامل مع البيانات الضخمة");
+        volumeScenario.setExpectedOutcome("Confirm the system can handle big data efficiently");
         
         scenarios.add(volumeScenario);
         return scenarios;
@@ -236,19 +236,19 @@ public class PerformanceTestScenarioGenerator {
         
         PerformanceTestScenario spikeScenario = new PerformanceTestScenario();
         spikeScenario.setScenarioId("SPIKE_001");
-        spikeScenario.setScenarioName("اختبار الذروة المفاجئة");
+        spikeScenario.setScenarioName("Spike Test - Sudden Load");
         spikeScenario.setScenarioType("SPIKE");
-        spikeScenario.setDescription("اختبار استجابة النظام للزيادة المفاجئة في الحمل");
-        spikeScenario.setTargetUsers((int) (request.getExpectedUsers() * 2)); // ضعف المستخدمين المتوقعين
-        spikeScenario.setRampUpTime(5); // 5 دقائق فقط
+        spikeScenario.setDescription("Test system response to a sudden increase in load");
+        spikeScenario.setTargetUsers((int) (request.getExpectedUsers() * 2)); // double expected users
+        spikeScenario.setRampUpTime(5); // 5 minutes
         spikeScenario.setTestDuration(20);
         spikeScenario.setPriority(3);
         
         List<String> steps = new ArrayList<>();
-        steps.add("بدء بـ " + request.getExpectedUsers() + " مستخدم");
-        steps.add("زيادة مفاجئة إلى " + spikeScenario.getTargetUsers() + " مستخدم في 5 دقائق");
-        steps.add("الحفاظ على الحمل العالي لمدة 10 دقائق");
-        steps.add("تقليل الحمل تدريجياً");
+        steps.add("Start with " + request.getExpectedUsers() + " users");
+        steps.add("Suddenly increase to " + spikeScenario.getTargetUsers() + " users in 5 minutes");
+        steps.add("Maintain high load for 10 minutes");
+        steps.add("Gradually decrease the load");
         spikeScenario.setTestSteps(steps);
         
         Map<String, Object> params = new HashMap<>();
@@ -258,22 +258,22 @@ public class PerformanceTestScenarioGenerator {
         spikeScenario.setParameters(params);
         
         List<String> successCriteria = Arrays.asList(
-            "النظام لا ينهار عند الذروة",
-            "وقت التعافي أقل من 5 دقائق",
-            "الحفاظ على الوظائف الأساسية"
+            "System does not crash during spike",
+            "Recovery time less than 5 minutes",
+            "Core functionalities remain available"
         );
         spikeScenario.setSuccessCriteria(successCriteria);
         
         List<String> monitoringPoints = Arrays.asList(
-            "وقت الاستجابة أثناء الذروة",
-            "معدل الأخطاء",
-            "استخدام الموارد",
-            "وقت التعافي",
-            "تأثير على المستخدمين الحاليين"
+            "Response time during spike",
+            "Error rate",
+            "Resource usage",
+            "Recovery time",
+            "Impact on current users"
         );
         spikeScenario.setMonitoringPoints(monitoringPoints);
         
-        spikeScenario.setExpectedOutcome("تأكيد قدرة النظام على التعامل مع الذروات المفاجئة");
+        spikeScenario.setExpectedOutcome("Confirm the system can handle sudden spikes in load");
         
         scenarios.add(spikeScenario);
         return scenarios;
@@ -284,19 +284,19 @@ public class PerformanceTestScenarioGenerator {
         
         PerformanceTestScenario scalabilityScenario = new PerformanceTestScenario();
         scalabilityScenario.setScenarioId("SCALABILITY_001");
-        scalabilityScenario.setScenarioName("اختبار قابلية التوسع");
+        scalabilityScenario.setScenarioName("Scalability Test");
         scalabilityScenario.setScenarioType("SCALABILITY");
-        scalabilityScenario.setDescription("اختبار أداء النظام مع إضافة موارد جديدة");
+        scalabilityScenario.setDescription("Test system performance with additional resources");
         scalabilityScenario.setTargetUsers(request.getExpectedUsers());
         scalabilityScenario.setRampUpTime(15);
         scalabilityScenario.setTestDuration(45);
         scalabilityScenario.setPriority(3);
         
         List<String> steps = new ArrayList<>();
-        steps.add("بدء الاختبار مع خادم واحد");
-        steps.add("إضافة خادم ثاني أثناء الاختبار");
-        steps.add("إضافة خادم ثالث إذا لزم الأمر");
-        steps.add("مراقبة توزيع الحمل");
+        steps.add("Start the test with one server");
+        steps.add("Add a second server during the test");
+        steps.add("Add a third server if needed");
+        steps.add("Monitor load distribution");
         scalabilityScenario.setTestSteps(steps);
         
         Map<String, Object> params = new HashMap<>();
@@ -307,22 +307,22 @@ public class PerformanceTestScenarioGenerator {
         scalabilityScenario.setParameters(params);
         
         List<String> successCriteria = Arrays.asList(
-            "تحسن الأداء مع إضافة الخوادم",
-            "توزيع متوازن للحمل",
-            "عدم وجود توقف في الخدمة"
+            "Performance improves with added servers",
+            "Balanced load distribution",
+            "No service downtime"
         );
         scalabilityScenario.setSuccessCriteria(successCriteria);
         
         List<String> monitoringPoints = Arrays.asList(
-            "توزيع الحمل على الخوادم",
-            "وقت الاستجابة لكل خادم",
-            "استخدام الموارد لكل خادم",
-            "وقت إضافة الخوادم الجديدة",
-            "تأثير التوسع على الأداء العام"
+            "Load distribution across servers",
+            "Response time per server",
+            "Resource usage per server",
+            "Time to add new servers",
+            "Impact of scaling on overall performance"
         );
         scalabilityScenario.setMonitoringPoints(monitoringPoints);
         
-        scalabilityScenario.setExpectedOutcome("تأكيد قابلية النظام للتوسع الأفقي");
+        scalabilityScenario.setExpectedOutcome("Confirm the system's horizontal scalability");
         
         scenarios.add(scalabilityScenario);
         return scenarios;
@@ -354,44 +354,44 @@ public class PerformanceTestScenarioGenerator {
 
     private String determineTestEnvironment(PerformanceTestRequest request) {
         if ("PRODUCTION_LIKE".equals(request.getDeploymentEnvironment())) {
-            return "بيئة مشابهة للإنتاج";
+            return "Production-like Environment";
         } else if ("STAGING".equals(request.getDeploymentEnvironment())) {
-            return "بيئة الاختبار";
+            return "Staging Environment";
         } else {
-            return "بيئة التطوير";
+            return "Development Environment";
         }
     }
 
     private String generateExecutionStrategy(PerformanceTestRequest request, List<PerformanceTestScenario> scenarios) {
         StringBuilder strategy = new StringBuilder();
-        strategy.append("استراتيجية التنفيذ:\n");
-        strategy.append("1. تنفيذ السيناريوهات بالترتيب التالي:\n");
-        strategy.append("   - اختبار التحمل (SOAK) أولاً\n");
-        strategy.append("   - اختبار الحجم (VOLUME)\n");
-        strategy.append("   - اختبار الضغط (STRESS)\n");
-        strategy.append("   - اختبار الذروة (SPIKE)\n");
-        strategy.append("   - اختبار قابلية التوسع (SCALABILITY)\n");
-        strategy.append("2. مراقبة مستمرة للموارد\n");
-        strategy.append("3. إيقاف الاختبار عند حدوث مشاكل خطيرة\n");
+        strategy.append("Execution Strategy:\n");
+        strategy.append("1. Execute scenarios in the following order:\n");
+        strategy.append("   - Soak Test (SOAK) first\n");
+        strategy.append("   - Volume Test (VOLUME)\n");
+        strategy.append("   - Stress Test (STRESS)\n");
+        strategy.append("   - Spike Test (SPIKE)\n");
+        strategy.append("   - Scalability Test (SCALABILITY)\n");
+        strategy.append("2. Continuously monitor resources\n");
+        strategy.append("3. Stop the test if critical issues occur\n");
         return strategy.toString();
     }
 
     private List<String> generatePrerequisites(PerformanceTestRequest request) {
         List<String> prerequisites = new ArrayList<>();
-        prerequisites.add("إعداد بيئة الاختبار");
-        prerequisites.add("تحضير بيانات الاختبار");
-        prerequisites.add("إعداد أدوات المراقبة");
-        prerequisites.add("تأمين موارد النظام الكافية");
-        prerequisites.add("إعداد خطة الطوارئ");
+        prerequisites.add("Prepare the test environment");
+        prerequisites.add("Prepare test data");
+        prerequisites.add("Set up monitoring tools");
+        prerequisites.add("Ensure sufficient system resources");
+        prerequisites.add("Prepare a contingency plan");
         return prerequisites;
     }
 
     private Map<String, String> generateTestDataRequirements(PerformanceTestRequest request) {
         Map<String, String> requirements = new HashMap<>();
-        requirements.put("user_data", "بيانات " + request.getExpectedUsers() + " مستخدم");
-        requirements.put("transaction_data", "بيانات المعاملات للعمليات الشائعة");
-        requirements.put("search_data", "بيانات البحث المتنوعة");
-        requirements.put("file_data", "ملفات بأحجام مختلفة للاختبار");
+        requirements.put("user_data", "Data for " + request.getExpectedUsers() + " users");
+        requirements.put("transaction_data", "Transaction data for common operations");
+        requirements.put("search_data", "Diverse search data");
+        requirements.put("file_data", "Files of various sizes for testing");
         return requirements;
     }
 
@@ -403,16 +403,16 @@ public class PerformanceTestScenarioGenerator {
         int hours = totalMinutes / 60;
         int minutes = totalMinutes % 60;
         
-        return hours + " ساعة و " + minutes + " دقيقة";
+        return hours + " hours and " + minutes + " minutes";
     }
 
     private String assessRisks(PerformanceTestRequest request, List<PerformanceTestScenario> scenarios) {
         StringBuilder risks = new StringBuilder();
-        risks.append("تقييم المخاطر:\n");
-        risks.append("1. مخاطر عالية: اختبار الضغط قد يسبب توقف النظام\n");
-        risks.append("2. مخاطر متوسطة: اختبار التحمل قد يستهلك موارد كثيرة\n");
-        risks.append("3. مخاطر منخفضة: اختبار الحجم قد يؤثر على الأداء مؤقتاً\n");
-        risks.append("4. توصيات: إعداد خطة استرداد ومراقبة مستمرة\n");
+        risks.append("Risk Assessment:\n");
+        risks.append("1. High risk: Stress test may cause system outage\n");
+        risks.append("2. Medium risk: Soak test may consume significant resources\n");
+        risks.append("3. Low risk: Volume test may temporarily affect performance\n");
+        risks.append("4. Recommendations: Prepare a recovery plan and monitor continuously\n");
         return risks.toString();
     }
 
