@@ -23,11 +23,18 @@ public class KnowledgeBaseService {
         public String title;
         public String source; // text, file, jira, slack
         public String content;
+        public String description; // new field for editable description
         public Map<String, String> metadata;
         public Instant createdAt;
     }
 
+    public static class DocumentationGroup {
+        public String id;
+        public String name;
+        public DocumentationGroup(String id, String name) { this.id = id; this.name = name; }
+    }
     private final List<Document> documents = new CopyOnWriteArrayList<>();
+    private final List<DocumentationGroup> docGroups = new CopyOnWriteArrayList<>();
     private final WebClient http = WebClient.builder().build();
 
     public List<Document> listDocuments() {
@@ -153,6 +160,105 @@ public class KnowledgeBaseService {
             documents.add(d);
             return 1;
         } catch (Exception e) { return 0; }
+    }
+
+    public DocumentationGroup createDocumentationGroup(String name) {
+        String id = UUID.randomUUID().toString();
+        DocumentationGroup group = new DocumentationGroup(id, name);
+        docGroups.add(group);
+        return group;
+    }
+    public boolean deleteDocumentationGroup(String id) {
+        return docGroups.removeIf(g -> g.id.equals(id));
+    }
+    public List<DocumentationGroup> listDocumentationGroups() {
+        return new ArrayList<>(docGroups);
+    }
+
+    public void ingestApiDocumentation(String title, String content, String endpoint, String method, Map<String, String> extraMetadata, String groupId, String description) {
+        if (content == null || content.trim().isEmpty()) return;
+        Document d = new Document();
+        d.id = UUID.randomUUID().toString();
+        d.title = (title == null || title.isBlank()) ? (method + " " + endpoint) : title.trim();
+        d.source = "api-doc";
+        d.content = content;
+        d.description = description;
+        Map<String, String> meta = new HashMap<>();
+        meta.put("endpoint", endpoint);
+        meta.put("method", method);
+        if (groupId != null) meta.put("groupId", groupId);
+        if (extraMetadata != null) meta.putAll(extraMetadata);
+        // إضافة scenarioId إذا كان موجودًا في extraMetadata
+        if (extraMetadata != null && extraMetadata.containsKey("scenarioId")) {
+            meta.put("scenarioId", extraMetadata.get("scenarioId"));
+        }
+        // إضافة tags وstatus وlastTested إذا وجدت
+        if (extraMetadata != null && extraMetadata.containsKey("tags")) {
+            meta.put("tags", extraMetadata.get("tags"));
+        }
+        if (extraMetadata != null && extraMetadata.containsKey("status")) {
+            meta.put("status", extraMetadata.get("status"));
+        }
+        if (extraMetadata != null && extraMetadata.containsKey("lastTested")) {
+            meta.put("lastTested", extraMetadata.get("lastTested"));
+        }
+        d.metadata = meta;
+        d.createdAt = Instant.now();
+        documents.add(d);
+    }
+    public Map<String, Map<String, List<Document>>> getApiDocumentationGrouped(String groupId) {
+        Map<String, Map<String, List<Document>>> grouped = new HashMap<>();
+        for (Document d : documents) {
+            if (!"api-doc".equals(d.source)) continue;
+            if (groupId != null && d.metadata != null && !groupId.equals(d.metadata.get("groupId"))) continue;
+            String endpoint = d.metadata != null ? d.metadata.getOrDefault("endpoint", "") : "";
+            String method = d.metadata != null ? d.metadata.getOrDefault("method", "") : "";
+            if (endpoint.isEmpty() || method.isEmpty()) continue;
+            grouped.computeIfAbsent(endpoint, k -> new HashMap<>())
+                   .computeIfAbsent(method, k -> new ArrayList<>())
+                   .add(d);
+        }
+        return grouped;
+    }
+
+    public boolean deleteApiDocumentation(String docId) {
+        return documents.removeIf(d -> Objects.equals(d.id, docId) && "api-doc".equals(d.source));
+    }
+    public boolean updateApiDocumentation(String docId, String newTitle, String newDescription, String notes, String tags, String status, String lastTested) {
+        for (Document d : documents) {
+            if (Objects.equals(d.id, docId) && "api-doc".equals(d.source)) {
+                if (newTitle != null && !newTitle.isBlank()) d.title = newTitle;
+                if (newDescription != null) d.description = newDescription;
+                if (notes != null) {
+                    if (d.metadata == null) d.metadata = new HashMap<>();
+                    d.metadata.put("notes", notes);
+                }
+                if (tags != null) {
+                    if (d.metadata == null) d.metadata = new HashMap<>();
+                    d.metadata.put("tags", tags);
+                }
+                if (status != null) {
+                    if (d.metadata == null) d.metadata = new HashMap<>();
+                    d.metadata.put("status", status);
+                }
+                if (lastTested != null) {
+                    if (d.metadata == null) d.metadata = new HashMap<>();
+                    d.metadata.put("lastTested", lastTested);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean moveApiDocumentation(String docId, String newGroupId) {
+        for (Document d : documents) {
+            if (Objects.equals(d.id, docId) && "api-doc".equals(d.source)) {
+                if (d.metadata == null) d.metadata = new HashMap<>();
+                d.metadata.put("groupId", newGroupId);
+                return true;
+            }
+        }
+        return false;
     }
 
     public String buildContextForQuestion(String question, int maxChars) {

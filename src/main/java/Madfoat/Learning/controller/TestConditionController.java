@@ -3,6 +3,7 @@ package Madfoat.Learning.controller;
 import Madfoat.Learning.service.AIService;
 import Madfoat.Learning.service.ImageProcessingService;
 import Madfoat.Learning.service.ApiScenarioService;
+import Madfoat.Learning.service.KnowledgeBaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 public class TestConditionController {
@@ -23,6 +25,9 @@ public class TestConditionController {
 
     @Autowired
     private ApiScenarioService apiScenarioService;
+
+    @Autowired
+    private KnowledgeBaseService knowledgeBaseService;
 
     @GetMapping("/")
     public String index() {
@@ -181,6 +186,97 @@ public class TestConditionController {
             try { expectedStatus = Integer.parseInt(String.valueOf(exp)); } catch (Exception ignored) {}
         }
         return apiScenarioService.setScenarioAssertions(id, assertions, expectedStatus);
+    }
+
+    @PostMapping("/api/documentation/group/create")
+    @ResponseBody
+    public KnowledgeBaseService.DocumentationGroup createDocumentationGroup(@RequestParam("name") String name) {
+        return knowledgeBaseService.createDocumentationGroup(name);
+    }
+
+    @PostMapping("/api/documentation/group/delete")
+    @ResponseBody
+    public Map<String, Object> deleteDocumentationGroup(@RequestParam("id") String id) {
+        boolean ok = knowledgeBaseService.deleteDocumentationGroup(id);
+        return Map.of("status", ok ? "ok" : "error");
+    }
+
+    @GetMapping("/api/documentation/groups")
+    @ResponseBody
+    public List<KnowledgeBaseService.DocumentationGroup> listDocumentationGroups() {
+        return knowledgeBaseService.listDocumentationGroups();
+    }
+
+    @PostMapping("/api/documentation/delete")
+    @ResponseBody
+    public Map<String, Object> deleteApiDocumentation(@RequestParam("id") String id) {
+        boolean ok = knowledgeBaseService.deleteApiDocumentation(id);
+        return Map.of("status", ok ? "ok" : "error");
+    }
+
+    @PostMapping("/api/documentation/edit")
+    @ResponseBody
+    public Map<String, Object> editApiDocumentation(@RequestParam("id") String id,
+                                                   @RequestParam(value = "title", required = false) String title,
+                                                   @RequestParam(value = "description", required = false) String description,
+                                                   @RequestParam(value = "notes", required = false) String notes,
+                                                   @RequestParam(value = "tags", required = false) String tags,
+                                                   @RequestParam(value = "status", required = false) String status,
+                                                   @RequestParam(value = "lastTested", required = false) String lastTested) {
+        boolean ok = knowledgeBaseService.updateApiDocumentation(id, title, description, notes, tags, status, lastTested);
+        return Map.of("status", ok ? "ok" : "error");
+    }
+
+    @PostMapping("/api/documentation/move")
+    @ResponseBody
+    public Map<String, Object> moveApiDocumentation(@RequestParam("id") String id,
+                                                   @RequestParam("groupId") String groupId) {
+        boolean ok = knowledgeBaseService.moveApiDocumentation(id, groupId);
+        return Map.of("status", ok ? "ok" : "error");
+    }
+
+    @PostMapping("/api/documentation/add")
+    @ResponseBody
+    public Map<String, Object> addApiDocumentation(@RequestParam("id") String id,
+                                                  @RequestParam(value = "title", required = false) String title,
+                                                  @RequestParam(value = "description", required = false) String description,
+                                                  @RequestParam(value = "groupId", required = false) String groupId,
+                                                  @RequestParam(value = "tags", required = false) String tags,
+                                                  @RequestParam(value = "status", required = false) String status) {
+        Map<String, Object> scenario = apiScenarioService.getScenarioDetail(id);
+        if (scenario == null || !"ok".equals(scenario.get("status"))) {
+            return Map.of("status", "error", "message", "Scenario not found");
+        }
+        String endpoint = String.valueOf(scenario.getOrDefault("url", ""));
+        String method = String.valueOf(scenario.getOrDefault("method", ""));
+        String docTitle = title != null ? title : String.valueOf(scenario.getOrDefault("title", method + " " + endpoint));
+        StringBuilder content = new StringBuilder();
+        content.append("Endpoint: ").append(endpoint).append("\n");
+        content.append("Method: ").append(method).append("\n");
+        if (description != null && !description.isBlank()) {
+            content.append("Description: ").append(description).append("\n");
+        } else if (scenario.get("desc") != null) {
+            content.append("Description: ").append(scenario.get("desc")).append("\n");
+        }
+        content.append("Details: ").append(scenario.toString());
+        // أضف كل بيانات السيناريو إلى extraMetadata
+        Map<String, String> extraMetadata = new HashMap<>();
+        extraMetadata.put("scenarioId", id);
+        extraMetadata.put("body", String.valueOf(scenario.getOrDefault("body", "")));
+        extraMetadata.put("headers", String.valueOf(scenario.getOrDefault("headers", "")));
+        extraMetadata.put("expectedStatus", String.valueOf(scenario.getOrDefault("expectedStatus", "")));
+        extraMetadata.put("assertions", String.valueOf(scenario.getOrDefault("assertions", "")));
+        extraMetadata.put("curl", String.valueOf(scenario.getOrDefault("curl", "")));
+        if (tags != null) extraMetadata.put("tags", tags);
+        if (status != null) extraMetadata.put("status", status);
+        knowledgeBaseService.ingestApiDocumentation(docTitle, content.toString(), endpoint, method, extraMetadata, groupId, description);
+        return Map.of("status", "ok");
+    }
+
+    @GetMapping("/api/documentation/grouped")
+    @ResponseBody
+    public Map<String, Map<String, List<KnowledgeBaseService.Document>>> getApiDocumentationGrouped(@RequestParam(value = "groupId", required = false) String groupId) {
+        return knowledgeBaseService.getApiDocumentationGrouped(groupId);
     }
 
     @GetMapping("/api/health")
