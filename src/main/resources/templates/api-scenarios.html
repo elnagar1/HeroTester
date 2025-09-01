@@ -659,11 +659,11 @@
             return;
         }
         let html = `<div class="table-responsive"><table class="table table-striped align-middle" id="docTable"><thead><tr>
-            <th style="width: 35%;">API Information</th>
-            <th style="width: 20%;">Technical Details</th>
-            <th style="width: 15%;">Testing</th>
-            <th style="width: 15%;">Metadata</th>
-            <th style="width: 15%;">Actions</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 40%;">API Information</th>
+            <th style="width: 25%;">Quick Details</th>
+            <th style="width: 20%;">Status & Tags</th>
+            <th style="width: 10%;">Actions</th>
         </tr></thead><tbody>`;
         allDocs.forEach(doc => {
             const scenarioId = doc.metadata && doc.metadata.scenarioId ? doc.metadata.scenarioId : doc.id;
@@ -677,80 +677,119 @@
             const tags = doc.metadata && doc.metadata.tags ? doc.metadata.tags : '';
             const status = doc.metadata && doc.metadata.status ? doc.metadata.status : 'Draft';
             const lastTested = doc.metadata && doc.metadata.lastTested ? doc.metadata.lastTested : '';
-            html += `<tr data-docid="${doc.id}" data-scenarioid="${scenarioId}">
+            html += `<tr class="doc-main-row" data-docid="${doc.id}" data-scenarioid="${scenarioId}">
+                <td class="toggle-cell">
+                    <button class="btn btn-sm btn-outline-secondary toggle-btn" data-docid="${doc.id}" title="Toggle Details">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </td>
                 <td>
-                    <div class="api-info-card">
-                        <div class="api-header">
-                            <div class="api-title-section">
-                                <i class="fas fa-plug api-icon"></i>
-                                <input class="form-control form-control-sm doc-title-input" value="${doc.title || ''}" data-id="${doc.id}" placeholder="Enter API Title"/>
-                            </div>
-                            <div class="api-description-section">
-                                <textarea class="form-control form-control-sm doc-desc-input" data-id="${doc.id}" placeholder="Describe what this API does..." rows="2">${doc.description || ''}</textarea>
-                            </div>
+                    <div class="api-info-compact">
+                        <div class="api-title-compact">
+                            <i class="fas fa-plug api-icon"></i>
+                            <input class="form-control form-control-sm doc-title-input" value="${doc.title || ''}" data-id="${doc.id}" placeholder="Enter API Title"/>
+                        </div>
+                        <div class="api-desc-compact">
+                            <textarea class="form-control form-control-sm doc-desc-input" data-id="${doc.id}" placeholder="Describe what this API does..." rows="1">${doc.description || ''}</textarea>
                         </div>
                     </div>
                 </td>
                 <td>
-                    <div class="technical-details">
-                        <div class="endpoint-section mb-2">
-                            <label class="detail-label"><i class="fas fa-link"></i> Endpoint</label>
-                            <code class="endpoint-url">${doc.endpoint || ''}</code>
-                        </div>
-                        <div class="method-section mb-2">
-                            <label class="detail-label"><i class="fas fa-code-branch"></i> Method</label>
+                    <div class="quick-details">
+                        <div class="endpoint-method">
                             <span class="badge bg-primary method-badge">${doc.method || ''}</span>
+                            <code class="endpoint-compact">${doc.endpoint || ''}</code>
                         </div>
-                        <div class="curl-section">
-                            <label class="detail-label"><i class="fas fa-terminal"></i> cURL</label>
-                            <pre class="curl-preview">${curl ? curl.substring(0, 100) + (curl.length > 100 ? '...' : '') : 'N/A'}</pre>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div class="testing-info">
-                        <div class="expected-section mb-2">
-                            <label class="detail-label"><i class="fas fa-check-circle"></i> Expected Status</label>
-                            <span class="status-value">${expected || 'Not set'}</span>
-                        </div>
-                        <div class="assertions-section">
-                            <label class="detail-label"><i class="fas fa-list-check"></i> Assertions</label>
-                            <div class="assertions-preview">${assertions ? assertions.substring(0, 80) + (assertions.length > 80 ? '...' : '') : 'None'}</div>
+                        <div class="expected-compact">
+                            <small class="text-muted">Expected: ${expected || 'Not set'}</small>
                         </div>
                     </div>
                 </td>
                 <td>
-                    <div class="metadata-info">
-                        <div class="tags-section mb-2">
-                            <label class="detail-label"><i class="fas fa-tags"></i> Tags</label>
-                            <input class="form-control form-control-sm doc-tags-input" value="${tags}" data-id="${doc.id}" placeholder="tag1, tag2"/>
-                        </div>
-                        <div class="status-section mb-2">
-                            <label class="detail-label"><i class="fas fa-flag"></i> Status</label>
-                            <select class="form-select form-select-sm doc-status-input" data-id="${doc.id}">
-                                <option${status==='Draft'?' selected':''}>Draft</option>
-                                <option${status==='Reviewed'?' selected':''}>Reviewed</option>
-                                <option${status==='Approved'?' selected':''}>Approved</option>
-                                <option${status==='Deprecated'?' selected':''}>Deprecated</option>
-                            </select>
-                        </div>
-                        <div class="last-tested-section">
-                            <label class="detail-label"><i class="fas fa-clock"></i> Last Tested</label>
-                            <span class="doc-last-tested" data-id="${doc.id}">${lastTested || 'Never'}</span>
-                        </div>
-                        <div class="notes-section mt-2">
-                            <label class="detail-label"><i class="fas fa-sticky-note"></i> Notes</label>
-                            <input class="form-control form-control-sm doc-notes-input" value="${notes}" data-id="${doc.id}" placeholder="Add notes..."/>
-                        </div>
+                    <div class="status-tags-compact">
+                        <select class="form-select form-select-sm doc-status-input" data-id="${doc.id}">
+                            <option${status==='Draft'?' selected':''}>Draft</option>
+                            <option${status==='Reviewed'?' selected':''}>Reviewed</option>
+                            <option${status==='Approved'?' selected':''}>Approved</option>
+                            <option${status==='Deprecated'?' selected':''}>Deprecated</option>
+                        </select>
+                        <input class="form-control form-control-sm doc-tags-input mt-1" value="${tags}" data-id="${doc.id}" placeholder="tags"/>
                     </div>
                 </td>
                 <td>
-                    <div class="actions-section">
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-outline-primary doc-run" data-id="${scenarioId}" title="Run Test"><i class="fas fa-play"></i></button>
-                            <button class="btn btn-sm btn-outline-secondary doc-code" data-id="${scenarioId}" title="View Code"><i class="fas fa-code"></i></button>
-                            <button class="btn btn-sm btn-outline-danger doc-delete" data-id="${doc.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                            <button class="btn btn-sm btn-outline-dark doc-move" data-id="${doc.id}" title="Move"><i class="fas fa-exchange-alt"></i></button>
+                    <div class="actions-compact">
+                        <button class="btn btn-sm btn-outline-primary doc-run" data-id="${scenarioId}" title="Run"><i class="fas fa-play"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary doc-code" data-id="${scenarioId}" title="Code"><i class="fas fa-code"></i></button>
+                        <button class="btn btn-sm btn-outline-danger doc-delete" data-id="${doc.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+            <tr class="doc-details-row" data-docid="${doc.id}" style="display: none;">
+                <td colspan="5">
+                    <div class="expanded-details">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="detail-section">
+                                    <h6><i class="fas fa-cogs"></i> Technical Details</h6>
+                                    <div class="technical-details-expanded">
+                                        <div class="endpoint-section mb-2">
+                                            <label class="detail-label"><i class="fas fa-link"></i> Endpoint</label>
+                                            <code class="endpoint-url">${doc.endpoint || ''}</code>
+                                        </div>
+                                        <div class="method-section mb-2">
+                                            <label class="detail-label"><i class="fas fa-code-branch"></i> Method</label>
+                                            <span class="badge bg-primary method-badge">${doc.method || ''}</span>
+                                        </div>
+                                        <div class="curl-section">
+                                            <label class="detail-label"><i class="fas fa-terminal"></i> cURL</label>
+                                            <pre class="curl-preview">${curl ? curl.substring(0, 150) + (curl.length > 150 ? '...' : '') : 'N/A'}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-section">
+                                    <h6><i class="fas fa-vial"></i> Testing & Assertions</h6>
+                                    <div class="testing-info-expanded">
+                                        <div class="expected-section mb-2">
+                                            <label class="detail-label"><i class="fas fa-check-circle"></i> Expected Status</label>
+                                            <span class="status-value">${expected || 'Not set'}</span>
+                                        </div>
+                                        <div class="assertions-section">
+                                            <label class="detail-label"><i class="fas fa-list-check"></i> Assertions</label>
+                                            <div class="assertions-preview">${assertions ? assertions.substring(0, 120) + (assertions.length > 120 ? '...' : '') : 'None'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <div class="detail-section">
+                                    <h6><i class="fas fa-info-circle"></i> Additional Info</h6>
+                                    <div class="additional-info">
+                                        <div class="last-tested-section mb-2">
+                                            <label class="detail-label"><i class="fas fa-clock"></i> Last Tested</label>
+                                            <span class="doc-last-tested" data-id="${doc.id}">${lastTested || 'Never'}</span>
+                                        </div>
+                                        <div class="notes-section">
+                                            <label class="detail-label"><i class="fas fa-sticky-note"></i> Notes</label>
+                                            <input class="form-control form-control-sm doc-notes-input" value="${notes}" data-id="${doc.id}" placeholder="Add notes..."/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-section">
+                                    <h6><i class="fas fa-exchange-alt"></i> Management</h6>
+                                    <div class="management-actions">
+                                        <button class="btn btn-sm btn-outline-dark doc-move" data-id="${doc.id}" title="Move to Group"><i class="fas fa-exchange-alt"></i> Move</button>
+                                        <div class="mt-2">
+                                            <small class="text-muted">Documentation ID: ${doc.id}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </td>
@@ -762,6 +801,9 @@
         bindDocTableActions();
         // Auto-expand request details for all docs in the current group
         autoExpandRequests();
+        
+        // Bind toggle buttons
+        bindToggleButtons();
         // إضافة حفظ تلقائي للحقول القابلة للتعديل
         setTimeout(() => {
             document.querySelectorAll('.doc-title-input').forEach(input => {
@@ -1033,6 +1075,29 @@
         }
     };
     
+    // Toggle documentation details
+    function bindToggleButtons() {
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const docId = this.getAttribute('data-docid');
+                const detailsRow = document.querySelector(`.doc-details-row[data-docid="${docId}"]`);
+                const icon = this.querySelector('i');
+                
+                if (detailsRow.style.display === 'none') {
+                    detailsRow.style.display = 'table-row';
+                    icon.className = 'fas fa-chevron-up';
+                    this.classList.remove('btn-outline-secondary');
+                    this.classList.add('btn-outline-primary');
+                } else {
+                    detailsRow.style.display = 'none';
+                    icon.className = 'fas fa-chevron-down';
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-outline-secondary');
+                }
+            });
+        });
+    }
+    
     // Initial load
     document.getElementById('documentation-tab').addEventListener('shown.bs.tab', () => loadDocGroups());
 </script>
@@ -1078,6 +1143,127 @@
 <style>
 .doc-result-row { display: table-row !important; background: #f9f9f9; }
 /* API Documentation Table Styling */
+.toggle-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.toggle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+    transform: scale(1.1);
+}
+
+.api-info-compact {
+    padding: 8px;
+}
+
+.api-title-compact {
+    margin-bottom: 8px;
+}
+
+.api-desc-compact textarea {
+    resize: none;
+    min-height: 40px;
+    max-height: 40px;
+}
+
+.quick-details {
+    padding: 8px;
+}
+
+.endpoint-method {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.endpoint-compact {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #495057;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.expected-compact {
+    font-size: 11px;
+}
+
+.status-tags-compact {
+    padding: 8px;
+}
+
+.status-tags-compact .doc-status-input,
+.status-tags-compact .doc-tags-input {
+    font-size: 11px;
+    padding: 4px 6px;
+}
+
+.actions-compact {
+    text-align: center;
+}
+
+.actions-compact .btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin: 2px;
+    border-radius: 50%;
+    font-size: 10px;
+}
+
+/* Expanded Details Styling */
+.doc-details-row {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+}
+
+.expanded-details {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    margin: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.detail-section h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.detail-section h6 i {
+    margin-right: 8px;
+    color: #007bff;
+}
+
+.technical-details-expanded,
+.testing-info-expanded,
+.additional-info,
+.management-actions {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
 .api-info-card {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 12px;
