@@ -749,23 +749,6 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="detail-section">
-                                    <h6><i class="fas fa-vial"></i> Testing & Assertions</h6>
-                                    <div class="testing-info-expanded">
-                                        <div class="expected-section mb-2">
-                                            <label class="detail-label"><i class="fas fa-check-circle"></i> Expected Status</label>
-                                            <span class="status-value">${expected || 'Not set'}</span>
-                                        </div>
-                                        <div class="assertions-section">
-                                            <label class="detail-label"><i class="fas fa-list-check"></i> Assertions</label>
-                                            <div class="assertions-preview">${assertions ? assertions.substring(0, 120) + (assertions.length > 120 ? '...' : '') : 'None'}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-3 mt-2">
-                            <div class="col-md-6">
-                                <div class="detail-section">
                                     <h6><i class="fas fa-info-circle"></i> Additional Info</h6>
                                     <div class="additional-info">
                                         <div class="last-tested-section mb-2">
@@ -775,6 +758,23 @@
                                         <div class="notes-section">
                                             <label class="detail-label"><i class="fas fa-sticky-note"></i> Notes</label>
                                             <input class="form-control form-control-sm doc-notes-input" value="${notes}" data-id="${doc.id}" placeholder="Add notes..."/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <div class="detail-section">
+                                    <h6><i class="fas fa-vial"></i> Testing & Assertions</h6>
+                                    <div class="testing-info-expanded">
+                                        <div class="expected-section mb-2">
+                                            <label class="detail-label"><i class="fas fa-check-circle"></i> Expected Status</label>
+                                            <span class="status-value">${expected || 'Not set'}</span>
+                                        </div>
+                                        <div class="assertions-section">
+                                            <label class="detail-label"><i class="fas fa-list-check"></i> Assertions</label>
+                                            <div class="assertions-preview">${assertions ? assertions.substring(0, 120) + (assertions.length > 120 ? '...' : '') : 'None'}</div>
                                         </div>
                                     </div>
                                 </div>
