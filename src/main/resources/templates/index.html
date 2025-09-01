@@ -29,7 +29,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,.35);
         }
         .container { padding-top: 50px; }
-        .modern-panel { border: 1px solid var(--panel-border); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); backdrop-filter: blur(12px); background: var(--panel-bg); color: #e5e7eb; }
+        .modern-panel { border: 1px solid var(--panel-border); border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); background: var(--panel-bg); color: #e5e7eb; }
         .hero { text-align: center; margin-bottom: 22px; }
         .hero h1 { font-weight: 800; letter-spacing: .5px; background: linear-gradient(90deg, var(--brand-start), var(--brand-end)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .hero p { color: var(--muted); }
@@ -60,6 +60,7 @@
             <a class="navbar-brand text-white fw-bold" href="/">
                 <i class="fa-solid fa-flask-vial me-2"></i> HeroTester
             </a>
+            <button class="btn btn-outline-light ms-auto" id="settingsBtn" title="Settings" style="font-size:1.3rem;"><i class="fas fa-cog"></i></button>
         </div>
     </nav>
 
@@ -101,6 +102,11 @@
                                     <i class="fas fa-tachometer-alt"></i> Performance Test Generator
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-jira-tab" data-bs-toggle="tab" data-bs-target="#tab-jira" type="button" role="tab" aria-controls="tab-jira" aria-selected="false">
+                                    <i class="fas fa-bug"></i> Jira Bug Analysis
+                                </button>
+                            </li>
                         </ul>
 
                         <div class="tab-content" id="generatorTabsContent">
@@ -132,7 +138,7 @@
                                 <form th:action="@{/generate}" method="post" enctype="multipart/form-data" class="mb-4">
                                     <div class="mb-3">
                                         <label for="generationTypes" class="form-label">What do you need?</label>
-                                        <select class="form-select" id="generationTypes" name="generationTypes" multiple required>
+                                        <select class="form-select" id="generationTypes" name="generationTypes" multiple required title="Select output type">
                                             <option value="user_story">User Story</option>
                                             <option value="test_cases" selected>Test Cases</option>
                                         </select>
@@ -365,7 +371,72 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="tab-pane fade" id="tab-jira" role="tabpanel" aria-labelledby="tab-jira-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-bug icon-large text-danger"></i>
+                                    <h3>Jira Bug Analysis</h3>
+                                    <p class="text-muted">Connect your Jira instance to analyze bug trends and quality.</p>
+                                </div>
+                                <form id="jiraConnectionForm" class="mb-4">
+                                    <!-- تم حذف جميع الحقول، أبقِ فقط الزر -->
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary"><i class="fas fa-link"></i> Connect Jira</button>
+                                    </div>
+                                </form>
+                                <div id="jiraLoading" class="text-center my-3" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p>Connecting to Jira and analyzing bugs...</p>
+                                </div>
+                                <div id="jiraResults" style="display: none;">
+                                    <h4>Jira Bug Analysis Results</h4>
+                                    <p>Total Bugs: <span id="totalBugs">0</span></p>
+                                    <p>Data Issues: <span id="dataIssues">0</span></p>
+                                    <p>Spelling Errors: <span id="spellingErrors">0</span></p>
+                                    <p>Grammar Issues: <span id="grammarIssues">0</span></p>
+                                    <h5>Data Quality Issues</h5>
+                                    <div id="dataIssuesList" class="list-group"></div>
+                                    <h5>Language Issues</h5>
+                                    <div id="languageIssuesList" class="list-group"></div>
+                                    <h5>Detailed Bug List</h5>
+                                    <div id="detailedBugList" class="list-group"></div>
+                                    <div class="d-grid mt-3">
+                                        <button type="button" class="btn btn-secondary" onclick="exportJiraAnalysis()"><i class="fas fa-download"></i> Export Analysis</button>
+                                        <button type="button" class="btn btn-info" onclick="refreshJiraAnalysis()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                                    </div>
+                                </div>
+                                <div id="jiraErrorMessage" class="alert alert-danger d-none"></div>
+                            </div>
                         </div>
+                </div>
+                                    </div>
+                                            </div>
+                                        </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="settingsModalLabel"><i class="fas fa-cog"></i> Application Settings</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" title="Close"></button>
+                                                    </div>
+          <div class="modal-body">
+            <div id="settingsAlert" class="alert d-none"></div>
+            <form id="settingsForm">
+              <div class="table-responsive">
+                <table class="table table-dark table-striped align-middle" id="settingsTable">
+                  <thead><tr><th>Property</th><th>Value</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+                                                </div>
+                                            </form>
+                                        </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="saveSettingsBtn"><i class="fas fa-save"></i> Save Changes</button>
                 </div>
             </div>
         </div>
@@ -479,6 +550,239 @@
                 }
             });
         }
+
+        // Settings Modal Logic
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = new bootstrap.Modal(document.getElementById('settingsModal'));
+        const settingsTable = document.getElementById('settingsTable').querySelector('tbody');
+        const settingsAlert = document.getElementById('settingsAlert');
+        settingsBtn.addEventListener('click', async () => {
+          settingsAlert.classList.add('d-none');
+          settingsTable.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Loading...</td></tr>';
+          settingsModal.show();
+          try {
+            const res = await fetch('/api/settings/properties');
+            const props = await res.json();
+            let html = '';
+            for (const [key, value] of Object.entries(props)) {
+              html += `<tr><td><code>${key}</code></td><td><input type="text" class="form-control form-control-sm bg-dark text-light border-secondary" name="${key}" value="${value.replace(/"/g, '&quot;')}"></td></tr>`;
+            }
+            settingsTable.innerHTML = html;
+          } catch (e) {
+            settingsTable.innerHTML = '<tr><td colspan="2" class="text-danger">Failed to load properties.</td></tr>';
+          }
+        });
+        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+          const form = document.getElementById('settingsForm');
+          const data = {};
+          Array.from(form.elements).forEach(el => {
+            if (el.name) data[el.name] = el.value;
+          });
+          settingsAlert.classList.add('d-none');
+          try {
+            const res = await fetch('/api/settings/properties', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            if (json.status === 'ok') {
+              settingsAlert.className = 'alert alert-success';
+              settingsAlert.textContent = 'Settings saved successfully!';
+              settingsAlert.classList.remove('d-none');
+            } else {
+              throw new Error('Failed to save');
+            }
+          } catch (e) {
+            settingsAlert.className = 'alert alert-danger';
+            settingsAlert.textContent = 'Failed to save settings.';
+            settingsAlert.classList.remove('d-none');
+          }
+        });
+
+        // Jira Analysis JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const jiraForm = document.getElementById('jiraConnectionForm');
+            if (!jiraForm) return;
+            jiraForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const loadingEl = document.getElementById('jiraLoading');
+                const resultsEl = document.getElementById('jiraResults');
+                const errorEl = document.getElementById('jiraErrorMessage');
+                if (loadingEl) loadingEl.style.display = 'block';
+                if (resultsEl) resultsEl.style.display = 'none';
+                if (errorEl) errorEl.style.display = 'none';
+                const formData = new FormData(event.target);
+                const requestBody = {
+                    jiraUrl: formData.get('jiraUrl'),
+                    projectKey: formData.get('projectKey'),
+                    username: formData.get('username'),
+                    apiToken: formData.get('apiToken')
+                };
+                try {
+                    const response = await fetch('/api/jira/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to analyze Jira bugs');
+                    }
+                    const analysis = await response.json();
+                    displayJiraResults(analysis);
+                } catch (error) {
+                    if (errorEl) {
+                        errorEl.innerText = `Error: ${error.message}`;
+                        errorEl.style.display = 'block';
+                    }
+                } finally {
+                    if (loadingEl) loadingEl.style.display = 'none';
+                }
+            });
+        });
+        function displayJiraResults(analysis) {
+            const totalBugsEl = document.getElementById('totalBugs');
+            const dataIssuesEl = document.getElementById('dataIssues');
+            const spellingErrorsEl = document.getElementById('spellingErrors');
+            const grammarIssuesEl = document.getElementById('grammarIssues');
+            if (totalBugsEl) totalBugsEl.innerText = analysis.totalBugs || 0;
+            if (dataIssuesEl) dataIssuesEl.innerText = analysis.dataIssues || 0;
+            if (spellingErrorsEl) spellingErrorsEl.innerText = analysis.spellingErrors || 0;
+            if (grammarIssuesEl) grammarIssuesEl.innerText = analysis.grammarIssues || 0;
+            const dataIssuesList = document.getElementById('dataIssuesList');
+            if (dataIssuesList) {
+                if (analysis.dataQualityIssues && analysis.dataQualityIssues.length > 0) {
+                    dataIssuesList.innerHTML = analysis.dataQualityIssues.map(issue => 
+                        `<div class="alert alert-warning mb-2">
+                            <strong>${issue.bugKey}</strong>: ${issue.description}
+                            <br><small class="text-muted">Issue: ${issue.issueType}</small>
+                        </div>`
+                    ).join('');
+                } else {
+                    dataIssuesList.innerHTML = '<p class="text-muted">No data quality issues found.</p>';
+                }
+            }
+            const languageIssuesList = document.getElementById('languageIssuesList');
+            if (languageIssuesList) {
+                if (analysis.languageIssues && analysis.languageIssues.length > 0) {
+                    languageIssuesList.innerHTML = analysis.languageIssues.map(issue => 
+                        `<div class="alert alert-danger mb-2">
+                            <strong>${issue.bugKey}</strong>: ${issue.description}
+                            <br><small class="text-muted">Type: ${issue.issueType}</small>
+                        </div>`
+                    ).join('');
+                } else {
+                    languageIssuesList.innerHTML = '<p class="text-muted">No language issues found.</p>';
+                }
+            }
+            const detailedBugList = document.getElementById('detailedBugList');
+            if (detailedBugList) {
+                if (analysis.bugs && analysis.bugs.length > 0) {
+                    detailedBugList.innerHTML = analysis.bugs.map(bug => 
+                        `<div class="card mb-3 bg-dark border-secondary">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">${bug.key} - ${bug.summary}</h6>
+                                <span class="badge bg-${getPriorityColor(bug.priority)}">${bug.priority}</span>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Description:</strong> ${bug.description || 'No description'}</p>
+                                <p><strong>Status:</strong> ${bug.status}</p>
+                                <p><strong>Assignee:</strong> ${bug.assignee || 'Unassigned'}</p>
+                                <p><strong>Created:</strong> ${new Date(bug.created).toLocaleDateString()}</p>
+                                ${bug.comments ? `<p><strong>Comments:</strong> ${bug.comments.length}</p>` : ''}
+                                ${bug.analysis ? `<div class="mt-2"><strong>Analysis:</strong> ${bug.analysis}</div>` : ''}
+                            </div>
+                        </div>`
+                    ).join('');
+                } else {
+                    detailedBugList.innerHTML = '<p class="text-muted">No bugs found for this project.</p>';
+                }
+            }
+            const resultsEl = document.getElementById('jiraResults');
+            if (resultsEl) resultsEl.style.display = 'block';
+        }
+        function getPriorityColor(priority) {
+            const colors = {
+                'Highest': 'danger',
+                'High': 'warning',
+                'Medium': 'info',
+                'Low': 'success',
+                'Lowest': 'secondary'
+            };
+            return colors[priority] || 'secondary';
+        }
+        async function exportJiraAnalysis() {
+            try {
+                const response = await fetch('/api/jira/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'jira-bug-analysis.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    alert('Failed to export analysis');
+                }
+            } catch (error) {
+                alert('Failed to export analysis');
+            }
+        }
+        function refreshJiraAnalysis() {
+            const form = document.getElementById('jiraConnectionForm');
+            if (form) {
+                form.dispatchEvent(new Event('submit'));
+            }
+        }
+
+        // Load Jira properties from backend and fill the table
+        async function loadJiraProperties() {
+            try {
+                const res = await fetch('/api/settings/properties');
+                const props = await res.json();
+                document.getElementById('jiraPropUrl').textContent = props['jira.url'] || '';
+                document.getElementById('jiraPropProjectKey').textContent = props['jira.project.key'] || '';
+                document.getElementById('jiraPropUsername').textContent = props['jira.username'] || '';
+                document.getElementById('jiraPropApiToken').textContent = props['jira.api.token'] ? '************' : '';
+                document.getElementById('jiraPropEnabled').textContent = props['jira.enabled'] || '';
+            } catch (e) {
+                document.getElementById('jiraPropUrl').textContent = 'Error';
+                document.getElementById('jiraPropProjectKey').textContent = 'Error';
+                document.getElementById('jiraPropUsername').textContent = 'Error';
+                document.getElementById('jiraPropApiToken').textContent = 'Error';
+                document.getElementById('jiraPropEnabled').textContent = 'Error';
+            }
+        }
+        function copyJiraProp(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const val = el.textContent;
+            navigator.clipboard.writeText(val);
+        }
+        // Load Jira properties from backend and fill the bug analysis form fields
+        async function fillJiraFormFields() {
+            try {
+                const res = await fetch('/api/settings/properties');
+                const props = await res.json();
+                if (document.getElementById('jiraUrl')) document.getElementById('jiraUrl').value = props['jira.url'] || '';
+                if (document.getElementById('projectKey')) document.getElementById('projectKey').value = props['jira.project.key'] || '';
+                if (document.getElementById('username')) document.getElementById('username').value = props['jira.username'] || '';
+                if (document.getElementById('apiToken')) document.getElementById('apiToken').value = props['jira.api.token'] || '';
+            } catch (e) {
+                // Ignore errors, leave fields empty
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            loadJiraProperties();
+            fillJiraFormFields();
+        });
     </script>
 </body>
 </html>

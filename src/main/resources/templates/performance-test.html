@@ -6,6 +6,15 @@
     <title>Intelligent Performance Test Scenario Generator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --main-font: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        body, .form-control, .form-select, .btn, .card, .navbar, .nav, .tab-pane, .alert, .dropdown-menu, .modal-content {
+            font-family: var(--main-font) !important;
+        }
+    </style>
 </head>
 <body>
     <div class="container mt-5 mb-5">
@@ -90,6 +99,138 @@
                 <div id="scenariosList"></div>
                 <div class="d-flex justify-content-center gap-3 mt-4">
                     <button type="button" class="btn btn-success" onclick="copyToClipboard()">Copy Plan to Clipboard</button>
+                    <a href="/" class="btn btn-secondary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Jira Analysis Tab -->
+    <div class="container mt-5 mb-5">
+        <div class="header text-center py-4 bg-success text-white rounded-top shadow-sm">
+            <h1 class="display-4">🐛 Jira Bug Analysis</h1>
+            <p class="lead">Connect to Jira and analyze bugs for data quality issues</p>
+        </div>
+
+        <div class="content bg-white p-4 rounded-bottom shadow-sm">
+            <!-- Jira Connection Form -->
+            <div class="form-section card card-body mb-4">
+                <h3 class="card-title text-success text-center mb-4">Connect to Jira Project</h3>
+                <form id="jiraConnectionForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="jiraUrl" class="form-label">Jira URL:</label>
+                                <input type="url" id="jiraUrl" name="jiraUrl" class="form-control" placeholder="https://your-domain.atlassian.net" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="projectKey" class="form-label">Project Key:</label>
+                                <input type="text" id="projectKey" name="projectKey" class="form-control" placeholder="e.g., PROJ" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username/Email:</label>
+                                <input type="text" id="username" name="username" class="form-control" placeholder="your-email@domain.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="apiToken" class="form-label">API Token:</label>
+                                <input type="password" id="apiToken" name="apiToken" class="form-control" placeholder="Your Jira API token" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Connect & Analyze Bugs</button>
+                </form>
+            </div>
+
+            <!-- Loading Indicator for Jira -->
+            <div id="jiraLoading" class="loading-spinner text-center py-5" style="display:none;">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Connecting to Jira and analyzing bugs. Please wait...</p>
+            </div>
+
+            <!-- Error Message for Jira -->
+            <div id="jiraErrorMessage" class="error-message alert alert-danger" role="alert" style="display:none;"></div>
+
+            <!-- Jira Analysis Results -->
+            <div id="jiraResults" class="results" style="display:none;">
+                <h3 class="text-success text-center mb-4">Bug Analysis Results</h3>
+                
+                <!-- Summary Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-primary" id="totalBugs">0</h4>
+                                <p class="text-muted mb-0">Total Bugs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-warning" id="dataIssues">0</h4>
+                                <p class="text-muted mb-0">Data Issues</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-danger" id="spellingErrors">0</h4>
+                                <p class="text-muted mb-0">Spelling Errors</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center bg-light">
+                            <div class="card-body">
+                                <h4 class="text-info" id="grammarIssues">0</h4>
+                                <p class="text-muted mb-0">Grammar Issues</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issues by Category -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-white">
+                                <h5 class="mb-0">Data Quality Issues</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="dataIssuesList"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">Language Issues</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="languageIssuesList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Bug List -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Detailed Bug Analysis</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="detailedBugList"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button type="button" class="btn btn-success" onclick="exportJiraAnalysis()">Export Analysis</button>
+                    <button type="button" class="btn btn-warning" onclick="refreshJiraAnalysis()">Refresh Analysis</button>
                     <a href="/" class="btn btn-secondary">Back to Home</a>
                 </div>
             </div>

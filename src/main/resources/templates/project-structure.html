@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation Project Structure</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f7f9fc; }
+        .tree ul { list-style-type: none; position: relative; padding-left: 1.5rem; }
+        .tree li { margin: 0.5rem 0; padding-left: 1rem; position: relative; }
+        .tree li:before { content: ""; position: absolute; left: 0; top: 0.7rem; width: 1rem; height: 0.1rem; background: #ccc; }
+        .tree li:first-child:before { display: none; }
+        .tree .folder { color: #007bff; font-weight: bold; }
+        .tree .file { color: #333; }
+        .tree .highlight { background: #e3f2fd; border-radius: 5px; padding: 2px 6px; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fa-solid fa-sitemap me-2"></i>Automation Project Structure</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">This is a typical structure for a Java Selenium (TestNG, POM) automation project. <br>
+                <span class="fw-bold text-success">Add the generated <span class="highlight">Test class</span> and <span class="highlight">Page class</span> in the highlighted folders below:</span></p>
+                <div class="tree">
+                    <ul>
+                        <li><span class="folder">automation-project-root/</span>
+                            <ul>
+                                <li><span class="folder">src/</span>
+                                    <ul>
+                                        <li><span class="folder">main/</span>
+                                            <ul>
+                                                <li><span class="folder">java/</span>
+                                                    <ul>
+                                                        <li><span class="folder">com/</span>
+                                                            <ul>
+                                                                <li><span class="folder">yourcompany/</span>
+                                                                    <ul>
+                                                                        <li><span class="folder">pages/</span> <span class="highlight">&larr; Place <b>Page class</b> here</span>
+                                        <ul>
+                                            <li><span class="file highlight">GeneratedPage.java</span></li>
+                                        </ul>
+                                    </li>
+                                                                        <li><span class="folder">utils/</span></li>
+                                                                    </ul>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li><span class="folder">test/</span>
+                                            <ul>
+                                                <li><span class="folder">java/</span>
+                                                    <ul>
+                                                        <li><span class="folder">com/</span>
+                                                            <ul>
+                                                                <li><span class="folder">yourcompany/</span>
+                                                                    <ul>
+                                                                        <li><span class="folder">tests/</span> <span class="highlight">&larr; Place <b>Test class</b> here</span>
+                                        <ul>
+                                            <li><span class="file highlight">GeneratedTest.java</span></li>
+                                        </ul>
+                                    </li>
+                                                                    </ul>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li><span class="folder">drivers/</span></li>
+                                <li><span class="file">pom.xml</span></li>
+                                <li><span class="file">testng.xml</span></li>
+                                <li><span class="file">README.md</span></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="alert alert-info mt-4">
+                    <b>Note:</b> <br>
+                    - <b>Test class</b> (e.g., <code>GeneratedTest.java</code>) goes in <code>src/test/java/com/yourcompany/tests/</code>.<br>
+                    - <b>Page class</b> (e.g., <code>GeneratedPage.java</code>) goes in <code>src/main/java/com/yourcompany/pages/</code>.<br>
+                    - Adjust <code>yourcompany</code> to match your actual package structure.<br>
+                    - <b>GeneratedTest.java</b> & <b>GeneratedPage.java</b>: These are the generated automation classes.
+                </div>
+                <div class="mt-4 text-center">
+                    <a href="javascript:history.back()" class="btn btn-secondary"><i class="fa-solid fa-arrow-left me-1"></i>Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

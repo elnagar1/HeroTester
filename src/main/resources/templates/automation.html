@@ -9,7 +9,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --main-font: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        body, .form-control, .form-select, .btn, .card, .navbar, .nav, .tab-pane, .alert, .dropdown-menu, .modal-content {
+            font-family: var(--main-font) !important;
+        }
         body { background: #f7f9fc; }
         .container { padding-top: 30px; padding-bottom: 30px; }
         .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -38,6 +45,12 @@
                     <div class="card-header">
                         <h2 class="mb-0"><i class="fas fa-code"></i> Generated Automation Code</h2>
                         <p class="mb-0 mt-1">Java Selenium (TestNG, POM)</p>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <a href="/project-structure" class="btn btn-info mb-3" style="color:white;"><i class="fa-solid fa-sitemap me-1"></i>Show Project Structure</a>
                     </div>
                 </div>
 
@@ -120,3 +133,4 @@
     </script>
 </body>
 </html>
+
