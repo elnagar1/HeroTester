@@ -659,17 +659,11 @@
             return;
         }
         let html = `<div class="table-responsive"><table class="table table-striped align-middle" id="docTable"><thead><tr>
-            <th style="width: 30%;">API Details</th>
-            <th>Endpoint</th>
-            <th>Method</th>
-            <th>Expected</th>
-            <th>Assertions</th>
-            <th>cURL</th>
-            <th>Tags</th>
-            <th>Status</th>
-            <th>Last Tested</th>
-            <th>Notes</th>
-            <th>Actions</th>
+            <th style="width: 35%;">API Information</th>
+            <th style="width: 20%;">Technical Details</th>
+            <th style="width: 15%;">Testing</th>
+            <th style="width: 15%;">Metadata</th>
+            <th style="width: 15%;">Actions</th>
         </tr></thead><tbody>`;
         allDocs.forEach(doc => {
             const scenarioId = doc.metadata && doc.metadata.scenarioId ? doc.metadata.scenarioId : doc.id;
@@ -685,34 +679,80 @@
             const lastTested = doc.metadata && doc.metadata.lastTested ? doc.metadata.lastTested : '';
             html += `<tr data-docid="${doc.id}" data-scenarioid="${scenarioId}">
                 <td>
-                    <div class="api-details">
-                        <div class="mb-2">
-                            <input class="form-control form-control-sm doc-title-input" value="${doc.title || ''}" data-id="${doc.id}" placeholder="API Title"/>
-                        </div>
-                        <div class="mb-2">
-                            <textarea class="form-control form-control-sm doc-desc-input" data-id="${doc.id}" placeholder="API Description" rows="2">${doc.description || ''}</textarea>
+                    <div class="api-info-card">
+                        <div class="api-header">
+                            <div class="api-title-section">
+                                <i class="fas fa-plug api-icon"></i>
+                                <input class="form-control form-control-sm doc-title-input" value="${doc.title || ''}" data-id="${doc.id}" placeholder="Enter API Title"/>
+                            </div>
+                            <div class="api-description-section">
+                                <textarea class="form-control form-control-sm doc-desc-input" data-id="${doc.id}" placeholder="Describe what this API does..." rows="2">${doc.description || ''}</textarea>
+                            </div>
                         </div>
                     </div>
                 </td>
-                <td><code>${doc.endpoint || ''}</code></td>
-                <td><span class="badge bg-primary">${doc.method || ''}</span></td>
-                <td>${expected}</td>
-                <td><pre style='max-width:200px;max-height:80px;overflow:auto;font-size:12px;'>${assertions}</pre></td>
-                <td><pre style='max-width:200px;max-height:80px;overflow:auto;font-size:12px;'>${curl}</pre></td>
-                <td><input class="form-control form-control-sm doc-tags-input" value="${tags}" data-id="${doc.id}" placeholder="tag1, tag2"/></td>
-                <td><select class="form-select form-select-sm doc-status-input" data-id="${doc.id}">
-                    <option${status==='Draft'?' selected':''}>Draft</option>
-                    <option${status==='Reviewed'?' selected':''}>Reviewed</option>
-                    <option${status==='Approved'?' selected':''}>Approved</option>
-                    <option${status==='Deprecated'?' selected':''}>Deprecated</option>
-                </select></td>
-                <td><span class="doc-last-tested" data-id="${doc.id}">${lastTested}</span></td>
-                <td><input class="form-control form-control-sm doc-notes-input" value="${notes}" data-id="${doc.id}"/></td>
-                <td class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-primary doc-run" data-id="${scenarioId}" title="Run"><i class="fas fa-play"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary doc-code" data-id="${scenarioId}" title="Code"><i class="fas fa-code"></i></button>
-                    <button class="btn btn-sm btn-outline-danger doc-delete" data-id="${doc.id}" title="Delete"><i class="fas fa-trash"></i></button>
-                    <button class="btn btn-sm btn-outline-dark doc-move" data-id="${doc.id}" title="Move"><i class="fas fa-exchange-alt"></i></button>
+                <td>
+                    <div class="technical-details">
+                        <div class="endpoint-section mb-2">
+                            <label class="detail-label"><i class="fas fa-link"></i> Endpoint</label>
+                            <code class="endpoint-url">${doc.endpoint || ''}</code>
+                        </div>
+                        <div class="method-section mb-2">
+                            <label class="detail-label"><i class="fas fa-code-branch"></i> Method</label>
+                            <span class="badge bg-primary method-badge">${doc.method || ''}</span>
+                        </div>
+                        <div class="curl-section">
+                            <label class="detail-label"><i class="fas fa-terminal"></i> cURL</label>
+                            <pre class="curl-preview">${curl ? curl.substring(0, 100) + (curl.length > 100 ? '...' : '') : 'N/A'}</pre>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="testing-info">
+                        <div class="expected-section mb-2">
+                            <label class="detail-label"><i class="fas fa-check-circle"></i> Expected Status</label>
+                            <span class="status-value">${expected || 'Not set'}</span>
+                        </div>
+                        <div class="assertions-section">
+                            <label class="detail-label"><i class="fas fa-list-check"></i> Assertions</label>
+                            <div class="assertions-preview">${assertions ? assertions.substring(0, 80) + (assertions.length > 80 ? '...' : '') : 'None'}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="metadata-info">
+                        <div class="tags-section mb-2">
+                            <label class="detail-label"><i class="fas fa-tags"></i> Tags</label>
+                            <input class="form-control form-control-sm doc-tags-input" value="${tags}" data-id="${doc.id}" placeholder="tag1, tag2"/>
+                        </div>
+                        <div class="status-section mb-2">
+                            <label class="detail-label"><i class="fas fa-flag"></i> Status</label>
+                            <select class="form-select form-select-sm doc-status-input" data-id="${doc.id}">
+                                <option${status==='Draft'?' selected':''}>Draft</option>
+                                <option${status==='Reviewed'?' selected':''}>Reviewed</option>
+                                <option${status==='Approved'?' selected':''}>Approved</option>
+                                <option${status==='Deprecated'?' selected':''}>Deprecated</option>
+                            </select>
+                        </div>
+                        <div class="last-tested-section">
+                            <label class="detail-label"><i class="fas fa-clock"></i> Last Tested</label>
+                            <span class="doc-last-tested" data-id="${doc.id}">${lastTested || 'Never'}</span>
+                        </div>
+                        <div class="notes-section mt-2">
+                            <label class="detail-label"><i class="fas fa-sticky-note"></i> Notes</label>
+                            <input class="form-control form-control-sm doc-notes-input" value="${notes}" data-id="${doc.id}" placeholder="Add notes..."/>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="actions-section">
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary doc-run" data-id="${scenarioId}" title="Run Test"><i class="fas fa-play"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary doc-code" data-id="${scenarioId}" title="View Code"><i class="fas fa-code"></i></button>
+                            <button class="btn btn-sm btn-outline-danger doc-delete" data-id="${doc.id}" title="Delete"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-dark doc-move" data-id="${doc.id}" title="Move"><i class="fas fa-exchange-alt"></i></button>
+                        </div>
+                    </div>
                 </td>
             </tr>`;
         });
@@ -1037,9 +1077,227 @@
 </script>
 <style>
 .doc-result-row { display: table-row !important; background: #f9f9f9; }
-.api-details { min-width: 250px; }
-.doc-title-input { font-weight: 600; }
-.doc-desc-input { resize: vertical; min-height: 60px; }
+/* API Documentation Table Styling */
+.api-info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.api-header {
+    position: relative;
+}
+
+.api-icon {
+    color: #6c757d;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.api-title-section {
+    margin-bottom: 12px;
+}
+
+.doc-title-input {
+    font-weight: 700;
+    font-size: 16px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.doc-title-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.doc-desc-input {
+    resize: vertical;
+    min-height: 60px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.doc-desc-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40,167,69,0.25);
+}
+
+/* Technical Details Styling */
+.technical-details {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.detail-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.detail-label i {
+    margin-right: 4px;
+    width: 12px;
+}
+
+.endpoint-url {
+    background: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #495057;
+    word-break: break-all;
+}
+
+.method-badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.curl-preview {
+    background: #343a40;
+    color: #f8f9fa;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    max-height: 40px;
+    overflow: hidden;
+    margin: 0;
+}
+
+/* Testing Info Styling */
+.testing-info {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+}
+
+.status-value {
+    display: inline-block;
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.assertions-preview {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #856404;
+    max-height: 40px;
+    overflow: hidden;
+}
+
+/* Metadata Info Styling */
+.metadata-info {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.doc-tags-input,
+.doc-notes-input,
+.doc-status-input {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.doc-tags-input:focus,
+.doc-notes-input:focus,
+.doc-status-input:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255,193,7,0.25);
+}
+
+/* Actions Section Styling */
+.actions-section {
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.action-buttons .btn {
+    width: 100%;
+    font-size: 11px;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+
+/* Table Improvements */
+#docTable {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#docTable th {
+    background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+    padding: 16px 12px;
+    border: none;
+}
+
+#docTable td {
+    padding: 16px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#docTable tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .api-info-card,
+    .technical-details,
+    .testing-info,
+    .metadata-info {
+        padding: 8px;
+    }
+    
+    .doc-title-input {
+        font-size: 14px;
+    }
+    
+    .doc-desc-input {
+        min-height: 50px;
+    }
+}
+
 #btnAssert { 
     width: 100%; 
     margin-top: 10px; 
