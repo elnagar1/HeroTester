@@ -84,9 +84,7 @@
                                     <summary>Headers</summary>
                                     <pre class="mb-0"><code id="headersText" class="language-json" style="max-height: 200px; overflow:auto; display:block;"></code></pre>
                                 </details>
-                                <div class="mt-2">
-                                    <button class="btn btn-sm btn-outline-success" id="btnAssert">Add/Update Expected Assertion</button>
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -97,6 +95,9 @@
                             <div class="card-header"><i class="fas fa-code"></i> Rest Assured</div>
                             <div class="card-body">
                                 <pre class="language-java" style="max-height: 540px; overflow:auto;"><code id="codeText" class="language-java"></code></pre>
+                                <div class="mt-3 pt-3 border-top">
+                                    <button class="btn btn-sm btn-outline-success" id="btnAssert">Add/Update Expected Assertion</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -525,7 +526,32 @@
                 Prism.highlightElement(codeEl);
                 document.getElementById('codePanel').style.display = 'block';
                 if (assertionsModal) assertionsModal.hide();
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success alert-dismissible fade show mt-2';
+                successMsg.innerHTML = `
+                    <i class="fas fa-check-circle"></i> Assertions saved successfully! Rest Assured code updated.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.getElementById('codePanel').querySelector('.card-body').appendChild(successMsg);
+                
+                // Auto-remove success message after 5 seconds
+                setTimeout(() => {
+                    if (successMsg.parentNode) {
+                        successMsg.remove();
+                    }
+                }, 5000);
             }
+        } else {
+            // Show error message
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'alert alert-danger alert-dismissible fade show mt-2';
+            errorMsg.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i> Failed to save assertions: ${json.message || 'Unknown error'}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.getElementById('codePanel').querySelector('.card-body').appendChild(errorMsg);
         }
     }
 
@@ -957,6 +983,16 @@
         else if (body.trim().startsWith('<')) { body = formatXml(body); }
         return `<div><b>Request:</b> <span class='badge bg-dark'>${json.method || 'GET'}</span> <code>${json.url || '-'}</code></div><details open><summary>Headers</summary><pre class='language-json' style='max-height:120px;overflow:auto;'>${JSON.stringify(json.headers || {}, null, 2)}</pre></details><details><summary>Body</summary><pre class='${body.trim().startsWith('<') ? 'language-markup' : 'language-json'}' style='max-height:180px;overflow:auto;'>${body}</pre></details>`;
     }
+    // Bind Save Assertions button
+    document.getElementById('btnSaveAssertions').onclick = saveAssertions;
+    
+    // Bind Use Current button for Content-Type
+    document.getElementById('btnFillCt').onclick = function() {
+        if (lastResponseMeta && lastResponseMeta.contentType) {
+            document.getElementById('asContentType').value = lastResponseMeta.contentType;
+        }
+    };
+    
     // Initial load
     document.getElementById('documentation-tab').addEventListener('shown.bs.tab', () => loadDocGroups());
 </script>
@@ -1004,6 +1040,10 @@
 .api-details { min-width: 250px; }
 .doc-title-input { font-weight: 600; }
 .doc-desc-input { resize: vertical; min-height: 60px; }
+#btnAssert { 
+    width: 100%; 
+    margin-top: 10px; 
+}
 </style>
 </body>
 </html>
