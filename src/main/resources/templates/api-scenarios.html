@@ -637,8 +637,6 @@
             <th>Description</th>
             <th>Endpoint</th>
             <th>Method</th>
-            <th>Body</th>
-            <th>Headers</th>
             <th>Expected</th>
             <th>Assertions</th>
             <th>cURL</th>
@@ -660,13 +658,11 @@
             const tags = doc.metadata && doc.metadata.tags ? doc.metadata.tags : '';
             const status = doc.metadata && doc.metadata.status ? doc.metadata.status : 'Draft';
             const lastTested = doc.metadata && doc.metadata.lastTested ? doc.metadata.lastTested : '';
-            html += `<tr data-docid="${doc.id}">
+            html += `<tr data-docid="${doc.id}" data-scenarioid="${scenarioId}">
                 <td><input class="form-control form-control-sm doc-title-input" value="${doc.title || ''}" data-id="${doc.id}"/></td>
                 <td><input class="form-control form-control-sm doc-desc-input" value="${doc.description || ''}" data-id="${doc.id}"/></td>
                 <td><code>${doc.endpoint || ''}</code></td>
                 <td><span class="badge bg-primary">${doc.method || ''}</span></td>
-                <td><pre style='max-width:200px;max-height:80px;overflow:auto;font-size:12px;'>${body}</pre></td>
-                <td><pre style='max-width:200px;max-height:80px;overflow:auto;font-size:12px;'>${headers}</pre></td>
                 <td>${expected}</td>
                 <td><pre style='max-width:200px;max-height:80px;overflow:auto;font-size:12px;'>${assertions}</pre></td>
                 <td><pre style='max-width:200px;max-height:80px;overflow:auto;font-size:12px;'>${curl}</pre></td>
@@ -682,7 +678,6 @@
                 <td class="d-flex gap-2">
                     <button class="btn btn-sm btn-outline-primary doc-run" data-id="${scenarioId}" title="Run"><i class="fas fa-play"></i></button>
                     <button class="btn btn-sm btn-outline-secondary doc-code" data-id="${scenarioId}" title="Code"><i class="fas fa-code"></i></button>
-                    <button class="btn btn-sm btn-outline-info doc-request" data-id="${scenarioId}" title="Request"><i class="fas fa-file-alt"></i></button>
                     <button class="btn btn-sm btn-outline-danger doc-delete" data-id="${doc.id}" title="Delete"><i class="fas fa-trash"></i></button>
                     <button class="btn btn-sm btn-outline-dark doc-move" data-id="${doc.id}" title="Move"><i class="fas fa-exchange-alt"></i></button>
                 </td>
@@ -692,6 +687,8 @@
         docTableWrap.innerHTML = html;
         console.log('[DEBUG] Documentation table rendered, calling bindDocTableActions');
         bindDocTableActions();
+        // Auto-expand request details for all docs in the current group
+        autoExpandRequests();
         // إضافة حفظ تلقائي للحقول القابلة للتعديل
         setTimeout(() => {
             document.querySelectorAll('.doc-title-input').forEach(input => {
@@ -892,7 +889,8 @@
         if (!docRow) return;
         const resultRow = document.createElement('tr');
         resultRow.className = 'doc-result-row';
-        resultRow.innerHTML = `<td colspan="4">${html}<div class='text-end'><button class='btn btn-sm btn-outline-secondary mt-2 close-doc-result'>Close</button></div></td>`;
+        const colCount = table && table.querySelector('thead tr') ? table.querySelector('thead tr').children.length : 1;
+        resultRow.innerHTML = `<td colspan="${colCount}">${html}<div class='text-end'><button class='btn btn-sm btn-outline-secondary mt-2 close-doc-result'>Close</button></div></td>`;
         docRow.parentNode.insertBefore(resultRow, docRow.nextSibling);
         resultRow.querySelector('.close-doc-result').onclick = () => resultRow.remove();
         
@@ -904,6 +902,21 @@
                 }
             });
         }, 100);
+    }
+    async function autoExpandRequests() {
+        const rows = document.querySelectorAll('#docTable tr[data-docid]');
+        for (const row of rows) {
+            const docId = row.getAttribute('data-docid');
+            const scenarioId = row.getAttribute('data-scenarioid');
+            if (!scenarioId) continue;
+            try {
+                const res = await fetch('/api/scenario-detail?id=' + encodeURIComponent(scenarioId));
+                const json = await res.json();
+                insertDocResultRow(docId, renderDocRequest(json));
+            } catch (e) {
+                // ignore per-row errors
+            }
+        }
     }
     function renderDocResponse(json) {
         const contentType = (json.contentType || '').toLowerCase();
