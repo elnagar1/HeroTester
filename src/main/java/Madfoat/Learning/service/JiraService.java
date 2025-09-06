@@ -375,6 +375,278 @@ public class JiraService {
         issues.add(issue);
     }
     
+    public Map<String, Object> getProjects(String jiraUrl, String username, String apiToken) {
+        try {
+            String url = jiraUrl + "/rest/api/2/project";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode projects = objectMapper.readTree(response.getBody());
+                List<Map<String, Object>> projectList = new ArrayList<>();
+                
+                for (JsonNode project : projects) {
+                    Map<String, Object> projectInfo = new HashMap<>();
+                    projectInfo.put("key", project.get("key").asText());
+                    projectInfo.put("name", project.get("name").asText());
+                    projectInfo.put("id", project.get("id").asText());
+                    projectList.add(projectInfo);
+                }
+                
+                Map<String, Object> result = new HashMap<>();
+                result.put("projects", projectList);
+                return result;
+            }
+            
+            return Map.of("projects", new ArrayList<>());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get projects: " + e.getMessage(), e);
+        }
+    }
+
+    public Map<String, Object> getProjectStatistics(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            // Get all issues for the project
+            List<Map<String, Object>> issues = getAllProjectIssues(jiraUrl, projectKey, username, apiToken);
+            
+            // Calculate statistics
+            Map<String, Object> stats = new HashMap<>();
+            
+            // Count by issue type
+            Map<String, Integer> issueTypesDistribution = new HashMap<>();
+            Map<String, Integer> statusDistribution = new HashMap<>();
+            
+            int bugsCount = 0;
+            int userStoriesCount = 0;
+            int tasksCount = 0;
+            int totalIssues = issues.size();
+            int completedIssues = 0;
+            
+            for (Map<String, Object> issue : issues) {
+                String issueType = (String) issue.get("issueType");
+                String status = (String) issue.get("status");
+                
+                // Count by issue type
+                issueTypesDistribution.put(issueType, issueTypesDistribution.getOrDefault(issueType, 0) + 1);
+                
+                // Count by status
+                statusDistribution.put(status, statusDistribution.getOrDefault(status, 0) + 1);
+                
+                // Count specific types
+                if ("Bug".equalsIgnoreCase(issueType)) {
+                    bugsCount++;
+                } else if ("Story".equalsIgnoreCase(issueType) || "User Story".equalsIgnoreCase(issueType)) {
+                    userStoriesCount++;
+                } else if ("Task".equalsIgnoreCase(issueType)) {
+                    tasksCount++;
+                }
+                
+                // Count completed issues
+                if ("Done".equalsIgnoreCase(status) || "Closed".equalsIgnoreCase(status) || "Resolved".equalsIgnoreCase(status)) {
+                    completedIssues++;
+                }
+            }
+            
+            // Calculate progress percentage
+            int progressPercentage = totalIssues > 0 ? (completedIssues * 100) / totalIssues : 0;
+            
+            stats.put("bugsCount", bugsCount);
+            stats.put("userStoriesCount", userStoriesCount);
+            stats.put("tasksCount", tasksCount);
+            stats.put("totalIssues", totalIssues);
+            stats.put("completedIssues", completedIssues);
+            stats.put("progressPercentage", progressPercentage);
+            stats.put("issueTypesDistribution", issueTypesDistribution);
+            stats.put("statusDistribution", statusDistribution);
+            
+            // Generate velocity data (mock data for now)
+            stats.put("velocityData", generateVelocityData());
+            
+            // Generate burndown data (mock data for now)
+            stats.put("burndownData", generateBurndownData());
+            
+            return stats;
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get project statistics: " + e.getMessage(), e);
+        }
+    }
+
+    public Map<String, Object> getSprintStatistics(String jiraUrl, String projectKey, String username, String apiToken, String sprintId) {
+        try {
+            // Get sprint issues
+            List<Map<String, Object>> sprintIssues = getSprintIssuesById(jiraUrl, projectKey, username, apiToken, sprintId);
+            
+            // Get sprint information
+            Map<String, Object> sprintInfo = getSprintInfo(jiraUrl, projectKey, username, apiToken, sprintId);
+            
+            // Calculate statistics similar to project statistics but for sprint only
+            Map<String, Object> stats = new HashMap<>();
+            
+            Map<String, Integer> issueTypesDistribution = new HashMap<>();
+            Map<String, Integer> statusDistribution = new HashMap<>();
+            
+            int bugsCount = 0;
+            int userStoriesCount = 0;
+            int tasksCount = 0;
+            int totalIssues = sprintIssues.size();
+            int completedIssues = 0;
+            
+            for (Map<String, Object> issue : sprintIssues) {
+                String issueType = (String) issue.get("issueType");
+                String status = (String) issue.get("status");
+                
+                issueTypesDistribution.put(issueType, issueTypesDistribution.getOrDefault(issueType, 0) + 1);
+                statusDistribution.put(status, statusDistribution.getOrDefault(status, 0) + 1);
+                
+                if ("Bug".equalsIgnoreCase(issueType)) {
+                    bugsCount++;
+                } else if ("Story".equalsIgnoreCase(issueType) || "User Story".equalsIgnoreCase(issueType)) {
+                    userStoriesCount++;
+                } else if ("Task".equalsIgnoreCase(issueType)) {
+                    tasksCount++;
+                }
+                
+                if ("Done".equalsIgnoreCase(status) || "Closed".equalsIgnoreCase(status) || "Resolved".equalsIgnoreCase(status)) {
+                    completedIssues++;
+                }
+            }
+            
+            int progressPercentage = totalIssues > 0 ? (completedIssues * 100) / totalIssues : 0;
+            
+            stats.put("bugsCount", bugsCount);
+            stats.put("userStoriesCount", userStoriesCount);
+            stats.put("tasksCount", tasksCount);
+            stats.put("totalIssues", totalIssues);
+            stats.put("completedIssues", completedIssues);
+            stats.put("progressPercentage", progressPercentage);
+            stats.put("issueTypesDistribution", issueTypesDistribution);
+            stats.put("statusDistribution", statusDistribution);
+            
+            // Add sprint information
+            if (sprintInfo != null) {
+                stats.put("startDate", sprintInfo.get("startDate"));
+                stats.put("endDate", sprintInfo.get("endDate"));
+                stats.put("state", sprintInfo.get("state"));
+                stats.put("name", sprintInfo.get("name"));
+            }
+            
+            return stats;
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get sprint statistics: " + e.getMessage(), e);
+        }
+    }
+
+    private List<Map<String, Object>> getAllProjectIssues(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            String url = jiraUrl + "/rest/api/2/search";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Build JQL query for all project issues
+            String jql = String.format("project = %s ORDER BY created DESC", projectKey);
+            
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("jql", jql);
+            requestBody.put("maxResults", 1000);
+            requestBody.put("fields", Arrays.asList("summary", "description", "status", "priority", "assignee", "created", "issuetype"));
+            
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode searchResult = objectMapper.readTree(response.getBody());
+                List<Map<String, Object>> issues = new ArrayList<>();
+                
+                JsonNode issuesNode = searchResult.get("issues");
+                for (JsonNode issue : issuesNode) {
+                    Map<String, Object> issueData = new HashMap<>();
+                    issueData.put("key", issue.get("key").asText());
+                    issueData.put("summary", issue.path("fields").path("summary").asText(""));
+                    issueData.put("description", issue.path("fields").path("description").asText(""));
+                    issueData.put("status", issue.path("fields").path("status").path("name").asText(""));
+                    issueData.put("priority", issue.path("fields").path("priority").path("name").asText(""));
+                    issueData.put("issueType", issue.path("fields").path("issuetype").path("name").asText(""));
+                    issueData.put("assignee", issue.path("fields").path("assignee").path("displayName").asText("Unassigned"));
+                    issueData.put("created", issue.path("fields").path("created").asText(""));
+                    
+                    issues.add(issueData);
+                }
+                
+                return issues;
+            }
+            
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get project issues: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Object> getSprintInfo(String jiraUrl, String projectKey, String username, String apiToken, String sprintId) {
+        try {
+            // Get board ID first
+            String boardUrl = jiraUrl + "/rest/agile/1.0/board";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            
+            ResponseEntity<String> boardResponse = restTemplate.exchange(
+                boardUrl + "?projectKeyOrId=" + projectKey, 
+                HttpMethod.GET, 
+                request, 
+                String.class
+            );
+            
+            if (boardResponse.getStatusCode() == HttpStatus.OK) {
+                JsonNode boardResult = objectMapper.readTree(boardResponse.getBody());
+                if (boardResult.has("values") && boardResult.get("values").size() > 0) {
+                    String boardId = boardResult.get("values").get(0).get("id").asText();
+                    
+                    // Get specific sprint info
+                    String sprintUrl = jiraUrl + "/rest/agile/1.0/sprint/" + sprintId;
+                    ResponseEntity<String> sprintResponse = restTemplate.exchange(sprintUrl, HttpMethod.GET, request, String.class);
+                    
+                    if (sprintResponse.getStatusCode() == HttpStatus.OK) {
+                        JsonNode sprint = objectMapper.readTree(sprintResponse.getBody());
+                        Map<String, Object> sprintInfo = new HashMap<>();
+                        sprintInfo.put("id", sprint.get("id").asText());
+                        sprintInfo.put("name", sprint.get("name").asText());
+                        sprintInfo.put("state", sprint.get("state").asText());
+                        sprintInfo.put("startDate", sprint.get("startDate").asText());
+                        sprintInfo.put("endDate", sprint.get("endDate").asText());
+                        return sprintInfo;
+                    }
+                }
+            }
+            
+            return null;
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get sprint info: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Object> generateVelocityData() {
+        // Mock velocity data - in real implementation, this would come from historical sprint data
+        Map<String, Object> velocityData = new HashMap<>();
+        velocityData.put("labels", Arrays.asList("Sprint 1", "Sprint 2", "Sprint 3", "Sprint 4", "Sprint 5"));
+        velocityData.put("values", Arrays.asList(25, 30, 28, 35, 32));
+        return velocityData;
+    }
+
+    private Map<String, Object> generateBurndownData() {
+        // Mock burndown data - in real implementation, this would come from sprint progress data
+        Map<String, Object> burndownData = new HashMap<>();
+        burndownData.put("labels", Arrays.asList("Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7", "Day 8", "Day 9", "Day 10"));
+        burndownData.put("ideal", Arrays.asList(100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0));
+        burndownData.put("actual", Arrays.asList(100, 95, 88, 82, 75, 68, 60, 52, 45, 38, 30));
+        return burndownData;
+    }
+
     private HttpHeaders createAuthHeaders(String username, String apiToken) {
         HttpHeaders headers = new HttpHeaders();
         String auth = username + ":" + apiToken;

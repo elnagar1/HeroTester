@@ -107,6 +107,11 @@
                                     <i class="fas fa-bug"></i> Jira Bug Analysis
                                 </button>
                             </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-jira-stats-tab" data-bs-toggle="tab" data-bs-target="#tab-jira-stats" type="button" role="tab" aria-controls="tab-jira-stats" aria-selected="false">
+                                    <i class="fas fa-chart-bar"></i> Jira Statistics
+                                </button>
+                            </li>
                         </ul>
 
                         <div class="tab-content" id="generatorTabsContent">
@@ -409,6 +414,177 @@
                                 </div>
                                 <div id="jiraErrorMessage" class="alert alert-danger d-none"></div>
                             </div>
+
+                            <div class="tab-pane fade" id="tab-jira-stats" role="tabpanel" aria-labelledby="tab-jira-stats-tab">
+                                <div class="text-center mb-4 mt-2">
+                                    <i class="fas fa-chart-bar icon-large text-info"></i>
+                                    <h3>Jira Statistics Dashboard</h3>
+                                    <p class="text-muted">View comprehensive project statistics and sprint analytics</p>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-8">
+                                        <label for="projectSelect" class="form-label">Select Project:</label>
+                                        <select class="form-select" id="projectSelect">
+                                            <option value="">Loading projects...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="button" class="btn btn-primary w-100" id="loadProjectStats" disabled>
+                                            <i class="fas fa-chart-line"></i> Load Statistics
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="projectStatsContainer" style="display: none;">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <label for="sprintSelect" class="form-label">Filter by Sprint:</label>
+                                            <select class="form-select" id="sprintSelect">
+                                                <option value="">All Sprints</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 d-flex align-items-end">
+                                            <button type="button" class="btn btn-outline-secondary w-100" id="refreshStats">
+                                                <i class="fas fa-sync-alt"></i> Refresh
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sprint Information Card -->
+                                    <div id="sprintInfoCard" class="card bg-dark border-secondary mb-4" style="display: none;">
+                                        <div class="card-header">
+                                            <h5 class="mb-0"><i class="fas fa-running"></i> Sprint Information</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h6 class="text-muted">Start Date</h6>
+                                                        <p class="mb-0" id="sprintStartDate">-</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h6 class="text-muted">End Date</h6>
+                                                        <p class="mb-0" id="sprintEndDate">-</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h6 class="text-muted">Status</h6>
+                                                        <span class="badge" id="sprintStatus">-</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="text-center">
+                                                        <h6 class="text-muted">Progress</h6>
+                                                        <div class="progress" style="height: 20px;">
+                                                            <div class="progress-bar" id="sprintProgress" role="progressbar" style="width: 0%">0%</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Statistics Cards -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-danger text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-bug fa-2x text-danger mb-2"></i>
+                                                    <h4 class="text-danger" id="bugsCount">0</h4>
+                                                    <p class="text-muted mb-0">Bugs</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-primary text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                                                    <h4 class="text-primary" id="userStoriesCount">0</h4>
+                                                    <p class="text-muted mb-0">User Stories</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-warning text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-tasks fa-2x text-warning mb-2"></i>
+                                                    <h4 class="text-warning" id="tasksCount">0</h4>
+                                                    <p class="text-muted mb-0">Tasks</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-success text-center">
+                                                <div class="card-body">
+                                                    <i class="fas fa-chart-pie fa-2x text-success mb-2"></i>
+                                                    <h4 class="text-success" id="progressPercentage">0%</h4>
+                                                    <p class="text-muted mb-0">Progress</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Charts Container -->
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-header">
+                                                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Issue Types Distribution</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="issueTypesChart" width="400" height="300"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-header">
+                                                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Status Distribution</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="statusChart" width="400" height="300"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-header">
+                                                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Velocity Chart</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="velocityChart" width="400" height="300"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4">
+                                            <div class="card bg-dark border-secondary">
+                                                <div class="card-header">
+                                                    <h5 class="mb-0"><i class="fas fa-chart-area"></i> Burn Down Chart</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <canvas id="burndownChart" width="400" height="300"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="jiraStatsLoading" class="text-center my-3" style="display: none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p>Loading project statistics...</p>
+                                </div>
+
+                                <div id="jiraStatsError" class="alert alert-danger d-none"></div>
+                            </div>
                         </div>
                 </div>
                                     </div>
@@ -443,6 +619,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('imageFile');
@@ -782,6 +959,410 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadJiraProperties();
             fillJiraFormFields();
+            initializeJiraStats();
+        });
+
+        // Jira Statistics JavaScript
+        let charts = {};
+        
+        function initializeJiraStats() {
+            loadProjects();
+            
+            document.getElementById('loadProjectStats').addEventListener('click', loadProjectStatistics);
+            document.getElementById('refreshStats').addEventListener('click', refreshProjectStatistics);
+            document.getElementById('sprintSelect').addEventListener('change', onSprintChange);
+        }
+
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/jira/projects');
+                if (response.ok) {
+                    const data = await response.json();
+                    const projectSelect = document.getElementById('projectSelect');
+                    projectSelect.innerHTML = '<option value="">Select a project...</option>';
+                    
+                    if (data.projects && data.projects.length > 0) {
+                        data.projects.forEach(project => {
+                            const option = document.createElement('option');
+                            option.value = project.key;
+                            option.textContent = `${project.name} (${project.key})`;
+                            projectSelect.appendChild(option);
+                        });
+                    } else {
+                        projectSelect.innerHTML = '<option value="">No projects found</option>';
+                    }
+                } else {
+                    document.getElementById('projectSelect').innerHTML = '<option value="">Error loading projects</option>';
+                }
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectSelect').innerHTML = '<option value="">Error loading projects</option>';
+            }
+        }
+
+        async function loadProjectStatistics() {
+            const projectKey = document.getElementById('projectSelect').value;
+            if (!projectKey) return;
+
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(`/api/jira/project-stats?projectKey=${projectKey}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayProjectStatistics(data);
+                    loadSprints(projectKey);
+                } else {
+                    const errorData = await response.json();
+                    showError(errorData.error || 'Failed to load project statistics');
+                }
+            } catch (error) {
+                showError('Error loading project statistics: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadSprints(projectKey) {
+            try {
+                const response = await fetch(`/api/jira/sprints?projectKey=${projectKey}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const sprintSelect = document.getElementById('sprintSelect');
+                    sprintSelect.innerHTML = '<option value="">All Sprints</option>';
+                    
+                    if (data.sprints && data.sprints.length > 0) {
+                        data.sprints.forEach(sprint => {
+                            const option = document.createElement('option');
+                            option.value = sprint.id;
+                            option.textContent = sprint.name;
+                            sprintSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading sprints:', error);
+            }
+        }
+
+        function displayProjectStatistics(data) {
+            // Update statistics cards
+            document.getElementById('bugsCount').textContent = data.bugsCount || 0;
+            document.getElementById('userStoriesCount').textContent = data.userStoriesCount || 0;
+            document.getElementById('tasksCount').textContent = data.tasksCount || 0;
+            document.getElementById('progressPercentage').textContent = (data.progressPercentage || 0) + '%';
+
+            // Create charts
+            createIssueTypesChart(data.issueTypesDistribution);
+            createStatusChart(data.statusDistribution);
+            createVelocityChart(data.velocityData);
+            createBurndownChart(data.burndownData);
+
+            // Show the statistics container
+            document.getElementById('projectStatsContainer').style.display = 'block';
+        }
+
+        function createIssueTypesChart(data) {
+            const ctx = document.getElementById('issueTypesChart').getContext('2d');
+            
+            if (charts.issueTypes) {
+                charts.issueTypes.destroy();
+            }
+
+            charts.issueTypes = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data ? Object.keys(data) : ['No Data'],
+                    datasets: [{
+                        data: data ? Object.values(data) : [1],
+                        backgroundColor: [
+                            '#dc3545', // Red for Bugs
+                            '#0d6efd', // Blue for User Stories
+                            '#ffc107', // Yellow for Tasks
+                            '#198754', // Green for others
+                            '#6f42c1'  // Purple for others
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#1a1a1a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createStatusChart(data) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            if (charts.status) {
+                charts.status.destroy();
+            }
+
+            charts.status = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data ? Object.keys(data) : ['No Data'],
+                    datasets: [{
+                        label: 'Issues',
+                        data: data ? Object.values(data) : [0],
+                        backgroundColor: [
+                            '#dc3545', // Red for To Do
+                            '#ffc107', // Yellow for In Progress
+                            '#198754', // Green for Done
+                            '#0d6efd', // Blue for others
+                            '#6f42c1'  // Purple for others
+                        ],
+                        borderWidth: 1,
+                        borderColor: '#1a1a1a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createVelocityChart(data) {
+            const ctx = document.getElementById('velocityChart').getContext('2d');
+            
+            if (charts.velocity) {
+                charts.velocity.destroy();
+            }
+
+            charts.velocity = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data ? data.labels : ['No Data'],
+                    datasets: [{
+                        label: 'Velocity',
+                        data: data ? data.values : [0],
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBurndownChart(data) {
+            const ctx = document.getElementById('burndownChart').getContext('2d');
+            
+            if (charts.burndown) {
+                charts.burndown.destroy();
+            }
+
+            charts.burndown = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data ? data.labels : ['No Data'],
+                    datasets: [
+                        {
+                            label: 'Ideal Burndown',
+                            data: data ? data.ideal : [0],
+                            borderColor: '#dc3545',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0
+                        },
+                        {
+                            label: 'Actual Burndown',
+                            data: data ? data.actual : [0],
+                            borderColor: '#198754',
+                            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function onSprintChange() {
+            const sprintId = document.getElementById('sprintSelect').value;
+            const projectKey = document.getElementById('projectSelect').value;
+            
+            if (!sprintId || !projectKey) {
+                hideSprintInfo();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/jira/sprint-stats?projectKey=${projectKey}&sprintId=${sprintId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displaySprintInfo(data);
+                    updateChartsForSprint(data);
+                }
+            } catch (error) {
+                console.error('Error loading sprint statistics:', error);
+            }
+        }
+
+        function displaySprintInfo(data) {
+            document.getElementById('sprintStartDate').textContent = data.startDate || '-';
+            document.getElementById('sprintEndDate').textContent = data.endDate || '-';
+            
+            const statusBadge = document.getElementById('sprintStatus');
+            statusBadge.textContent = data.state || '-';
+            statusBadge.className = 'badge ' + getStatusBadgeClass(data.state);
+            
+            const progress = data.progressPercentage || 0;
+            const progressBar = document.getElementById('sprintProgress');
+            progressBar.style.width = progress + '%';
+            progressBar.textContent = progress + '%';
+            
+            document.getElementById('sprintInfoCard').style.display = 'block';
+        }
+
+        function hideSprintInfo() {
+            document.getElementById('sprintInfoCard').style.display = 'none';
+        }
+
+        function updateChartsForSprint(data) {
+            // Update statistics cards for sprint
+            document.getElementById('bugsCount').textContent = data.bugsCount || 0;
+            document.getElementById('userStoriesCount').textContent = data.userStoriesCount || 0;
+            document.getElementById('tasksCount').textContent = data.tasksCount || 0;
+            document.getElementById('progressPercentage').textContent = (data.progressPercentage || 0) + '%';
+
+            // Update charts with sprint data
+            if (data.issueTypesDistribution) {
+                createIssueTypesChart(data.issueTypesDistribution);
+            }
+            if (data.statusDistribution) {
+                createStatusChart(data.statusDistribution);
+            }
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status?.toLowerCase()) {
+                case 'active': return 'bg-success';
+                case 'closed': return 'bg-secondary';
+                case 'future': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function refreshProjectStatistics() {
+            loadProjectStatistics();
+        }
+
+        function showLoading(show) {
+            document.getElementById('jiraStatsLoading').style.display = show ? 'block' : 'none';
+            document.getElementById('loadProjectStats').disabled = show;
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('jiraStatsError');
+            errorEl.textContent = message;
+            errorEl.classList.remove('d-none');
+        }
+
+        function hideError() {
+            document.getElementById('jiraStatsError').classList.add('d-none');
+        }
+
+        // Enable load button when project is selected
+        document.getElementById('projectSelect').addEventListener('change', function() {
+            document.getElementById('loadProjectStats').disabled = !this.value;
         });
     </script>
 </body>
