@@ -1,5 +1,7 @@
 package Madfoat.Learning.config;
 
+import Madfoat.Learning.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,13 +15,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // You'll need to inject your custom UserDetailsService here later
-    // private UserDetailsService userDetailsService;
-
-    // @Autowired
-    // public SecurityConfig(UserDetailsService userDetailsService) {
-    //     this.userDetailsService = userDetailsService;
-    // }
+    @Autowired
+    private UserService userService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -27,10 +24,15 @@ public class SecurityConfig {
     }
 
     @Bean
+    public UserDetailsService userDetailsService() {
+        return userService;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/register", "/login", "/css/**", "/js/**", "/images/**").permitAll() // Allow access to registration, login, and static resources
+                .requestMatchers("/register", "/login", "/css/**", "/js/**", "/images/**", "/static/**").permitAll() // Allow access to registration, login, and static resources
                 .anyRequest().authenticated() // All other requests require authentication
             )
             .formLogin(form -> form
@@ -48,18 +50,4 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // You'll implement a custom UserDetailsService here or in a separate class later
-    // @Bean
-    // public UserDetailsService userDetailsService() {
-    //     // For now, return a dummy user. This will be replaced by your database integration.
-    //     return username -> {
-    //         if ("user".equals(username)) {
-    //             return org.springframework.security.core.userdetails.User.withUsername("user")
-    //                     .password(passwordEncoder().encode("password"))
-    //                     .roles("USER")
-    //                     .build();
-    //         }
-    //         throw new UsernameNotFoundException("User not found.");
-    //     };
-    // }
 }

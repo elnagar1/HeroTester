@@ -1,0 +1,98 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-------------< [0;36mMadfoat.Learning:TestAnalyistAiAssisstant[0;1m >--------------[m
+[[1;34mINFO[m] [1mBuilding TestAnalyistAiAssisstant 1.0-SNAPSHOT[m
+[[1;34mINFO[m]   from pom.xml
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mspring-boot:3.2.0:run[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mTestAnalyistAiAssisstant[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mresources:3.3.1:resources[m [1m(default-resources)[m @ [36mTestAnalyistAiAssisstant[0;1m ---[m
+[[1;34mINFO[m] Copying 1 resource from src/main/resources to target/classes
+[[1;34mINFO[m] Copying 10 resources from src/main/resources to target/classes
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mcompiler:3.11.0:compile[m [1m(default-compile)[m @ [36mTestAnalyistAiAssisstant[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mresources:3.3.1:testResources[m [1m(default-testResources)[m @ [36mTestAnalyistAiAssisstant[0;1m ---[m
+[[1;34mINFO[m] skip non existing resourceDirectory /workspace/src/test/resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mcompiler:3.11.0:testCompile[m [1m(default-testCompile)[m @ [36mTestAnalyistAiAssisstant[0;1m ---[m
+[[1;34mINFO[m] No sources to compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mspring-boot:3.2.0:run[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mTestAnalyistAiAssisstant[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mspring-boot:3.2.0:run[m [1m(default-cli)[m @ [36mTestAnalyistAiAssisstant[0;1m ---[m
+[[1;34mINFO[m] Attaching agents: []
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-09-06 22:02:30 - Starting Main using Java 21.0.7 with PID 3887 (/workspace/target/classes started by ubuntu in /workspace)
+2025-09-06 22:02:30 - Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-09-06 22:02:30 - No active profile set, falling back to 1 default profile: "default"
+2025-09-06 22:02:30 - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-09-06 22:02:30 - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-09-06 22:02:30 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-06 22:02:30 - Finished Spring Data repository scanning in 70 ms. Found 1 JPA repository interface.
+2025-09-06 22:02:31 - Tomcat initialized with port 8080 (http)
+2025-09-06 22:02:31 - Starting service [Tomcat]
+2025-09-06 22:02:31 - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-09-06 22:02:31 - Initializing Spring embedded WebApplicationContext
+2025-09-06 22:02:31 - Root WebApplicationContext: initialization completed in 791 ms
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+2025-09-06 22:02:31 - HikariPool-1 - Starting...
+2025-09-06 22:02:31 - HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:595d535f-a9c2-486d-8d6d-17e9ab7c1afb user=SA
+2025-09-06 22:02:31 - HikariPool-1 - Start completed.
+2025-09-06 22:02:31 - H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:595d535f-a9c2-486d-8d6d-17e9ab7c1afb'
+2025-09-06 22:02:31 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-09-06 22:02:31 - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-09-06 22:02:31 - HHH000026: Second-level cache disabled
+2025-09-06 22:02:31 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-09-06 22:02:32 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-09-06 22:02:32 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-09-06 22:02:32 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-09-06 22:02:32 - Adding welcome page template: index
+2025-09-06 22:02:32 - 52 mappings in 'requestMappingHandlerMapping'
+2025-09-06 22:02:32 - Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-09-06 22:02:32 - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@14567180, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@532fa204, org.springframework.security.web.context.SecurityContextHolderFilter@42de748, org.springframework.security.web.header.HeaderWriterFilter@31321fca, org.springframework.web.filter.CorsFilter@2bd61731, org.springframework.security.web.authentication.logout.LogoutFilter@2658019e, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@7a3816e8, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@2567fa2d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@3efae635, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@18e92384, org.springframework.security.web.access.ExceptionTranslationFilter@2d19b8c3, org.springframework.security.web.access.intercept.AuthorizationFilter@334ee369]
+2025-09-06 22:02:32 - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-09-06 22:02:32 - ControllerAdvice beans: 1 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-09-06 22:02:32 - LiveReload server is running on port 35729
+2025-09-06 22:02:32 - Tomcat started on port 8080 (http) with context path ''
+2025-09-06 22:02:32 - Started Main in 2.628 seconds (process running for 2.869)
+2025-09-06 22:02:51 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-09-06 22:02:51 - Initializing Servlet 'dispatcherServlet'
+2025-09-06 22:02:51 - Detected StandardServletMultipartResolver
+2025-09-06 22:02:51 - Detected AcceptHeaderLocaleResolver
+2025-09-06 22:02:51 - Detected FixedThemeResolver
+2025-09-06 22:02:51 - Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@568f858d
+2025-09-06 22:02:51 - Detected org.springframework.web.servlet.support.SessionFlashMapManager@20a59d78
+2025-09-06 22:02:51 - enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2025-09-06 22:02:51 - Completed initialization in 1 ms
+2025-09-06 22:02:51 - Cache miss for REQUEST dispatch to '/register' (previous null). Performing CorsConfiguration lookup. This is logged once only at WARN level, and every time at TRACE.
+2025-09-06 22:02:51 - Cache miss for REQUEST dispatch to '/register' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+2025-09-06 22:02:51 - POST "/register", parameters={masked}
+2025-09-06 22:02:51 - Mapped to Madfoat.Learning.controller.AuthController#registerUser(String, String, Model)
+2025-09-06 22:02:51 - View name 'redirect:', model {}
+2025-09-06 22:02:51 - Completed 302 FOUND
+2025-09-06 22:02:54 - GET "/register", parameters={}
+2025-09-06 22:02:54 - Mapped to Madfoat.Learning.controller.AuthController#showRegistrationForm(Model)
+2025-09-06 22:02:54 - Selected '*/*' given [*/*]
+2025-09-06 22:02:54 - Completed 200 OK
+2025-09-06 22:02:58 - POST "/register", parameters={masked}
+2025-09-06 22:02:58 - Mapped to Madfoat.Learning.controller.AuthController#registerUser(String, String, Model)
+2025-09-06 22:02:58 - Selected '*/*' given [*/*]
+2025-09-06 22:02:58 - Completed 200 OK
+2025-09-06 22:03:11 - POST "/register", parameters={masked}
+2025-09-06 22:03:11 - Mapped to Madfoat.Learning.controller.AuthController#registerUser(String, String, Model)
+2025-09-06 22:03:11 - View name 'redirect:', model {}
+2025-09-06 22:03:11 - Completed 302 FOUND

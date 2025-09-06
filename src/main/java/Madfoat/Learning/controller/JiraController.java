@@ -185,4 +185,69 @@ public class JiraController {
                 .body("Failed to export analysis: " + e.getMessage());
         }
     }
+
+    @GetMapping("/projects")
+    public ResponseEntity<Map<String, Object>> getProjects() {
+        try {
+            if (!jiraConfigService.isConfigured()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Jira not configured"));
+            }
+
+            String jiraUrl = jiraConfigService.getUrl();
+            String username = jiraConfigService.getUsername();
+            String apiToken = jiraConfigService.getApiToken();
+
+            Map<String, Object> projects = jiraService.getProjects(jiraUrl, username, apiToken);
+            return ResponseEntity.ok(projects);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get projects: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/project-stats")
+    public ResponseEntity<Map<String, Object>> getProjectStatistics(@RequestParam String projectKey) {
+        try {
+            if (!jiraConfigService.isConfigured()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Jira not configured"));
+            }
+
+            String jiraUrl = jiraConfigService.getUrl();
+            String username = jiraConfigService.getUsername();
+            String apiToken = jiraConfigService.getApiToken();
+
+            Map<String, Object> stats = jiraService.getProjectStatistics(jiraUrl, projectKey, username, apiToken);
+            return ResponseEntity.ok(stats);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get project statistics: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/sprint-stats")
+    public ResponseEntity<Map<String, Object>> getSprintStatistics(
+            @RequestParam String projectKey, 
+            @RequestParam String sprintId) {
+        try {
+            if (!jiraConfigService.isConfigured()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Jira not configured"));
+            }
+
+            String jiraUrl = jiraConfigService.getUrl();
+            String username = jiraConfigService.getUsername();
+            String apiToken = jiraConfigService.getApiToken();
+
+            Map<String, Object> stats = jiraService.getSprintStatistics(jiraUrl, projectKey, username, apiToken, sprintId);
+            return ResponseEntity.ok(stats);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get sprint statistics: " + e.getMessage()));
+        }
+    }
 }
