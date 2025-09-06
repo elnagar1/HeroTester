@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Cleanup Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0b1220 0%, #020617 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial;
+            color: #e5e7eb;
+        }
+        .container { padding: 50px 20px; }
+        .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.4);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body text-center p-5">
+                        <h1 class="mb-4">
+                            <i class="fas fa-trash-alt text-danger"></i>
+                            Chart Cleanup Tool
+                        </h1>
+                        <p class="lead mb-4">
+                            This tool will remove all Issue Types and Status Distribution charts from the current page.
+                        </p>
+                        <div class="alert alert-warning mb-4">
+                            <strong>Warning:</strong> This action will permanently remove chart sections from the page.
+                        </div>
+                        <button class="btn btn-primary btn-lg" onclick="removeCharts()">
+                            <i class="fas fa-trash me-2"></i>
+                            Remove Charts Now
+                        </button>
+                        <div id="result" class="mt-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/remove-charts.js"></script>
+    <script>
+        function removeCharts() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="alert alert-info">Removing charts...</div>';
+            
+            // Call the cleanup function
+            if (window.removeCharts) {
+                window.removeCharts();
+                resultDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check me-2"></i>Charts removed successfully!</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error: Cleanup function not found</div>';
+            }
+        }
+    </script>
+</body>
+</html>

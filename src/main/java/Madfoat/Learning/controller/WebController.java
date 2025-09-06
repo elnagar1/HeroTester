@@ -26,6 +26,11 @@ public class WebController {
         return "project-structure";
     }
 
+    @GetMapping("/chart-cleanup")
+    public String chartCleanupPage() {
+        return "chart-cleanup";
+    }
+
     @GetMapping("/api/settings/properties")
     @ResponseBody
     public Map<String, String> getProperties() throws IOException {
