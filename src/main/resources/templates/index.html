@@ -1548,42 +1548,47 @@
             }
         }
 
-        function displayCTODashboard(data) {
-            document.getElementById('ctoTotalBugs').textContent = data.totalBugs || 0;
-            document.getElementById('ctoTotalStories').textContent = data.totalStories || 0;
-            document.getElementById('ctoTotalTasks').textContent = data.totalTasks || 0;
-            document.getElementById('ctoCompletedIssues').textContent = data.completedIssues || 0;
-
-            displayColumnStats(data.columnStats || {});
-            updateIssueTypesChart(data.issueTypesDistribution || {});
-            updateStatusChart(data.statusDistribution || {});
-            updateIssuesTable(data.issues || []);
-            populateFilterDropdowns(data);
-        }
+        // This function is removed - using the updated version below
 
         function displayColumnStats(columnStats) {
+            console.log('Displaying column stats:', columnStats);
             const container = document.getElementById('ctoColumnStats');
-            if (!container) return;
+            if (!container) {
+                console.error('Column stats container not found');
+                return;
+            }
 
             let html = '';
-            for (const [columnName, count] of Object.entries(columnStats)) {
-                html += `
-                    <div class="col-md-3 mb-3">
-                        <div class="card bg-dark border-info">
-                            <div class="card-body text-center">
-                                <h5 class="text-info">${count}</h5>
-                                <p class="text-muted mb-0">${columnName}</p>
+            const entries = Object.entries(columnStats);
+            console.log('Column stats entries:', entries);
+            
+            if (entries.length === 0) {
+                html = '<div class="col-12"><p class="text-muted">No column data available</p></div>';
+            } else {
+                for (const [columnName, count] of entries) {
+                    html += `
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-dark border-info">
+                                <div class="card-body text-center">
+                                    <h5 class="text-info">${count}</h5>
+                                    <p class="text-muted mb-0">${columnName}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
             container.innerHTML = html;
+            console.log('Column stats HTML updated');
         }
 
         function updateIssueTypesChart(data) {
+            console.log('Updating issue types chart with:', data);
             const ctx = document.getElementById('ctoIssueTypesChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.error('Issue types chart canvas not found');
+                return;
+            }
 
             if (ctoCharts.issueTypes) {
                 ctoCharts.issueTypes.destroy();
@@ -1591,7 +1596,15 @@
 
             const labels = Object.keys(data);
             const values = Object.values(data);
+            console.log('Issue types labels:', labels);
+            console.log('Issue types values:', values);
+            
             const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
+
+            if (labels.length === 0) {
+                console.log('No issue types data to display');
+                return;
+            }
 
             ctoCharts.issueTypes = new Chart(ctx, {
                 type: 'doughnut',
@@ -1616,11 +1629,16 @@
                     }
                 }
             });
+            console.log('Issue types chart updated successfully');
         }
 
         function updateStatusChart(data) {
+            console.log('Updating status chart with:', data);
             const ctx = document.getElementById('ctoStatusChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.error('Status chart canvas not found');
+                return;
+            }
 
             if (ctoCharts.status) {
                 ctoCharts.status.destroy();
@@ -1628,7 +1646,15 @@
 
             const labels = Object.keys(data);
             const values = Object.values(data);
+            console.log('Status labels:', labels);
+            console.log('Status values:', values);
+            
             const colors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
+
+            if (labels.length === 0) {
+                console.log('No status data to display');
+                return;
+            }
 
             ctoCharts.status = new Chart(ctx, {
                 type: 'bar',
@@ -1673,28 +1699,38 @@
                     }
                 }
             });
+            console.log('Status chart updated successfully');
         }
 
         function updateIssuesTable(issues) {
+            console.log('Updating issues table with:', issues);
             const tbody = document.getElementById('ctoIssuesTableBody');
-            if (!tbody) return;
+            if (!tbody) {
+                console.error('Issues table body not found');
+                return;
+            }
 
             let html = '';
-            issues.forEach(issue => {
-                html += `
-                    <tr>
-                        <td><a href="#" class="text-primary">${issue.key}</a></td>
-                        <td>${issue.summary}</td>
-                        <td><span class="badge bg-secondary">${issue.type}</span></td>
-                        <td><span class="badge bg-${getStatusColor(issue.status)}">${issue.status}</span></td>
-                        <td><span class="badge bg-${getPriorityColor(issue.priority)}">${issue.priority}</span></td>
-                        <td>${issue.assignee || 'Unassigned'}</td>
-                        <td>${formatDate(issue.created)}</td>
-                        <td>${formatDate(issue.updated)}</td>
-                    </tr>
-                `;
-            });
+            if (issues.length === 0) {
+                html = '<tr><td colspan="8" class="text-center text-muted">No issues found</td></tr>';
+            } else {
+                issues.forEach(issue => {
+                    html += `
+                        <tr>
+                            <td><a href="#" class="text-primary">${issue.key}</a></td>
+                            <td>${issue.summary}</td>
+                            <td><span class="badge bg-secondary">${issue.type}</span></td>
+                            <td><span class="badge bg-${getStatusColor(issue.status)}">${issue.status}</span></td>
+                            <td><span class="badge bg-${getPriorityColor(issue.priority)}">${issue.priority}</span></td>
+                            <td>${issue.assignee || 'Unassigned'}</td>
+                            <td>${formatDate(issue.created)}</td>
+                            <td>${formatDate(issue.updated)}</td>
+                        </tr>
+                    `;
+                });
+            }
             tbody.innerHTML = html;
+            console.log('Issues table updated with', issues.length, 'issues');
         }
 
         function getStatusColor(status) {
@@ -2102,6 +2138,8 @@
         }
 
         function displayCTODashboard(data) {
+            console.log('Displaying CTO Dashboard with data:', data);
+            
             // Update basic counts
             document.getElementById('ctoTotalBugs').textContent = data.totalBugs || 0;
             document.getElementById('ctoTotalStories').textContent = data.totalStories || 0;
@@ -2109,26 +2147,50 @@
             document.getElementById('ctoCompletedIssues').textContent = data.completedIssues || 0;
 
             // Update sprint information
+            console.log('Updating sprint info:', data.sprintInfo);
             updateSprintInfo(data.sprintInfo || {});
             
             // Update CTO metrics
+            console.log('Updating CTO metrics');
             updateCTOMetrics(data);
             
             // Update other displays
+            console.log('Updating column stats:', data.columnStats);
             displayColumnStats(data.columnStats || {});
+            
+            console.log('Updating issue types chart:', data.issueTypesDistribution);
             updateIssueTypesChart(data.issueTypesDistribution || {});
+            
+            console.log('Updating status chart:', data.statusDistribution);
             updateStatusChart(data.statusDistribution || {});
+            
+            console.log('Updating issues table:', data.issues);
             updateIssuesTable(data.issues || []);
+            
+            console.log('Populating filter dropdowns');
             populateFilterDropdowns(data);
+            
+            console.log('CTO Dashboard display completed');
         }
 
         function updateSprintInfo(sprintInfo) {
-            document.getElementById('ctoSprintName').textContent = sprintInfo.name || '-';
-            document.getElementById('ctoSprintStories').textContent = sprintInfo.storiesCount || 0;
-            document.getElementById('ctoSprintBugs').textContent = sprintInfo.bugsCount || 0;
-            document.getElementById('ctoSprintDuration').textContent = sprintInfo.duration || '-';
-            document.getElementById('ctoSprintStartDate').textContent = sprintInfo.startDate ? new Date(sprintInfo.startDate).toLocaleDateString() : '-';
-            document.getElementById('ctoSprintEndDate').textContent = sprintInfo.endDate ? new Date(sprintInfo.endDate).toLocaleDateString() : '-';
+            console.log('Updating sprint info with:', sprintInfo);
+            
+            const nameEl = document.getElementById('ctoSprintName');
+            const storiesEl = document.getElementById('ctoSprintStories');
+            const bugsEl = document.getElementById('ctoSprintBugs');
+            const durationEl = document.getElementById('ctoSprintDuration');
+            const startDateEl = document.getElementById('ctoSprintStartDate');
+            const endDateEl = document.getElementById('ctoSprintEndDate');
+            
+            if (nameEl) nameEl.textContent = sprintInfo.name || 'No Sprint Found';
+            if (storiesEl) storiesEl.textContent = sprintInfo.storiesCount || 0;
+            if (bugsEl) bugsEl.textContent = sprintInfo.bugsCount || 0;
+            if (durationEl) durationEl.textContent = sprintInfo.duration || 'Unknown';
+            if (startDateEl) startDateEl.textContent = sprintInfo.startDate ? new Date(sprintInfo.startDate).toLocaleDateString() : 'Unknown';
+            if (endDateEl) endDateEl.textContent = sprintInfo.endDate ? new Date(sprintInfo.endDate).toLocaleDateString() : 'Unknown';
+            
+            console.log('Sprint info updated successfully');
         }
 
         function updateCTOMetrics(data) {
