@@ -26,6 +26,11 @@ public class WebController {
         return "project-structure";
     }
 
+    @GetMapping("/cto-management")
+    public String ctoManagementPage() {
+        return "cto-management";
+    }
+
     @GetMapping("/api/settings/properties")
     @ResponseBody
     public Map<String, String> getProperties() throws IOException {
