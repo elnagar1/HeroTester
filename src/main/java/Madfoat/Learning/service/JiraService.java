@@ -156,6 +156,133 @@ public class JiraService {
         }
     }
     
+    public Map<String, Object> getSprints(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            // Get board ID first
+            String boardUrl = jiraUrl + "/rest/agile/1.0/board";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            
+            ResponseEntity<String> boardResponse = restTemplate.exchange(
+                boardUrl + "?projectKeyOrId=" + projectKey, 
+                HttpMethod.GET, 
+                request, 
+                String.class
+            );
+            
+            if (boardResponse.getStatusCode() == HttpStatus.OK) {
+                JsonNode boardResult = objectMapper.readTree(boardResponse.getBody());
+                if (boardResult.has("values") && boardResult.get("values").size() > 0) {
+                    String boardId = boardResult.get("values").get(0).get("id").asText();
+                    
+                    // Get sprints for this board
+                    String sprintUrl = jiraUrl + "/rest/agile/1.0/board/" + boardId + "/sprint";
+                    ResponseEntity<String> sprintResponse = restTemplate.exchange(sprintUrl, HttpMethod.GET, request, String.class);
+                    
+                    if (sprintResponse.getStatusCode() == HttpStatus.OK) {
+                        JsonNode sprintResult = objectMapper.readTree(sprintResponse.getBody());
+                        List<Map<String, Object>> sprints = new ArrayList<>();
+                        
+                        if (sprintResult.has("values")) {
+                            for (JsonNode sprint : sprintResult.get("values")) {
+                                Map<String, Object> sprintInfo = new HashMap<>();
+                                sprintInfo.put("id", sprint.get("id").asText());
+                                sprintInfo.put("name", sprint.get("name").asText());
+                                sprintInfo.put("state", sprint.get("state").asText());
+                                sprintInfo.put("startDate", sprint.get("startDate").asText());
+                                sprintInfo.put("endDate", sprint.get("endDate").asText());
+                                sprints.add(sprintInfo);
+                            }
+                        }
+                        
+                        Map<String, Object> result = new HashMap<>();
+                        result.put("sprints", sprints);
+                        return result;
+                    }
+                }
+            }
+            
+            return Map.of("sprints", new ArrayList<>());
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get sprints: " + e.getMessage(), e);
+        }
+    }
+    
+    public Map<String, Object> analyzeSprint(String jiraUrl, String projectKey, String username, String apiToken, String sprintId) {
+        try {
+            // Get sprint issues
+            List<Map<String, Object>> sprintIssues = getSprintIssuesById(jiraUrl, projectKey, username, apiToken, sprintId);
+            
+            // Analyze issues
+            Map<String, Object> analysis = analyzeIssues(sprintIssues);
+            
+            // Add sprint information
+            analysis.put("totalBugs", sprintIssues.size());
+            analysis.put("sprintId", sprintId);
+            
+            return analysis;
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to analyze sprint: " + e.getMessage(), e);
+        }
+    }
+    
+    private List<Map<String, Object>> getSprintIssuesById(String jiraUrl, String projectKey, String username, String apiToken, String sprintId) {
+        try {
+            String url = jiraUrl + "/rest/api/2/search";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Build JQL query for specific sprint issues
+            String jql = String.format("project = %s AND sprint = %s ORDER BY priority DESC", projectKey, sprintId);
+            
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("jql", jql);
+            requestBody.put("maxResults", 100);
+            requestBody.put("fields", Arrays.asList("summary", "description", "status", "priority", "assignee", "created", "comment"));
+            
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode searchResult = objectMapper.readTree(response.getBody());
+                List<Map<String, Object>> issues = new ArrayList<>();
+                
+                JsonNode issuesNode = searchResult.get("issues");
+                for (JsonNode issue : issuesNode) {
+                    Map<String, Object> issueData = new HashMap<>();
+                    issueData.put("key", issue.get("key").asText());
+                    issueData.put("summary", issue.path("fields").path("summary").asText(""));
+                    issueData.put("description", issue.path("fields").path("description").asText(""));
+                    issueData.put("status", issue.path("fields").path("status").path("name").asText(""));
+                    issueData.put("priority", issue.path("fields").path("priority").path("name").asText(""));
+                    issueData.put("assignee", issue.path("fields").path("assignee").path("displayName").asText("Unassigned"));
+                    issueData.put("created", issue.path("fields").path("created").asText(""));
+                    
+                    // Get comments
+                    List<String> comments = new ArrayList<>();
+                    JsonNode commentNode = issue.path("fields").path("comment");
+                    if (commentNode.has("comments")) {
+                        for (JsonNode comment : commentNode.get("comments")) {
+                            comments.add(comment.path("body").asText(""));
+                        }
+                    }
+                    issueData.put("comments", comments);
+                    
+                    issues.add(issueData);
+                }
+                
+                return issues;
+            }
+            
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get sprint issues: " + e.getMessage(), e);
+        }
+    }
+
     private Map<String, Object> analyzeIssues(List<Map<String, Object>> issues) {
         List<Map<String, Object>> dataQualityIssues = new ArrayList<>();
         List<Map<String, Object>> languageIssues = new ArrayList<>();

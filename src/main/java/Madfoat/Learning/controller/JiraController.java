@@ -85,6 +85,51 @@ public class JiraController {
         }
     }
 
+    @GetMapping("/sprints")
+    public ResponseEntity<Map<String, Object>> getSprints() {
+        try {
+            if (!jiraConfigService.isConfigured()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Jira not configured"));
+            }
+
+            String jiraUrl = jiraConfigService.getUrl();
+            String projectKey = jiraConfigService.getProjectKey();
+            String username = jiraConfigService.getUsername();
+            String apiToken = jiraConfigService.getApiToken();
+
+            Map<String, Object> sprints = jiraService.getSprints(jiraUrl, projectKey, username, apiToken);
+            return ResponseEntity.ok(sprints);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get sprints: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/analyze-sprint")
+    public ResponseEntity<Map<String, Object>> analyzeSprint(@RequestBody Map<String, String> request) {
+        try {
+            String sprintId = request.get("sprintId");
+            if (sprintId == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Sprint ID is required"));
+            }
+
+            String jiraUrl = jiraConfigService.getUrl();
+            String projectKey = jiraConfigService.getProjectKey();
+            String username = jiraConfigService.getUsername();
+            String apiToken = jiraConfigService.getApiToken();
+
+            Map<String, Object> analysis = jiraService.analyzeSprint(jiraUrl, projectKey, username, apiToken, sprintId);
+            return ResponseEntity.ok(analysis);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to analyze sprint: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/export")
     public ResponseEntity<String> exportJiraAnalysis(@RequestBody Map<String, Object> analysis) {
         try {

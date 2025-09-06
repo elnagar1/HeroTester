@@ -154,6 +154,28 @@
             <!-- Error Message for Jira -->
             <div id="jiraErrorMessage" class="error-message alert alert-danger" role="alert" style="display:none;"></div>
 
+            <!-- Sprint Filter -->
+            <div id="sprintFilter" class="card mb-4" style="display:none;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-filter me-2"></i>Sprint Filter</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-8">
+                            <label for="sprintSelect" class="form-label">Select Sprint:</label>
+                            <select id="sprintSelect" class="form-select">
+                                <option value="">Loading sprints...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-info w-100" id="analyzeSprintBtn">
+                                <i class="fa-solid fa-search me-1"></i>Analyze Sprint
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Jira Analysis Results -->
             <div id="jiraResults" class="results" style="display:none;">
                 <h3 class="text-success text-center mb-4">Bug Analysis Results</h3>
@@ -371,6 +393,202 @@
                     alert('Failed to copy performance plan.');
                 }
             }
+        }
+
+        // Jira Connection Form Handler
+        document.getElementById('jiraConnectionForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            document.getElementById('jiraLoading').style.display = 'block';
+            document.getElementById('jiraResults').style.display = 'none';
+            document.getElementById('jiraErrorMessage').style.display = 'none';
+            document.getElementById('sprintFilter').style.display = 'none';
+            
+            const formData = new FormData(event.target);
+            const requestBody = {
+                jiraUrl: formData.get('jiraUrl'),
+                projectKey: formData.get('projectKey'),
+                username: formData.get('username'),
+                apiToken: formData.get('apiToken')
+            };
+
+            try {
+                const response = await fetch('/api/jira/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to analyze Jira project');
+                }
+
+                const analysis = await response.json();
+                displayJiraResults(analysis);
+                
+                // Load sprints for filtering
+                await loadSprints();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('jiraErrorMessage').innerText = `Error: ${error.message}`;
+                document.getElementById('jiraErrorMessage').style.display = 'block';
+            } finally {
+                document.getElementById('jiraLoading').style.display = 'none';
+            }
+        });
+
+        // Load sprints for filtering
+        async function loadSprints() {
+            try {
+                const response = await fetch('/api/jira/sprints');
+                if (response.ok) {
+                    const data = await response.json();
+                    const sprintSelect = document.getElementById('sprintSelect');
+                    sprintSelect.innerHTML = '<option value="">All Sprints</option>';
+                    
+                    if (data.sprints && data.sprints.length > 0) {
+                        data.sprints.forEach(sprint => {
+                            const option = document.createElement('option');
+                            option.value = sprint.id;
+                            option.textContent = `${sprint.name} (${sprint.state})`;
+                            sprintSelect.appendChild(option);
+                        });
+                    }
+                    
+                    document.getElementById('sprintFilter').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading sprints:', error);
+            }
+        }
+
+        // Analyze specific sprint
+        document.getElementById('analyzeSprintBtn').addEventListener('click', async function() {
+            const sprintId = document.getElementById('sprintSelect').value;
+            if (!sprintId) {
+                alert('Please select a sprint');
+                return;
+            }
+
+            document.getElementById('jiraLoading').style.display = 'block';
+            document.getElementById('jiraResults').style.display = 'none';
+            document.getElementById('jiraErrorMessage').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/jira/analyze-sprint', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sprintId: sprintId })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to analyze sprint');
+                }
+
+                const analysis = await response.json();
+                displayJiraResults(analysis);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('jiraErrorMessage').innerText = `Error: ${error.message}`;
+                document.getElementById('jiraErrorMessage').style.display = 'block';
+            } finally {
+                document.getElementById('jiraLoading').style.display = 'none';
+            }
+        });
+
+        // Display Jira analysis results
+        function displayJiraResults(analysis) {
+            // Update summary statistics
+            document.getElementById('totalBugs').textContent = analysis.totalBugs || 0;
+            document.getElementById('dataIssues').textContent = analysis.dataQualityIssues ? analysis.dataQualityIssues.length : 0;
+            document.getElementById('spellingErrors').textContent = analysis.languageIssues ? analysis.languageIssues.filter(issue => issue.issueType === 'Spelling Error').length : 0;
+            document.getElementById('grammarIssues').textContent = analysis.languageIssues ? analysis.languageIssues.filter(issue => issue.issueType === 'Grammar Issue').length : 0;
+
+            // Display data quality issues
+            const dataIssuesList = document.getElementById('dataIssuesList');
+            dataIssuesList.innerHTML = '';
+            if (analysis.dataQualityIssues && analysis.dataQualityIssues.length > 0) {
+                analysis.dataQualityIssues.forEach(issue => {
+                    const div = document.createElement('div');
+                    div.className = 'alert alert-warning alert-sm';
+                    div.innerHTML = `<strong>${issue.bugKey}:</strong> ${issue.issueType} - ${issue.description}`;
+                    dataIssuesList.appendChild(div);
+                });
+            } else {
+                dataIssuesList.innerHTML = '<p class="text-muted">No data quality issues found.</p>';
+            }
+
+            // Display language issues
+            const languageIssuesList = document.getElementById('languageIssuesList');
+            languageIssuesList.innerHTML = '';
+            if (analysis.languageIssues && analysis.languageIssues.length > 0) {
+                analysis.languageIssues.forEach(issue => {
+                    const div = document.createElement('div');
+                    div.className = 'alert alert-danger alert-sm';
+                    div.innerHTML = `<strong>${issue.bugKey}:</strong> ${issue.issueType} - ${issue.description}`;
+                    languageIssuesList.appendChild(div);
+                });
+            } else {
+                languageIssuesList.innerHTML = '<p class="text-muted">No language issues found.</p>';
+            }
+
+            // Display detailed bug list
+            const detailedBugList = document.getElementById('detailedBugList');
+            detailedBugList.innerHTML = '';
+            if (analysis.bugs && analysis.bugs.length > 0) {
+                const table = document.createElement('table');
+                table.className = 'table table-striped table-hover';
+                table.style.tableLayout = 'fixed';
+                table.style.width = '100%';
+                
+                // Create table header
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                const headers = ['Issue Key', 'Summary', 'Status', 'Priority', 'Assignee'];
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    th.style.width = header === 'Issue Key' ? '15%' : 
+                                   header === 'Summary' ? '35%' : 
+                                   header === 'Status' ? '15%' : 
+                                   header === 'Priority' ? '15%' : '20%';
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                // Create table body
+                const tbody = document.createElement('tbody');
+                analysis.bugs.forEach(bug => {
+                    const row = document.createElement('tr');
+                    const cells = [bug.key, bug.summary, bug.status, bug.priority, bug.assignee];
+                    cells.forEach((cell, index) => {
+                        const td = document.createElement('td');
+                        td.textContent = cell || '';
+                        td.style.overflow = 'hidden';
+                        td.style.textOverflow = 'ellipsis';
+                        td.style.whiteSpace = 'nowrap';
+                        if (cell && cell.length > 50) {
+                            td.title = cell;
+                        }
+                        row.appendChild(td);
+                    });
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                detailedBugList.appendChild(table);
+            } else {
+                detailedBugList.innerHTML = '<p class="text-muted">No bugs found.</p>';
+            }
+
+            document.getElementById('jiraResults').style.display = 'block';
         }
 
         // Script for initial load check for existing plan (if coming from a redirect or refresh)
