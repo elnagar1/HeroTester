@@ -512,92 +512,211 @@ public class CTOService {
     
     public Map<String, Object> getCurrentSprintInfo(String jiraUrl, String projectKey, String username, String apiToken) {
         try {
+            System.out.println("=== SPRINT INFO DEBUG ===");
+            System.out.println("Jira URL: " + jiraUrl);
+            System.out.println("Project Key: " + projectKey);
+            System.out.println("Username: " + username);
+            
             Map<String, Object> sprintInfo = new HashMap<>();
             
-            // Get active sprint from Agile API
+            // First, try to get boards for the project
             String url = jiraUrl + "/rest/agile/1.0/board?projectKeyOrId=" + projectKey;
-            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            System.out.println("Boards URL: " + url);
             
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            System.out.println("Boards response status: " + response.getStatusCode());
+            System.out.println("Boards response body: " + response.getBody());
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode boards = objectMapper.readTree(response.getBody());
                 
                 if (boards.has("values") && boards.get("values").size() > 0) {
-                    String boardId = boards.get("values").get(0).get("id").asText();
+                    System.out.println("Found " + boards.get("values").size() + " boards");
                     
-                    // Get active sprints for this board
-                    String sprintUrl = jiraUrl + "/rest/agile/1.0/board/" + boardId + "/sprint?state=active";
-                    ResponseEntity<String> sprintResponse = restTemplate.exchange(sprintUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
-                    
-                    if (sprintResponse.getStatusCode() == HttpStatus.OK) {
-                        JsonNode sprintData = objectMapper.readTree(sprintResponse.getBody());
+                    for (JsonNode board : boards.get("values")) {
+                        String boardId = board.get("id").asText();
+                        String boardName = board.get("name").asText();
+                        System.out.println("Processing board: " + boardName + " (ID: " + boardId + ")");
                         
-                        if (sprintData.has("values") && sprintData.get("values").size() > 0) {
-                            JsonNode activeSprint = sprintData.get("values").get(0);
+                        // Get all sprints for this board (not just active)
+                        String sprintUrl = jiraUrl + "/rest/agile/1.0/board/" + boardId + "/sprint";
+                        System.out.println("Sprints URL: " + sprintUrl);
+                        
+                        ResponseEntity<String> sprintResponse = restTemplate.exchange(sprintUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                        System.out.println("Sprints response status: " + sprintResponse.getStatusCode());
+                        System.out.println("Sprints response body: " + sprintResponse.getBody());
+                        
+                        if (sprintResponse.getStatusCode() == HttpStatus.OK) {
+                            JsonNode sprintData = objectMapper.readTree(sprintResponse.getBody());
                             
-                            sprintInfo.put("name", activeSprint.get("name").asText());
-                            sprintInfo.put("id", activeSprint.get("id").asText());
-                            sprintInfo.put("state", activeSprint.get("state").asText());
-                            
-                            // Get sprint start and end dates
-                            String startDate = activeSprint.path("startDate").asText("");
-                            String endDate = activeSprint.path("endDate").asText("");
-                            
-                            sprintInfo.put("startDate", startDate);
-                            sprintInfo.put("endDate", endDate);
-                            
-                            // Calculate duration
-                            if (!startDate.isEmpty() && !endDate.isEmpty()) {
-                                try {
-                                    java.time.LocalDate start = java.time.LocalDate.parse(startDate.substring(0, 10));
-                                    java.time.LocalDate end = java.time.LocalDate.parse(endDate.substring(0, 10));
-                                    long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
-                                    sprintInfo.put("duration", days + " days");
-                                } catch (Exception e) {
-                                    sprintInfo.put("duration", "Unknown");
-                                }
-                            } else {
-                                sprintInfo.put("duration", "Unknown");
-                            }
-                            
-                            // Get issues in this sprint
-                            String sprintId = activeSprint.get("id").asText();
-                            String issuesUrl = jiraUrl + "/rest/agile/1.0/sprint/" + sprintId + "/issue?fields=issuetype,summary";
-                            ResponseEntity<String> issuesResponse = restTemplate.exchange(issuesUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
-                            
-                            if (issuesResponse.getStatusCode() == HttpStatus.OK) {
-                                JsonNode issuesData = objectMapper.readTree(issuesResponse.getBody());
+                            if (sprintData.has("values") && sprintData.get("values").size() > 0) {
+                                System.out.println("Found " + sprintData.get("values").size() + " sprints");
                                 
-                                long storiesCount = 0;
-                                long bugsCount = 0;
-                                
-                                if (issuesData.has("issues")) {
-                                    for (JsonNode issue : issuesData.get("issues")) {
-                                        String issueType = issue.path("fields").path("issuetype").path("name").asText("");
-                                        if ("Story".equals(issueType)) {
-                                            storiesCount++;
-                                        } else if ("Bug".equals(issueType)) {
-                                            bugsCount++;
-                                        }
+                                // Look for active sprint first, then any sprint
+                                JsonNode selectedSprint = null;
+                                for (JsonNode sprint : sprintData.get("values")) {
+                                    String state = sprint.get("state").asText();
+                                    System.out.println("Sprint: " + sprint.get("name").asText() + " (State: " + state + ")");
+                                    
+                                    if ("active".equals(state)) {
+                                        selectedSprint = sprint;
+                                        break;
+                                    } else if (selectedSprint == null) {
+                                        selectedSprint = sprint; // Use first sprint if no active one
                                     }
                                 }
                                 
-                                sprintInfo.put("storiesCount", storiesCount);
-                                sprintInfo.put("bugsCount", bugsCount);
+                                if (selectedSprint != null) {
+                                    System.out.println("Selected sprint: " + selectedSprint.get("name").asText());
+                                    
+                                    sprintInfo.put("name", selectedSprint.get("name").asText());
+                                    sprintInfo.put("id", selectedSprint.get("id").asText());
+                                    sprintInfo.put("state", selectedSprint.get("state").asText());
+                                    
+                                    // Get sprint start and end dates
+                                    String startDate = selectedSprint.path("startDate").asText("");
+                                    String endDate = selectedSprint.path("endDate").asText("");
+                                    
+                                    sprintInfo.put("startDate", startDate);
+                                    sprintInfo.put("endDate", endDate);
+                                    
+                                    // Calculate duration
+                                    if (!startDate.isEmpty() && !endDate.isEmpty()) {
+                                        try {
+                                            java.time.LocalDate start = java.time.LocalDate.parse(startDate.substring(0, 10));
+                                            java.time.LocalDate end = java.time.LocalDate.parse(endDate.substring(0, 10));
+                                            long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+                                            sprintInfo.put("duration", days + " days");
+                                        } catch (Exception e) {
+                                            sprintInfo.put("duration", "Unknown");
+                                        }
+                                    } else {
+                                        sprintInfo.put("duration", "Unknown");
+                                    }
+                                    
+                                    // Get issues in this sprint
+                                    String sprintId = selectedSprint.get("id").asText();
+                                    String issuesUrl = jiraUrl + "/rest/agile/1.0/sprint/" + sprintId + "/issue?fields=issuetype,summary";
+                                    System.out.println("Issues URL: " + issuesUrl);
+                                    
+                                    ResponseEntity<String> issuesResponse = restTemplate.exchange(issuesUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                                    System.out.println("Issues response status: " + issuesResponse.getStatusCode());
+                                    System.out.println("Issues response body: " + issuesResponse.getBody());
+                                    
+                                    if (issuesResponse.getStatusCode() == HttpStatus.OK) {
+                                        JsonNode issuesData = objectMapper.readTree(issuesResponse.getBody());
+                                        
+                                        long storiesCount = 0;
+                                        long bugsCount = 0;
+                                        
+                                        if (issuesData.has("issues")) {
+                                            System.out.println("Found " + issuesData.get("issues").size() + " issues in sprint");
+                                            
+                                            for (JsonNode issue : issuesData.get("issues")) {
+                                                String issueType = issue.path("fields").path("issuetype").path("name").asText("");
+                                                String issueKey = issue.get("key").asText();
+                                                System.out.println("Issue: " + issueKey + " (Type: " + issueType + ")");
+                                                
+                                                if ("Story".equals(issueType)) {
+                                                    storiesCount++;
+                                                } else if ("Bug".equals(issueType)) {
+                                                    bugsCount++;
+                                                }
+                                            }
+                                        }
+                                        
+                                        sprintInfo.put("storiesCount", storiesCount);
+                                        sprintInfo.put("bugsCount", bugsCount);
+                                        
+                                        System.out.println("Final sprint info: " + sprintInfo);
+                                        return sprintInfo;
+                                    } else {
+                                        System.out.println("Failed to get issues for sprint");
+                                        sprintInfo.put("storiesCount", 0);
+                                        sprintInfo.put("bugsCount", 0);
+                                        return sprintInfo;
+                                    }
+                                }
                             } else {
-                                sprintInfo.put("storiesCount", 0);
-                                sprintInfo.put("bugsCount", 0);
+                                System.out.println("No sprints found for board");
                             }
-                            
-                            return sprintInfo;
+                        } else {
+                            System.out.println("Failed to get sprints for board");
                         }
                     }
+                } else {
+                    System.out.println("No boards found for project");
                 }
+            } else {
+                System.out.println("Failed to get boards for project");
             }
             
-            // Fallback if no active sprint found
-            sprintInfo.put("name", "No Active Sprint");
+            // Fallback: Try to get sprint info using JQL search
+            System.out.println("No sprint found via Agile API, trying JQL fallback");
+            try {
+                String jqlUrl = jiraUrl + "/rest/api/2/search?jql=project=" + projectKey + " AND sprint in openSprints()&fields=issuetype,sprint&maxResults=1000";
+                System.out.println("JQL URL: " + jqlUrl);
+                
+                ResponseEntity<String> jqlResponse = restTemplate.exchange(jqlUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                System.out.println("JQL response status: " + jqlResponse.getStatusCode());
+                System.out.println("JQL response body: " + jqlResponse.getBody());
+                
+                if (jqlResponse.getStatusCode() == HttpStatus.OK) {
+                    JsonNode jqlData = objectMapper.readTree(jqlResponse.getBody());
+                    
+                    if (jqlData.has("issues") && jqlData.get("issues").size() > 0) {
+                        System.out.println("Found " + jqlData.get("issues").size() + " issues in open sprints");
+                        
+                        long storiesCount = 0;
+                        long bugsCount = 0;
+                        String sprintName = "Open Sprint";
+                        
+                        for (JsonNode issue : jqlData.get("issues")) {
+                            String issueType = issue.path("fields").path("issuetype").path("name").asText("");
+                            String issueKey = issue.get("key").asText();
+                            System.out.println("Issue: " + issueKey + " (Type: " + issueType + ")");
+                            
+                            if ("Story".equals(issueType)) {
+                                storiesCount++;
+                            } else if ("Bug".equals(issueType)) {
+                                bugsCount++;
+                            }
+                            
+                            // Try to get sprint name from sprint field
+                            JsonNode sprintField = issue.path("fields").path("sprint");
+                            if (sprintField.isArray() && sprintField.size() > 0) {
+                                String sprintInfoStr = sprintField.get(0).asText();
+                                // Parse sprint info string to extract name
+                                if (sprintInfoStr.contains("name=")) {
+                                    String[] parts = sprintInfoStr.split("name=");
+                                    if (parts.length > 1) {
+                                        String namePart = parts[1].split(",")[0];
+                                        sprintName = namePart;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        sprintInfo.put("name", sprintName);
+                        sprintInfo.put("storiesCount", storiesCount);
+                        sprintInfo.put("bugsCount", bugsCount);
+                        sprintInfo.put("duration", "Unknown");
+                        sprintInfo.put("startDate", "Unknown");
+                        sprintInfo.put("endDate", "Unknown");
+                        
+                        System.out.println("JQL fallback result: " + sprintInfo);
+                        return sprintInfo;
+                    }
+                }
+            } catch (Exception jqlError) {
+                System.err.println("JQL fallback also failed: " + jqlError.getMessage());
+            }
+            
+            // Final fallback
+            System.out.println("No sprint found, using final fallback");
+            sprintInfo.put("name", "No Sprint Found");
             sprintInfo.put("storiesCount", 0);
             sprintInfo.put("bugsCount", 0);
             sprintInfo.put("duration", "N/A");
@@ -611,7 +730,7 @@ public class CTOService {
             e.printStackTrace();
             
             Map<String, Object> errorSprintInfo = new HashMap<>();
-            errorSprintInfo.put("name", "Error Loading Sprint");
+            errorSprintInfo.put("name", "Error: " + e.getMessage());
             errorSprintInfo.put("storiesCount", 0);
             errorSprintInfo.put("bugsCount", 0);
             errorSprintInfo.put("duration", "Error");
