@@ -662,9 +662,14 @@
                                                     <i class="fas fa-sync-alt"></i> Refresh
                                                 </button>
                                             </div>
-                                            <div class="col-md-2 d-flex align-items-end">
+                                            <div class="col-md-1 d-flex align-items-end">
                                                 <button type="button" class="btn btn-outline-warning w-100" onclick="debugProjectsFromConfig()" title="Debug Mode">
                                                     <i class="fas fa-bug"></i> Debug
+                                                </button>
+                                            </div>
+                                            <div class="col-md-1 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-info w-100" onclick="testSprintInfo()" title="Test Sprint Info">
+                                                    <i class="fas fa-running"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -1449,6 +1454,46 @@
             } catch (error) {
                 console.error('Debug error:', error);
                 alert('❌ Debug failed: ' + error.message);
+            }
+        }
+
+        async function testSprintInfo() {
+            const select = document.getElementById('ctoProjectSelect');
+            const selectedProject = select.options[select.selectedIndex];
+            
+            if (!selectedProject.value) {
+                alert('❌ Please select a project first');
+                return;
+            }
+
+            try {
+                console.log('Testing sprint info for project:', selectedProject.value);
+                
+                const response = await fetch('/api/cto/sprint-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectKey: selectedProject.value })
+                });
+
+                const data = await response.json();
+                console.log('Sprint info response:', data);
+                
+                let sprintInfo = '=== SPRINT INFO TEST ===\n\n';
+                sprintInfo += `Project: ${selectedProject.textContent}\n`;
+                sprintInfo += `Sprint Name: ${data.name || 'N/A'}\n`;
+                sprintInfo += `Stories Count: ${data.storiesCount || 0}\n`;
+                sprintInfo += `Bugs Count: ${data.bugsCount || 0}\n`;
+                sprintInfo += `Duration: ${data.duration || 'N/A'}\n`;
+                sprintInfo += `Start Date: ${data.startDate || 'N/A'}\n`;
+                sprintInfo += `End Date: ${data.endDate || 'N/A'}\n`;
+                sprintInfo += `State: ${data.state || 'N/A'}\n\n`;
+                sprintInfo += 'Check browser console for full details.';
+                
+                alert(sprintInfo);
+                
+            } catch (error) {
+                console.error('Sprint info test error:', error);
+                alert('❌ Sprint info test failed: ' + error.message);
             }
         }
 

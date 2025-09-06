@@ -263,6 +263,28 @@ public class CTOController {
         }
     }
 
+    @PostMapping("/sprint-info")
+    public ResponseEntity<Map<String, Object>> getSprintInfo(@RequestBody Map<String, String> request) {
+        try {
+            String projectKey = request.get("projectKey");
+            
+            if (projectKey == null || projectKey.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Project key is required"));
+            }
+
+            // Use config values
+            String cleanJiraUrl = jiraUrl.endsWith("/") ? jiraUrl.substring(0, jiraUrl.length() - 1) : jiraUrl;
+            
+            Map<String, Object> sprintInfo = ctoService.getCurrentSprintInfo(cleanJiraUrl, projectKey, jiraUsername, jiraApiToken);
+            return ResponseEntity.ok(sprintInfo);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get sprint info: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
         return ResponseEntity.ok(Map.of("status", "OK", "service", "CTO Management"));

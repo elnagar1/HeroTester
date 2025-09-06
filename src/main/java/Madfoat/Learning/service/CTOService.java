@@ -102,6 +102,12 @@ public class CTOService {
             // CTO specific metrics
             calculateCTOMetrics(statistics, allIssues);
             
+            // Get real sprint information
+            System.out.println("Getting sprint information for project: " + projectKey);
+            Map<String, Object> sprintInfo = getCurrentSprintInfo(jiraUrl, projectKey, username, apiToken);
+            System.out.println("Sprint info result: " + sprintInfo);
+            statistics.put("sprintInfo", sprintInfo);
+            
             return statistics;
             
         } catch (Exception e) {
@@ -437,9 +443,8 @@ public class CTOService {
         double productivityIndex = calculateProductivityIndex(allIssues);
         statistics.put("productivityIndex", Math.round(productivityIndex * 100) / 100.0);
         
-        // Sprint information
-        Map<String, Object> sprintInfo = getCurrentSprintInfo(allIssues);
-        statistics.put("sprintInfo", sprintInfo);
+        // Sprint information - will be set by the calling method with real sprint data
+        // This is just a placeholder, real sprint info will be set in getProjectStatistics
     }
     
     private double calculateProductivityIndex(List<Map<String, Object>> allIssues) {
@@ -503,6 +508,118 @@ public class CTOService {
         sprintInfo.put("endDate", java.time.LocalDate.now().plusDays(7).toString());
         
         return sprintInfo;
+    }
+    
+    public Map<String, Object> getCurrentSprintInfo(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            Map<String, Object> sprintInfo = new HashMap<>();
+            
+            // Get active sprint from Agile API
+            String url = jiraUrl + "/rest/agile/1.0/board?projectKeyOrId=" + projectKey;
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode boards = objectMapper.readTree(response.getBody());
+                
+                if (boards.has("values") && boards.get("values").size() > 0) {
+                    String boardId = boards.get("values").get(0).get("id").asText();
+                    
+                    // Get active sprints for this board
+                    String sprintUrl = jiraUrl + "/rest/agile/1.0/board/" + boardId + "/sprint?state=active";
+                    ResponseEntity<String> sprintResponse = restTemplate.exchange(sprintUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                    
+                    if (sprintResponse.getStatusCode() == HttpStatus.OK) {
+                        JsonNode sprintData = objectMapper.readTree(sprintResponse.getBody());
+                        
+                        if (sprintData.has("values") && sprintData.get("values").size() > 0) {
+                            JsonNode activeSprint = sprintData.get("values").get(0);
+                            
+                            sprintInfo.put("name", activeSprint.get("name").asText());
+                            sprintInfo.put("id", activeSprint.get("id").asText());
+                            sprintInfo.put("state", activeSprint.get("state").asText());
+                            
+                            // Get sprint start and end dates
+                            String startDate = activeSprint.path("startDate").asText("");
+                            String endDate = activeSprint.path("endDate").asText("");
+                            
+                            sprintInfo.put("startDate", startDate);
+                            sprintInfo.put("endDate", endDate);
+                            
+                            // Calculate duration
+                            if (!startDate.isEmpty() && !endDate.isEmpty()) {
+                                try {
+                                    java.time.LocalDate start = java.time.LocalDate.parse(startDate.substring(0, 10));
+                                    java.time.LocalDate end = java.time.LocalDate.parse(endDate.substring(0, 10));
+                                    long days = java.time.temporal.ChronoUnit.DAYS.between(start, end);
+                                    sprintInfo.put("duration", days + " days");
+                                } catch (Exception e) {
+                                    sprintInfo.put("duration", "Unknown");
+                                }
+                            } else {
+                                sprintInfo.put("duration", "Unknown");
+                            }
+                            
+                            // Get issues in this sprint
+                            String sprintId = activeSprint.get("id").asText();
+                            String issuesUrl = jiraUrl + "/rest/agile/1.0/sprint/" + sprintId + "/issue?fields=issuetype,summary";
+                            ResponseEntity<String> issuesResponse = restTemplate.exchange(issuesUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                            
+                            if (issuesResponse.getStatusCode() == HttpStatus.OK) {
+                                JsonNode issuesData = objectMapper.readTree(issuesResponse.getBody());
+                                
+                                long storiesCount = 0;
+                                long bugsCount = 0;
+                                
+                                if (issuesData.has("issues")) {
+                                    for (JsonNode issue : issuesData.get("issues")) {
+                                        String issueType = issue.path("fields").path("issuetype").path("name").asText("");
+                                        if ("Story".equals(issueType)) {
+                                            storiesCount++;
+                                        } else if ("Bug".equals(issueType)) {
+                                            bugsCount++;
+                                        }
+                                    }
+                                }
+                                
+                                sprintInfo.put("storiesCount", storiesCount);
+                                sprintInfo.put("bugsCount", bugsCount);
+                            } else {
+                                sprintInfo.put("storiesCount", 0);
+                                sprintInfo.put("bugsCount", 0);
+                            }
+                            
+                            return sprintInfo;
+                        }
+                    }
+                }
+            }
+            
+            // Fallback if no active sprint found
+            sprintInfo.put("name", "No Active Sprint");
+            sprintInfo.put("storiesCount", 0);
+            sprintInfo.put("bugsCount", 0);
+            sprintInfo.put("duration", "N/A");
+            sprintInfo.put("startDate", "N/A");
+            sprintInfo.put("endDate", "N/A");
+            
+            return sprintInfo;
+            
+        } catch (Exception e) {
+            System.err.println("Error getting current sprint info: " + e.getMessage());
+            e.printStackTrace();
+            
+            Map<String, Object> errorSprintInfo = new HashMap<>();
+            errorSprintInfo.put("name", "Error Loading Sprint");
+            errorSprintInfo.put("storiesCount", 0);
+            errorSprintInfo.put("bugsCount", 0);
+            errorSprintInfo.put("duration", "Error");
+            errorSprintInfo.put("startDate", "Error");
+            errorSprintInfo.put("endDate", "Error");
+            
+            return errorSprintInfo;
+        }
     }
 
     public Map<String, Object> getFilterOptions(String jiraUrl, String projectKey, String username, String apiToken) {
