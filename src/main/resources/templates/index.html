@@ -593,20 +593,30 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row g-3">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
+                                                <label for="ctoJiraUrl" class="form-label">Jira URL</label>
+                                                <input type="url" class="form-control" id="ctoJiraUrl" placeholder="https://yourcompany.atlassian.net">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="ctoUsername" class="form-label">Username</label>
+                                                <input type="text" class="form-control" id="ctoUsername" placeholder="user@company.com">
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="ctoApiToken" class="form-label">API Token</label>
+                                                <input type="password" class="form-control" id="ctoApiToken" placeholder="Your API token">
+                                            </div>
+                                            <div class="col-md-3 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-primary w-100" onclick="loadProjects()">
+                                                    <i class="fas fa-search"></i> Load Projects
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 mt-3">
+                                            <div class="col-12">
                                                 <label for="ctoProjectSelect" class="form-label">Select Project</label>
                                                 <select class="form-select" id="ctoProjectSelect">
                                                     <option value="">Choose a project...</option>
                                                 </select>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label for="ctoJiraUrl" class="form-label">Jira URL</label>
-                                                <input type="url" class="form-control" id="ctoJiraUrl" placeholder="https://yourcompany.atlassian.net">
-                                            </div>
-                                            <div class="col-md-4 d-flex align-items-end">
-                                                <button type="button" class="btn btn-outline-primary w-100" onclick="loadProjects()">
-                                                    <i class="fas fa-search"></i> Load Projects
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -1707,6 +1717,12 @@
                 return;
             }
 
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            button.disabled = true;
+
             try {
                 const response = await fetch('/api/cto/projects', {
                     method: 'POST',
@@ -1720,10 +1736,24 @@
                 }
 
                 const data = await response.json();
-                populateProjectSelect(data.projects || []);
+                console.log('Projects data:', data); // Debug log
+                
+                if (data.projects && data.projects.length > 0) {
+                    populateProjectSelect(data.projects);
+                    alert(`Successfully loaded ${data.projects.length} projects`);
+                } else {
+                    alert('No projects found or user does not have access to any projects');
+                    populateProjectSelect([]);
+                }
                 
             } catch (error) {
+                console.error('Error loading projects:', error);
                 alert('Error loading projects: ' + error.message);
+                populateProjectSelect([]);
+            } finally {
+                // Reset button state
+                button.innerHTML = originalText;
+                button.disabled = false;
             }
         }
 
@@ -1731,7 +1761,19 @@
             const select = document.getElementById('ctoProjectSelect');
             select.innerHTML = '<option value="">Choose a project...</option>';
             
+            console.log('Populating project select with:', projects);
+            
+            if (!projects || projects.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No projects available";
+                option.disabled = true;
+                select.appendChild(option);
+                return;
+            }
+            
             projects.forEach(project => {
+                console.log('Processing project:', project);
                 if (!project.archived) {
                     const option = document.createElement('option');
                     option.value = project.key;
@@ -1740,6 +1782,8 @@
                     select.appendChild(option);
                 }
             });
+            
+            console.log('Project select populated with', select.options.length - 1, 'projects');
         }
 
         function handleProjectSelection() {

@@ -266,9 +266,14 @@ public class CTOService {
     public Map<String, Object> getProjects(String jiraUrl, String username, String apiToken) {
         try {
             String url = jiraUrl + "/rest/api/2/project";
+            System.out.println("Fetching projects from: " + url);
+            
             HttpHeaders headers = createAuthHeaders(username, apiToken);
             
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            System.out.println("Response status: " + response.getStatusCode());
+            System.out.println("Response body: " + response.getBody());
             
             if (response.getStatusCode() == HttpStatus.OK) {
                 JsonNode projects = objectMapper.readTree(response.getBody());
@@ -285,16 +290,21 @@ public class CTOService {
                     projectList.add(projectData);
                 }
                 
+                System.out.println("Found " + projectList.size() + " projects");
+                
                 Map<String, Object> result = new HashMap<>();
                 result.put("projects", projectList);
                 result.put("total", projectList.size());
                 
                 return result;
+            } else {
+                System.out.println("Failed to get projects. Status: " + response.getStatusCode());
+                return Map.of("projects", new ArrayList<>(), "total", 0, "error", "HTTP " + response.getStatusCode());
             }
             
-            return Map.of("projects", new ArrayList<>(), "total", 0);
-            
         } catch (Exception e) {
+            System.err.println("Error getting projects: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Failed to get projects: " + e.getMessage(), e);
         }
     }

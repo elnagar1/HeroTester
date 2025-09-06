@@ -87,7 +87,13 @@ public class CTOController {
             String username = request.get("username");
             String apiToken = request.get("apiToken");
 
+            System.out.println("Received request for projects:");
+            System.out.println("Jira URL: " + jiraUrl);
+            System.out.println("Username: " + username);
+            System.out.println("API Token: " + (apiToken != null ? "***" + apiToken.substring(Math.max(0, apiToken.length() - 4)) : "null"));
+
             if (jiraUrl == null || username == null || apiToken == null) {
+                System.out.println("Missing required fields");
                 return ResponseEntity.badRequest()
                     .body(Map.of("error", "Missing required fields: jiraUrl, username, apiToken"));
             }
@@ -98,11 +104,32 @@ public class CTOController {
             }
 
             Map<String, Object> projects = ctoService.getProjects(jiraUrl, username, apiToken);
+            System.out.println("Returning projects: " + projects);
             return ResponseEntity.ok(projects);
 
         } catch (Exception e) {
+            System.err.println("Error in getProjects controller: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "Failed to get projects: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/test-projects")
+    public ResponseEntity<Map<String, Object>> testProjects() {
+        try {
+            // Test with a sample Jira URL (this will fail but we can see the error)
+            Map<String, Object> result = ctoService.getProjects(
+                "https://test.atlassian.net", 
+                "test@example.com", 
+                "test-token"
+            );
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                "error", e.getMessage(),
+                "status", "Test endpoint working - error expected"
+            ));
         }
     }
 
