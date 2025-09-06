@@ -612,9 +612,14 @@
                                                     </a>
                                                 </small>
                                             </div>
-                                            <div class="col-md-3 d-flex align-items-end">
+                                            <div class="col-md-2 d-flex align-items-end">
                                                 <button type="button" class="btn btn-outline-primary w-100" onclick="loadProjects()">
                                                     <i class="fas fa-search"></i> Load Projects
+                                                </button>
+                                            </div>
+                                            <div class="col-md-1 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-warning w-100" onclick="debugProjects()" title="Debug Mode">
+                                                    <i class="fas fa-bug"></i>
                                                 </button>
                                             </div>
                                         </div>
@@ -1929,6 +1934,62 @@
             
             // This is a simplified calculation - in real scenario you'd use story points
             return completedStories.length;
+        }
+
+        async function debugProjects() {
+            const jiraUrl = document.getElementById('ctoJiraUrl').value.trim();
+            const username = document.getElementById('ctoUsername').value.trim();
+            const apiToken = document.getElementById('ctoApiToken').value.trim();
+
+            if (!jiraUrl || !username || !apiToken) {
+                alert('❌ Please fill in all required fields first');
+                return;
+            }
+
+            console.log('=== DEBUG MODE ===');
+            console.log('Jira URL:', jiraUrl);
+            console.log('Username:', username);
+            console.log('API Token:', apiToken.substring(0, 4) + '***');
+
+            try {
+                const response = await fetch('/api/cto/debug-projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jiraUrl, username, apiToken })
+                });
+
+                const data = await response.json();
+                console.log('Debug response:', data);
+                
+                // Show detailed debug info
+                let debugInfo = '=== DEBUG INFORMATION ===\n\n';
+                debugInfo += `Status: ${response.status}\n`;
+                debugInfo += `Success: ${data.success || false}\n`;
+                debugInfo += `Total Projects: ${data.total || 0}\n`;
+                debugInfo += `Error: ${data.error || 'None'}\n\n`;
+                
+                if (data.projects && data.projects.length > 0) {
+                    debugInfo += 'Projects found:\n';
+                    data.projects.forEach((project, index) => {
+                        debugInfo += `${index + 1}. ${project.name} (${project.key})\n`;
+                    });
+                } else {
+                    debugInfo += 'No projects found in response\n';
+                }
+                
+                debugInfo += '\nCheck browser console for full details.';
+                
+                alert(debugInfo);
+                
+                // Also populate the select if projects were found
+                if (data.projects && data.projects.length > 0) {
+                    populateProjectSelect(data.projects);
+                }
+                
+            } catch (error) {
+                console.error('Debug error:', error);
+                alert('❌ Debug failed: ' + error.message);
+            }
         }
     </script>
 </body>

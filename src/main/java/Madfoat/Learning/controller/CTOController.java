@@ -133,6 +133,43 @@ public class CTOController {
         }
     }
 
+    @PostMapping("/debug-projects")
+    public ResponseEntity<Map<String, Object>> debugProjects(@RequestBody Map<String, String> request) {
+        try {
+            String jiraUrl = request.get("jiraUrl");
+            String username = request.get("username");
+            String apiToken = request.get("apiToken");
+
+            System.out.println("=== DEBUG PROJECTS REQUEST ===");
+            System.out.println("Jira URL: " + jiraUrl);
+            System.out.println("Username: " + username);
+            System.out.println("API Token: " + (apiToken != null ? "***" + apiToken.substring(Math.max(0, apiToken.length() - 4)) : "null"));
+
+            if (jiraUrl == null || username == null || apiToken == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Missing required fields"));
+            }
+
+            // Remove trailing slash from Jira URL if present
+            if (jiraUrl.endsWith("/")) {
+                jiraUrl = jiraUrl.substring(0, jiraUrl.length() - 1);
+            }
+
+            Map<String, Object> projects = ctoService.getProjects(jiraUrl, username, apiToken);
+            
+            System.out.println("=== DEBUG PROJECTS RESULT ===");
+            System.out.println("Result: " + projects);
+            
+            return ResponseEntity.ok(projects);
+
+        } catch (Exception e) {
+            System.err.println("Error in debug-projects: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Debug failed: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
         return ResponseEntity.ok(Map.of("status", "OK", "service", "CTO Management"));

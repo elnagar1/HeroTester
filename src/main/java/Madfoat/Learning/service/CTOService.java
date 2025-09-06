@@ -278,11 +278,14 @@ public class CTOService {
                 System.out.println("Authentication test status: " + testResponse.getStatusCode());
                 if (testResponse.getStatusCode() == HttpStatus.OK) {
                     System.out.println("Authentication successful");
+                    JsonNode userInfo = objectMapper.readTree(testResponse.getBody());
+                    System.out.println("User info: " + userInfo.get("displayName").asText() + " (" + userInfo.get("emailAddress").asText() + ")");
                 } else {
                     System.out.println("Authentication failed: " + testResponse.getBody());
                 }
             } catch (Exception authError) {
                 System.out.println("Authentication test failed: " + authError.getMessage());
+                authError.printStackTrace();
             }
             
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
@@ -294,28 +297,41 @@ public class CTOService {
                 JsonNode projects = objectMapper.readTree(response.getBody());
                 List<Map<String, Object>> projectList = new ArrayList<>();
                 
+                System.out.println("Projects response type: " + projects.getNodeType());
+                System.out.println("Is array: " + projects.isArray());
+                System.out.println("Response size: " + (projects.isArray() ? projects.size() : "N/A"));
+                
                 if (projects.isArray()) {
+                    System.out.println("Processing " + projects.size() + " projects...");
                     for (JsonNode project : projects) {
-                        Map<String, Object> projectData = new HashMap<>();
-                        projectData.put("key", project.get("key").asText());
-                        projectData.put("name", project.get("name").asText());
-                        projectData.put("description", project.path("description").asText(""));
-                        projectData.put("lead", project.path("lead").path("displayName").asText(""));
-                        projectData.put("projectTypeKey", project.path("projectTypeKey").asText(""));
-                        projectData.put("archived", project.path("archived").asBoolean(false));
-                        projectList.add(projectData);
+                        try {
+                            Map<String, Object> projectData = new HashMap<>();
+                            projectData.put("key", project.get("key").asText());
+                            projectData.put("name", project.get("name").asText());
+                            projectData.put("description", project.path("description").asText(""));
+                            projectData.put("lead", project.path("lead").path("displayName").asText(""));
+                            projectData.put("projectTypeKey", project.path("projectTypeKey").asText(""));
+                            projectData.put("archived", project.path("archived").asBoolean(false));
+                            projectList.add(projectData);
+                            System.out.println("Added project: " + project.get("key").asText() + " - " + project.get("name").asText());
+                        } catch (Exception e) {
+                            System.err.println("Error processing project: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     System.out.println("Unexpected response format - not an array");
+                    System.out.println("Response content: " + response.getBody());
                 }
                 
-                System.out.println("Found " + projectList.size() + " projects");
+                System.out.println("Found " + projectList.size() + " projects total");
                 
                 Map<String, Object> result = new HashMap<>();
                 result.put("projects", projectList);
                 result.put("total", projectList.size());
                 result.put("jiraUrl", jiraUrl);
                 result.put("username", username);
+                result.put("success", true);
                 
                 return result;
             } else if (response.getStatusCode() == HttpStatus.UNAUTHORIZED) {
