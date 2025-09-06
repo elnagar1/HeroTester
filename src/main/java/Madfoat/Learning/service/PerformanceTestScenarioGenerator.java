@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 public class PerformanceTestScenarioGenerator {
 
     private static final Map<String, List<String>> SCENARIO_TEMPLATES = new HashMap<>();
-    private static final Map<String, Map<String, Object>> OPERATION_WEIGHTS = new HashMap<>();
 
     static {
         // Scenario templates definition
@@ -47,12 +46,6 @@ public class PerformanceTestScenarioGenerator {
             "Test load distribution across servers"
         ));
 
-        // تعريف أوزان العمليات المختلفة
-        OPERATION_WEIGHTS.put("تسجيل الدخول", Map.of("cpu_weight", 0.3, "memory_weight", 0.2, "db_weight", 0.5));
-        OPERATION_WEIGHTS.put("البحث", Map.of("cpu_weight", 0.4, "memory_weight", 0.3, "db_weight", 0.8));
-        OPERATION_WEIGHTS.put("إضافة منتج", Map.of("cpu_weight", 0.5, "memory_weight", 0.4, "db_weight", 0.7));
-        OPERATION_WEIGHTS.put("عرض الصفحة", Map.of("cpu_weight", 0.2, "memory_weight", 0.3, "db_weight", 0.3));
-        OPERATION_WEIGHTS.put("تحميل ملف", Map.of("cpu_weight", 0.6, "memory_weight", 0.7, "db_weight", 0.2));
     }
 
     public PerformanceTestPlan generateTestPlan(PerformanceTestRequest request) {

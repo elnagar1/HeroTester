@@ -1,8 +1,6 @@
 package Madfoat.Learning.model;
 
 import jakarta.persistence.*;
-import java.util.Collection;
-import java.util.Collections;
 
 @Entity
 @Table(name = "users") // Renamed from "user" to avoid potential SQL keyword conflict
