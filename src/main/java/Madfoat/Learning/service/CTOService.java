@@ -488,27 +488,7 @@ public class CTOService {
         return resolutionTimes.isEmpty() ? 0 : resolutionTimes.stream().mapToLong(Long::longValue).sum() / resolutionTimes.size();
     }
     
-    private Map<String, Object> getCurrentSprintInfo(List<Map<String, Object>> allIssues) {
-        Map<String, Object> sprintInfo = new HashMap<>();
-        
-        // Count stories and bugs in current sprint (simplified)
-        long sprintStories = allIssues.stream()
-            .filter(issue -> "Story".equals(issue.get("type")))
-            .count();
-        
-        long sprintBugs = allIssues.stream()
-            .filter(issue -> "Bug".equals(issue.get("type")))
-            .count();
-        
-        sprintInfo.put("name", "Current Sprint");
-        sprintInfo.put("storiesCount", sprintStories);
-        sprintInfo.put("bugsCount", sprintBugs);
-        sprintInfo.put("duration", "2 weeks"); // Default sprint duration
-        sprintInfo.put("startDate", java.time.LocalDate.now().minusDays(7).toString());
-        sprintInfo.put("endDate", java.time.LocalDate.now().plusDays(7).toString());
-        
-        return sprintInfo;
-    }
+    // This method is removed - using the public getCurrentSprintInfo with Jira API instead
     
     public Map<String, Object> getCurrentSprintInfo(String jiraUrl, String projectKey, String username, String apiToken) {
         try {

@@ -70,7 +70,22 @@ public class CTOController {
                 jiraUrl = jiraUrl.substring(0, jiraUrl.length() - 1);
             }
 
+            System.out.println("=== CONTROLLER DEBUG ===");
+            System.out.println("Using Jira URL: " + jiraUrl);
+            System.out.println("Using Project Key: " + projectKey);
+            System.out.println("Using Username: " + username);
+            System.out.println("API Token present: " + (apiToken != null && !apiToken.isEmpty()));
+            
             Map<String, Object> statistics = ctoService.getProjectStatistics(jiraUrl, projectKey, username, apiToken);
+            
+            System.out.println("=== STATISTICS RESULT ===");
+            System.out.println("Total statistics keys: " + statistics.keySet().size());
+            System.out.println("Statistics keys: " + statistics.keySet());
+            System.out.println("Sprint info present: " + statistics.containsKey("sprintInfo"));
+            if (statistics.containsKey("sprintInfo")) {
+                System.out.println("Sprint info: " + statistics.get("sprintInfo"));
+            }
+            
             return ResponseEntity.ok(statistics);
 
         } catch (Exception e) {

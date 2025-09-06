@@ -668,9 +668,12 @@
                                                 </button>
                                             </div>
                                             <div class="col-md-1 d-flex align-items-end">
-                                                <button type="button" class="btn btn-outline-info w-100" onclick="testSprintInfo()" title="Test Sprint Info">
-                                                    <i class="fas fa-running"></i>
-                                                </button>
+                        <button type="button" class="btn btn-outline-info w-100" onclick="testSprintInfo()" title="Test Sprint Info">
+                            <i class="fas fa-running"></i> Test Sprint
+                        </button>
+                        <button type="button" class="btn btn-outline-warning w-100 mt-2" onclick="debugCurrentData()" title="Debug Current Data">
+                            <i class="fas fa-bug"></i> Debug Data
+                        </button>
                                             </div>
                                         </div>
                                         
@@ -1497,6 +1500,43 @@
             }
         }
 
+        function debugCurrentData() {
+            console.log('=== CURRENT DATA DEBUG ===');
+            console.log('ctoCurrentData:', ctoCurrentData);
+            
+            if (ctoCurrentData) {
+                console.log('Data keys:', Object.keys(ctoCurrentData));
+                console.log('Sprint info:', ctoCurrentData.sprintInfo);
+                console.log('Column stats:', ctoCurrentData.columnStats);
+                console.log('Issue types:', ctoCurrentData.issueTypesDistribution);
+                console.log('Status distribution:', ctoCurrentData.statusDistribution);
+                console.log('Issues:', ctoCurrentData.issues);
+                
+                // Check DOM elements
+                const sprintNameEl = document.getElementById('ctoSprintName');
+                const sprintStoriesEl = document.getElementById('ctoSprintStories');
+                const sprintBugsEl = document.getElementById('ctoSprintBugs');
+                
+                console.log('Sprint name element:', sprintNameEl);
+                console.log('Sprint stories element:', sprintStoriesEl);
+                console.log('Sprint bugs element:', sprintBugsEl);
+                
+                if (sprintNameEl) {
+                    console.log('Sprint name element text:', sprintNameEl.textContent);
+                }
+                if (sprintStoriesEl) {
+                    console.log('Sprint stories element text:', sprintStoriesEl.textContent);
+                }
+                if (sprintBugsEl) {
+                    console.log('Sprint bugs element text:', sprintBugsEl.textContent);
+                }
+                
+                alert('Debug info logged to console. Check F12 Console for details.');
+            } else {
+                alert('❌ No current data available. Please analyze a project first.');
+            }
+        }
+
         async function handleCTOConnection(event) {
             event.preventDefault();
             
@@ -2119,6 +2159,14 @@
                 }
 
                 const data = await response.json();
+                console.log('=== FRONTEND DEBUG ===');
+                console.log('Received data from server:', data);
+                console.log('Data keys:', Object.keys(data));
+                console.log('Sprint info present:', data.sprintInfo ? 'YES' : 'NO');
+                if (data.sprintInfo) {
+                    console.log('Sprint info details:', data.sprintInfo);
+                }
+                
                 ctoCurrentData = data;
                 
                 if (loadingEl) loadingEl.style.display = 'none';
