@@ -267,8 +267,23 @@ public class CTOService {
         try {
             String url = jiraUrl + "/rest/api/2/project";
             System.out.println("Fetching projects from: " + url);
+            System.out.println("Username: " + username);
             
             HttpHeaders headers = createAuthHeaders(username, apiToken);
+            
+            // First, let's test authentication with a simple API call
+            try {
+                String testUrl = jiraUrl + "/rest/api/2/myself";
+                ResponseEntity<String> testResponse = restTemplate.exchange(testUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                System.out.println("Authentication test status: " + testResponse.getStatusCode());
+                if (testResponse.getStatusCode() == HttpStatus.OK) {
+                    System.out.println("Authentication successful");
+                } else {
+                    System.out.println("Authentication failed: " + testResponse.getBody());
+                }
+            } catch (Exception authError) {
+                System.out.println("Authentication test failed: " + authError.getMessage());
+            }
             
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
             
@@ -279,15 +294,19 @@ public class CTOService {
                 JsonNode projects = objectMapper.readTree(response.getBody());
                 List<Map<String, Object>> projectList = new ArrayList<>();
                 
-                for (JsonNode project : projects) {
-                    Map<String, Object> projectData = new HashMap<>();
-                    projectData.put("key", project.get("key").asText());
-                    projectData.put("name", project.get("name").asText());
-                    projectData.put("description", project.path("description").asText(""));
-                    projectData.put("lead", project.path("lead").path("displayName").asText(""));
-                    projectData.put("projectTypeKey", project.path("projectTypeKey").asText(""));
-                    projectData.put("archived", project.path("archived").asBoolean(false));
-                    projectList.add(projectData);
+                if (projects.isArray()) {
+                    for (JsonNode project : projects) {
+                        Map<String, Object> projectData = new HashMap<>();
+                        projectData.put("key", project.get("key").asText());
+                        projectData.put("name", project.get("name").asText());
+                        projectData.put("description", project.path("description").asText(""));
+                        projectData.put("lead", project.path("lead").path("displayName").asText(""));
+                        projectData.put("projectTypeKey", project.path("projectTypeKey").asText(""));
+                        projectData.put("archived", project.path("archived").asBoolean(false));
+                        projectList.add(projectData);
+                    }
+                } else {
+                    System.out.println("Unexpected response format - not an array");
                 }
                 
                 System.out.println("Found " + projectList.size() + " projects");
@@ -295,17 +314,52 @@ public class CTOService {
                 Map<String, Object> result = new HashMap<>();
                 result.put("projects", projectList);
                 result.put("total", projectList.size());
+                result.put("jiraUrl", jiraUrl);
+                result.put("username", username);
                 
                 return result;
+            } else if (response.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                System.out.println("Unauthorized - check credentials");
+                return Map.of(
+                    "projects", new ArrayList<>(), 
+                    "total", 0, 
+                    "error", "Unauthorized - Please check your username and API token",
+                    "statusCode", response.getStatusCode().value()
+                );
+            } else if (response.getStatusCode() == HttpStatus.FORBIDDEN) {
+                System.out.println("Forbidden - no access to projects");
+                return Map.of(
+                    "projects", new ArrayList<>(), 
+                    "total", 0, 
+                    "error", "Forbidden - You don't have access to view projects. Please contact your Jira administrator.",
+                    "statusCode", response.getStatusCode().value()
+                );
             } else {
                 System.out.println("Failed to get projects. Status: " + response.getStatusCode());
-                return Map.of("projects", new ArrayList<>(), "total", 0, "error", "HTTP " + response.getStatusCode());
+                return Map.of(
+                    "projects", new ArrayList<>(), 
+                    "total", 0, 
+                    "error", "HTTP " + response.getStatusCode() + " - " + response.getBody(),
+                    "statusCode", response.getStatusCode().value()
+                );
             }
             
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            System.err.println("HTTP Client Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            return Map.of(
+                "projects", new ArrayList<>(), 
+                "total", 0, 
+                "error", "HTTP " + e.getStatusCode() + " - " + e.getResponseBodyAsString(),
+                "statusCode", e.getStatusCode().value()
+            );
         } catch (Exception e) {
             System.err.println("Error getting projects: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Failed to get projects: " + e.getMessage(), e);
+            return Map.of(
+                "projects", new ArrayList<>(), 
+                "total", 0, 
+                "error", "Connection failed: " + e.getMessage()
+            );
         }
     }
 
