@@ -1,0 +1,87 @@
+package Madfoat.Learning.controller;
+
+import Madfoat.Learning.service.CTOService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/cto")
+@CrossOrigin(origins = "*")
+public class CTOController {
+
+    @Autowired
+    private CTOService ctoService;
+
+    @PostMapping("/project-stats")
+    public ResponseEntity<Map<String, Object>> getProjectStatistics(@RequestBody Map<String, String> request) {
+        try {
+            String jiraUrl = request.get("jiraUrl");
+            String projectKey = request.get("projectKey");
+            String username = request.get("username");
+            String apiToken = request.get("apiToken");
+
+            if (jiraUrl == null || projectKey == null || username == null || apiToken == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Missing required fields: jiraUrl, projectKey, username, apiToken"));
+            }
+
+            // Remove trailing slash from Jira URL if present
+            if (jiraUrl.endsWith("/")) {
+                jiraUrl = jiraUrl.substring(0, jiraUrl.length() - 1);
+            }
+
+            Map<String, Object> statistics = ctoService.getProjectStatistics(jiraUrl, projectKey, username, apiToken);
+            return ResponseEntity.ok(statistics);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get project statistics: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/export")
+    public ResponseEntity<String> exportCTOData(@RequestBody Map<String, Object> data) {
+        try {
+            // Generate CSV content
+            StringBuilder csv = new StringBuilder();
+            csv.append("Issue Key,Summary,Type,Status,Priority,Assignee,Created,Updated,Description\n");
+
+            if (data.containsKey("issues")) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Map<String, Object>> issues = (java.util.List<Map<String, Object>>) data.get("issues");
+                
+                for (Map<String, Object> issue : issues) {
+                    String key = (String) issue.get("key");
+                    String summary = (String) issue.get("summary");
+                    String type = (String) issue.get("type");
+                    String status = (String) issue.get("status");
+                    String priority = (String) issue.get("priority");
+                    String assignee = (String) issue.get("assignee");
+                    String created = (String) issue.get("created");
+                    String updated = (String) issue.get("updated");
+                    String description = (String) issue.get("description");
+                    
+                    csv.append(String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                        key, summary, type, status, priority, assignee, created, updated, description));
+                }
+            }
+
+            return ResponseEntity.ok()
+                .header("Content-Type", "text/csv")
+                .header("Content-Disposition", "attachment; filename=\"cto-management-report.csv\"")
+                .body(csv.toString());
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body("Failed to export data: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of("status", "OK", "service", "CTO Management"));
+    }
+}
