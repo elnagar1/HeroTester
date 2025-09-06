@@ -132,6 +132,90 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
+        
+        /* CTO Text Visibility Fixes */
+        .cto-dashboard h1, .cto-dashboard h2, .cto-dashboard h3, .cto-dashboard h4, .cto-dashboard h5, .cto-dashboard h6 {
+            color: #ffffff !important;
+        }
+        
+        .cto-dashboard p, .cto-dashboard span, .cto-dashboard div {
+            color: #e5e7eb !important;
+        }
+        
+        .cto-dashboard .text-muted {
+            color: #9ca3af !important;
+        }
+        
+        .cto-dashboard .form-label {
+            color: #f3f4f6 !important;
+            font-weight: 600;
+        }
+        
+        .cto-dashboard .form-control, .cto-dashboard .form-select {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #ffffff !important;
+        }
+        
+        .cto-dashboard .form-control:focus, .cto-dashboard .form-select:focus {
+            background-color: #1f2937 !important;
+            border-color: #3b82f6 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+        
+        .cto-dashboard .form-control::placeholder {
+            color: #9ca3af !important;
+        }
+        
+        .cto-dashboard .card-header {
+            background-color: #111827 !important;
+            border-bottom-color: #374151 !important;
+        }
+        
+        .cto-dashboard .table-dark {
+            --bs-table-bg: #1f2937;
+            --bs-table-striped-bg: #374151;
+            --bs-table-hover-bg: #4b5563;
+        }
+        
+        .cto-dashboard .table-dark th {
+            background-color: #111827 !important;
+            color: #ffffff !important;
+            border-color: #374151 !important;
+        }
+        
+        .cto-dashboard .table-dark td {
+            background-color: #1f2937 !important;
+            color: #e5e7eb !important;
+            border-color: #374151 !important;
+        }
+        
+        .cto-dashboard .badge {
+            font-weight: 600;
+        }
+        
+        .cto-dashboard .btn-outline-primary {
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .cto-dashboard .btn-outline-primary:hover {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+        
+        .cto-dashboard .btn-outline-success {
+            color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .cto-dashboard .btn-outline-success:hover {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -495,15 +579,41 @@
                                 <div id="jiraErrorMessage" class="alert alert-danger d-none"></div>
                             </div>
 
-                            <div class="tab-pane fade" id="tab-cto" role="tabpanel" aria-labelledby="tab-cto-tab">
+                            <div class="tab-pane fade cto-dashboard" id="tab-cto" role="tabpanel" aria-labelledby="tab-cto-tab">
                                 <div class="text-center mb-4 mt-2">
                                     <i class="fas fa-chart-line icon-large text-success"></i>
                                     <h3>CTO Management Dashboard</h3>
                                     <p class="text-muted">Comprehensive project statistics and analytics from Jira</p>
                                 </div>
 
-                                <!-- Connection Section -->
+                                <!-- Project Selection Section -->
                                 <div class="card bg-dark border-secondary mb-4">
+                                    <div class="card-header">
+                                        <h5 class="mb-0"><i class="fas fa-project-diagram"></i> Project Selection</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label for="ctoProjectSelect" class="form-label">Select Project</label>
+                                                <select class="form-select" id="ctoProjectSelect">
+                                                    <option value="">Choose a project...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="ctoJiraUrl" class="form-label">Jira URL</label>
+                                                <input type="url" class="form-control" id="ctoJiraUrl" placeholder="https://yourcompany.atlassian.net">
+                                            </div>
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-primary w-100" onclick="loadProjects()">
+                                                    <i class="fas fa-search"></i> Load Projects
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Connection Section -->
+                                <div class="card bg-dark border-secondary mb-4" id="ctoConnectionCard" style="display: none;">
                                     <div class="card-header">
                                         <h5 class="mb-0"><i class="fas fa-link"></i> Jira Connection</h5>
                                     </div>
@@ -511,14 +621,6 @@
                                         <form id="ctoConnectionForm">
                                             <div class="row g-3">
                                                 <div class="col-md-3">
-                                                    <label for="ctoJiraUrl" class="form-label">Jira URL</label>
-                                                    <input type="url" class="form-control" id="ctoJiraUrl" placeholder="https://yourcompany.atlassian.net">
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label for="ctoProjectKey" class="form-label">Project Key</label>
-                                                    <input type="text" class="form-control" id="ctoProjectKey" placeholder="PROJ">
-                                                </div>
-                                                <div class="col-md-2">
                                                     <label for="ctoUsername" class="form-label">Username</label>
                                                     <input type="text" class="form-control" id="ctoUsername" placeholder="user@company.com">
                                                 </div>
@@ -526,9 +628,13 @@
                                                     <label for="ctoApiToken" class="form-label">API Token</label>
                                                     <input type="password" class="form-control" id="ctoApiToken" placeholder="Your API token">
                                                 </div>
-                                                <div class="col-md-2 d-flex align-items-end">
+                                                <div class="col-md-3">
+                                                    <label for="ctoSelectedProject" class="form-label">Selected Project</label>
+                                                    <input type="text" class="form-control" id="ctoSelectedProject" readonly>
+                                                </div>
+                                                <div class="col-md-3 d-flex align-items-end">
                                                     <button type="submit" class="btn btn-primary w-100">
-                                                        <i class="fas fa-sync-alt"></i> Connect
+                                                        <i class="fas fa-sync-alt"></i> Connect & Analyze
                                                     </button>
                                                 </div>
                                             </div>
@@ -611,7 +717,60 @@
 
                                 <!-- Statistics Dashboard -->
                                 <div id="ctoDashboard" style="display: none;">
-                                    <!-- Summary Cards -->
+                                    <!-- Sprint Information -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-12">
+                                            <div class="card bg-dark border-primary">
+                                                <div class="card-header">
+                                                    <h5 class="mb-0"><i class="fas fa-running"></i> Current Sprint Information</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+                                                            <div class="text-center">
+                                                                <h6 class="text-primary">Sprint Name</h6>
+                                                                <h4 id="ctoSprintName">-</h4>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="text-center">
+                                                                <h6 class="text-success">Stories Count</h6>
+                                                                <h4 id="ctoSprintStories">0</h4>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="text-center">
+                                                                <h6 class="text-danger">Bugs Count</h6>
+                                                                <h4 id="ctoSprintBugs">0</h4>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="text-center">
+                                                                <h6 class="text-warning">Sprint Duration</h6>
+                                                                <h4 id="ctoSprintDuration">-</h4>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row g-3 mt-2">
+                                                        <div class="col-md-6">
+                                                            <div class="text-center">
+                                                                <h6 class="text-info">Start Date</h6>
+                                                                <h5 id="ctoSprintStartDate">-</h5>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="text-center">
+                                                                <h6 class="text-info">End Date</h6>
+                                                                <h5 id="ctoSprintEndDate">-</h5>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- CTO Key Metrics -->
                                     <div class="row g-3 mb-4">
                                         <div class="col-md-3">
                                             <div class="card bg-dark border-success cto-stat-card">
@@ -619,6 +778,7 @@
                                                     <i class="fas fa-bug fa-2x text-danger mb-2"></i>
                                                     <h4 id="ctoTotalBugs">0</h4>
                                                     <p class="text-muted mb-0">Total Bugs</p>
+                                                    <small class="text-success" id="ctoBugsResolved">0 Resolved</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -628,24 +788,69 @@
                                                     <i class="fas fa-book fa-2x text-primary mb-2"></i>
                                                     <h4 id="ctoTotalStories">0</h4>
                                                     <p class="text-muted mb-0">Total Stories</p>
+                                                    <small class="text-success" id="ctoStoriesCompleted">0 Completed</small>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="card bg-dark border-warning cto-stat-card">
                                                 <div class="card-body text-center">
-                                                    <i class="fas fa-tasks fa-2x text-warning mb-2"></i>
-                                                    <h4 id="ctoTotalTasks">0</h4>
-                                                    <p class="text-muted mb-0">Total Tasks</p>
+                                                    <i class="fas fa-tachometer-alt fa-2x text-warning mb-2"></i>
+                                                    <h4 id="ctoTeamVelocity">0</h4>
+                                                    <p class="text-muted mb-0">Team Velocity</p>
+                                                    <small class="text-info" id="ctoVelocityTrend">Points/Sprint</small>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="card bg-dark border-info cto-stat-card">
                                                 <div class="card-body text-center">
-                                                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                                    <h4 id="ctoCompletedIssues">0</h4>
-                                                    <p class="text-muted mb-0">Completed</p>
+                                                    <i class="fas fa-percentage fa-2x text-success mb-2"></i>
+                                                    <h4 id="ctoCompletionRate">0%</h4>
+                                                    <p class="text-muted mb-0">Completion Rate</p>
+                                                    <small class="text-warning" id="ctoAvgResolutionTime">0 days avg</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Additional CTO Metrics -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-secondary cto-stat-card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-users fa-2x text-info mb-2"></i>
+                                                    <h4 id="ctoActiveTeamMembers">0</h4>
+                                                    <p class="text-muted mb-0">Active Team</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-secondary cto-stat-card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                                                    <h4 id="ctoAvgResolutionTime">0</h4>
+                                                    <p class="text-muted mb-0">Avg Resolution</p>
+                                                    <small class="text-info">Days</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-secondary cto-stat-card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                                                    <h4 id="ctoCriticalBugs">0</h4>
+                                                    <p class="text-muted mb-0">Critical Bugs</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-dark border-secondary cto-stat-card">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                                                    <h4 id="ctoProductivityIndex">0</h4>
+                                                    <p class="text-muted mb-0">Productivity</p>
+                                                    <small class="text-info">Index</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -1121,6 +1326,12 @@
             if (ctoForm) {
                 ctoForm.addEventListener('submit', handleCTOConnection);
             }
+            
+            const projectSelect = document.getElementById('ctoProjectSelect');
+            if (projectSelect) {
+                projectSelect.addEventListener('change', handleProjectSelection);
+            }
+            
             loadCTOConfig();
         }
 
@@ -1130,8 +1341,11 @@
                 const config = await res.json();
                 if (config.configured) {
                     document.getElementById('ctoJiraUrl').value = config.url || '';
-                    document.getElementById('ctoProjectKey').value = config.projectKey || '';
                     document.getElementById('ctoUsername').value = config.username || '';
+                    // Auto-load projects if URL and username are available
+                    if (config.url && config.username) {
+                        // Don't auto-load projects, let user click the button
+                    }
                 }
             } catch (e) {
                 console.log('Could not load Jira config:', e);
@@ -1152,9 +1366,10 @@
             if (errorEl) errorEl.classList.add('d-none');
 
             const formData = new FormData(event.target);
+            const selectedProject = document.getElementById('ctoProjectSelect').value;
             const requestBody = {
-                jiraUrl: formData.get('ctoJiraUrl') || document.getElementById('ctoJiraUrl').value,
-                projectKey: formData.get('ctoProjectKey') || document.getElementById('ctoProjectKey').value,
+                jiraUrl: document.getElementById('ctoJiraUrl').value,
+                projectKey: selectedProject,
                 username: formData.get('ctoUsername') || document.getElementById('ctoUsername').value,
                 apiToken: formData.get('ctoApiToken') || document.getElementById('ctoApiToken').value
             };
@@ -1480,6 +1695,139 @@
             if (form) {
                 form.dispatchEvent(new Event('submit'));
             }
+        }
+
+        async function loadProjects() {
+            const jiraUrl = document.getElementById('ctoJiraUrl').value;
+            const username = document.getElementById('ctoUsername').value;
+            const apiToken = document.getElementById('ctoApiToken').value;
+
+            if (!jiraUrl || !username || !apiToken) {
+                alert('Please fill in Jira URL, Username, and API Token first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/cto/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jiraUrl, username, apiToken })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load projects');
+                }
+
+                const data = await response.json();
+                populateProjectSelect(data.projects || []);
+                
+            } catch (error) {
+                alert('Error loading projects: ' + error.message);
+            }
+        }
+
+        function populateProjectSelect(projects) {
+            const select = document.getElementById('ctoProjectSelect');
+            select.innerHTML = '<option value="">Choose a project...</option>';
+            
+            projects.forEach(project => {
+                if (!project.archived) {
+                    const option = document.createElement('option');
+                    option.value = project.key;
+                    option.textContent = `${project.name} (${project.key})`;
+                    option.dataset.projectName = project.name;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        function handleProjectSelection() {
+            const select = document.getElementById('ctoProjectSelect');
+            const selectedProject = select.options[select.selectedIndex];
+            
+            if (selectedProject.value) {
+                document.getElementById('ctoSelectedProject').value = selectedProject.textContent;
+                document.getElementById('ctoConnectionCard').style.display = 'block';
+            } else {
+                document.getElementById('ctoConnectionCard').style.display = 'none';
+            }
+        }
+
+        function displayCTODashboard(data) {
+            // Update basic counts
+            document.getElementById('ctoTotalBugs').textContent = data.totalBugs || 0;
+            document.getElementById('ctoTotalStories').textContent = data.totalStories || 0;
+            document.getElementById('ctoTotalTasks').textContent = data.totalTasks || 0;
+            document.getElementById('ctoCompletedIssues').textContent = data.completedIssues || 0;
+
+            // Update sprint information
+            updateSprintInfo(data.sprintInfo || {});
+            
+            // Update CTO metrics
+            updateCTOMetrics(data);
+            
+            // Update other displays
+            displayColumnStats(data.columnStats || {});
+            updateIssueTypesChart(data.issueTypesDistribution || {});
+            updateStatusChart(data.statusDistribution || {});
+            updateIssuesTable(data.issues || []);
+            populateFilterDropdowns(data);
+        }
+
+        function updateSprintInfo(sprintInfo) {
+            document.getElementById('ctoSprintName').textContent = sprintInfo.name || '-';
+            document.getElementById('ctoSprintStories').textContent = sprintInfo.storiesCount || 0;
+            document.getElementById('ctoSprintBugs').textContent = sprintInfo.bugsCount || 0;
+            document.getElementById('ctoSprintDuration').textContent = sprintInfo.duration || '-';
+            document.getElementById('ctoSprintStartDate').textContent = sprintInfo.startDate ? new Date(sprintInfo.startDate).toLocaleDateString() : '-';
+            document.getElementById('ctoSprintEndDate').textContent = sprintInfo.endDate ? new Date(sprintInfo.endDate).toLocaleDateString() : '-';
+        }
+
+        function updateCTOMetrics(data) {
+            // Team velocity calculation
+            const velocity = calculateTeamVelocity(data.issues || []);
+            document.getElementById('ctoTeamVelocity').textContent = velocity;
+            
+            // Completion rate
+            const totalIssues = data.totalIssues || 0;
+            const completedIssues = data.completedIssues || 0;
+            const completionRate = totalIssues > 0 ? Math.round((completedIssues / totalIssues) * 100) : 0;
+            document.getElementById('ctoCompletionRate').textContent = completionRate + '%';
+            
+            // Bugs resolved
+            const bugsResolved = data.bugsResolved || 0;
+            document.getElementById('ctoBugsResolved').textContent = bugsResolved + ' Resolved';
+            
+            // Stories completed
+            const storiesCompleted = data.storiesCompleted || 0;
+            document.getElementById('ctoStoriesCompleted').textContent = storiesCompleted + ' Completed';
+            
+            // Active team members
+            const activeMembers = data.activeTeamMembers || 0;
+            document.getElementById('ctoActiveTeamMembers').textContent = activeMembers;
+            
+            // Average resolution time
+            const avgResolutionTime = data.avgResolutionTime || 0;
+            document.getElementById('ctoAvgResolutionTime').textContent = avgResolutionTime + ' days avg';
+            
+            // Critical bugs
+            const criticalBugs = data.criticalBugs || 0;
+            document.getElementById('ctoCriticalBugs').textContent = criticalBugs;
+            
+            // Productivity index
+            const productivityIndex = data.productivityIndex || 0;
+            document.getElementById('ctoProductivityIndex').textContent = productivityIndex;
+        }
+
+        function calculateTeamVelocity(issues) {
+            // Simple velocity calculation based on completed stories
+            const completedStories = issues.filter(issue => 
+                issue.type === 'Story' && issue.status === 'Done'
+            );
+            
+            // This is a simplified calculation - in real scenario you'd use story points
+            return completedStories.length;
         }
     </script>
 </body>

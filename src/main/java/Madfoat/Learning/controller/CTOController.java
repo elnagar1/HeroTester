@@ -80,6 +80,32 @@ public class CTOController {
         }
     }
 
+    @PostMapping("/projects")
+    public ResponseEntity<Map<String, Object>> getProjects(@RequestBody Map<String, String> request) {
+        try {
+            String jiraUrl = request.get("jiraUrl");
+            String username = request.get("username");
+            String apiToken = request.get("apiToken");
+
+            if (jiraUrl == null || username == null || apiToken == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Missing required fields: jiraUrl, username, apiToken"));
+            }
+
+            // Remove trailing slash from Jira URL if present
+            if (jiraUrl.endsWith("/")) {
+                jiraUrl = jiraUrl.substring(0, jiraUrl.length() - 1);
+            }
+
+            Map<String, Object> projects = ctoService.getProjects(jiraUrl, username, apiToken);
+            return ResponseEntity.ok(projects);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get projects: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> health() {
         return ResponseEntity.ok(Map.of("status", "OK", "service", "CTO Management"));
