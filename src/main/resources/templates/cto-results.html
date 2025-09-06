@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTO Dashboard - Project Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0b1220;
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --border-color: rgba(148, 163, 184, 0.2);
+            --text-primary: #e5e7eb;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #020617 100%);
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+        }
+
+        .navbar-modern {
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+            box-shadow: 0 10px 30px rgba(0,0,0,.35);
+            backdrop-filter: blur(10px);
+        }
+
+        .dashboard-container {
+            padding: 2rem 1rem;
+        }
+
+        .card-modern {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.4);
+            transition: all 0.3s ease;
+        }
+
+        .card-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,.5);
+        }
+
+        .card-header-modern {
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border-radius: 16px 16px 0 0;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .chart-container.large {
+            height: 400px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-open { background: var(--accent-orange); color: white; }
+        .status-progress { background: var(--accent-blue); color: white; }
+        .status-review { background: var(--accent-purple); color: white; }
+        .status-resolved { background: var(--accent-green); color: white; }
+        .status-closed { background: var(--text-secondary); color: white; }
+
+        .priority-critical { color: var(--accent-red); }
+        .priority-high { color: var(--accent-orange); }
+        .priority-medium { color: var(--accent-blue); }
+        .priority-low { color: var(--text-secondary); }
+
+        .team-performance-bar {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            height: 8px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .team-performance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+            border-radius: 8px;
+            transition: width 0.8s ease;
+        }
+
+        .filter-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-modern {
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .form-control-modern {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control-modern:focus {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-blue);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-modern navbar-expand-lg">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand text-white fw-bold" href="/">
+                <i class="fa-solid fa-chart-line me-2"></i> CTO Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <span class="text-white-50 me-3">
+                    <i class="fa-solid fa-clock me-1"></i>
+                    <span id="currentTime"></span>
+                </span>
+                <button class="btn btn-outline-light" onclick="refreshData()">
+                    <i class="fa-solid fa-sync-alt me-1"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid dashboard-container">
+        <!-- Key Metrics Row -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card fade-in">
+                    <div class="metric-value text-primary" id="totalIssues">115</div>
+                    <div class="metric-label">Total Issues</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card fade-in">
+                    <div class="metric-value text-success" id="resolvedIssues">20</div>
+                    <div class="metric-label">Resolved This Week</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card fade-in">
+                    <div class="metric-value text-warning" id="avgResolutionTime">3.2</div>
+                    <div class="metric-label">Avg Resolution (Days)</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card fade-in">
+                    <div class="metric-value text-info" id="teamEfficiency">84%</div>
+                    <div class="metric-label">Team Efficiency</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filter-section fade-in">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label">Time Range</label>
+                    <select class="form-select form-control-modern" id="timeRange">
+                        <option value="7d">Last 7 Days</option>
+                        <option value="30d" selected>Last 30 Days</option>
+                        <option value="90d">Last 90 Days</option>
+                        <option value="1y">Last Year</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Team</label>
+                    <select class="form-select form-control-modern" id="teamFilter">
+                        <option value="all">All Teams</option>
+                        <option value="frontend">Frontend</option>
+                        <option value="backend">Backend</option>
+                        <option value="devops">DevOps</option>
+                        <option value="qa">QA</option>
+                        <option value="mobile">Mobile</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Priority</label>
+                    <select class="form-select form-control-modern" id="priorityFilter">
+                        <option value="all">All Priorities</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-modern w-100" onclick="applyFilters()">
+                        <i class="fa-solid fa-filter me-1"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <!-- Issue Types Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card card-modern">
+                    <div class="card-header-modern">
+                        <h5 class="mb-0">
+                            <i class="fa-solid fa-chart-pie me-2"></i>
+                            Issue Types Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="issueTypesChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <div class="row text-center">
+                                <div class="col-6 col-md-4 mb-2">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="status-badge status-open me-2" style="width: 12px; height: 12px; border-radius: 50%;"></div>
+                                        <small>Bug: <span th:text="${issueTypes.Bug}">45</span></small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 mb-2">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="status-badge status-progress me-2" style="width: 12px; height: 12px; border-radius: 50%;"></div>
+                                        <small>Feature: <span th:text="${issueTypes['Feature Request']}">32</span></small>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 mb-2">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <div class="status-badge status-review me-2" style="width: 12px; height: 12px; border-radius: 50%;"></div>
+                                        <small>Tech Debt: <span th:text="${issueTypes['Technical Debt']}">18</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Distribution Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card card-modern">
+                    <div class="card-header-modern">
+                        <h5 class="mb-0">
+                            <i class="fa-solid fa-chart-bar me-2"></i>
+                            Status Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-badge status-open me-2">Open</span>
+                                        <span th:text="${statusDistribution.Open}">25</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-badge status-progress me-2">Progress</span>
+                                        <span th:text="${statusDistribution['In Progress']}">35</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-badge status-review me-2">Review</span>
+                                        <span th:text="${statusDistribution['In Review']}">20</span>
+                                    </div>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-badge status-resolved me-2">Resolved</span>
+                                        <span th:text="${statusDistribution.Resolved}">15</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Charts Row -->
+        <div class="row mb-4">
+            <!-- Priority Distribution -->
+            <div class="col-lg-6 mb-4">
+                <div class="card card-modern">
+                    <div class="card-header-modern">
+                        <h5 class="mb-0">
+                            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+                            Priority Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <div class="row text-center">
+                                <div class="col-3 mb-2">
+                                    <div class="priority-critical">
+                                        <i class="fa-solid fa-circle me-1"></i>
+                                        <small>Critical: <span th:text="${priorityDistribution.Critical}">8</span></small>
+                                    </div>
+                                </div>
+                                <div class="col-3 mb-2">
+                                    <div class="priority-high">
+                                        <i class="fa-solid fa-circle me-1"></i>
+                                        <small>High: <span th:text="${priorityDistribution.High}">22</span></small>
+                                    </div>
+                                </div>
+                                <div class="col-3 mb-2">
+                                    <div class="priority-medium">
+                                        <i class="fa-solid fa-circle me-1"></i>
+                                        <small>Medium: <span th:text="${priorityDistribution.Medium}">45</span></small>
+                                    </div>
+                                </div>
+                                <div class="col-3 mb-2">
+                                    <div class="priority-low">
+                                        <i class="fa-solid fa-circle me-1"></i>
+                                        <small>Low: <span th:text="${priorityDistribution.Low}">25</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Performance -->
+            <div class="col-lg-6 mb-4">
+                <div class="card card-modern">
+                    <div class="card-header-modern">
+                        <h5 class="mb-0">
+                            <i class="fa-solid fa-users me-2"></i>
+                            Team Performance
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="teamPerformanceChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <div th:each="team, iterStat : ${teamPerformance}">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span th:text="${team.key}">Team Name</span>
+                                    <span th:text="${team.value} + '%'">85%</span>
+                                </div>
+                                <div class="team-performance-bar">
+                                    <div class="team-performance-fill" 
+                                         th:style="'width: ' + ${team.value} + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trends Chart -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-modern">
+                    <div class="card-header-modern">
+                        <h5 class="mb-0">
+                            <i class="fa-solid fa-chart-line me-2"></i>
+                            Issue Trends Over Time
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container large">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Chart.js configuration
+        Chart.defaults.color = '#e5e7eb';
+        Chart.defaults.borderColor = 'rgba(148, 163, 184, 0.2)';
+        Chart.defaults.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+
+        // Color palette
+        const colors = {
+            primary: '#3b82f6',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            info: '#06b6d4',
+            purple: '#8b5cf6',
+            orange: '#f97316',
+            pink: '#ec4899'
+        };
+
+        // Issue Types Chart
+        const issueTypesCtx = document.getElementById('issueTypesChart').getContext('2d');
+        const issueTypesChart = new Chart(issueTypesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bug', 'Feature Request', 'Technical Debt', 'Performance Issue', 'Security Issue'],
+                datasets: [{
+                    data: [45, 32, 18, 12, 8],
+                    backgroundColor: [
+                        colors.danger,
+                        colors.primary,
+                        colors.warning,
+                        colors.info,
+                        colors.purple
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#0b1220'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e5e7eb',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Open', 'In Progress', 'In Review', 'Resolved', 'Closed'],
+                datasets: [{
+                    label: 'Issues',
+                    data: [25, 35, 20, 15, 5],
+                    backgroundColor: [
+                        colors.warning,
+                        colors.primary,
+                        colors.purple,
+                        colors.success,
+                        '#6b7280'
+                    ],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e5e7eb',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Priority Distribution Chart
+        const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+        const priorityChart = new Chart(priorityCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Critical', 'High', 'Medium', 'Low'],
+                datasets: [{
+                    data: [8, 22, 45, 25],
+                    backgroundColor: [
+                        colors.danger,
+                        colors.warning,
+                        colors.primary,
+                        '#6b7280'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#0b1220'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e5e7eb',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+
+        // Team Performance Chart
+        const teamCtx = document.getElementById('teamPerformanceChart').getContext('2d');
+        const teamChart = new Chart(teamCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Frontend', 'Backend', 'DevOps', 'QA', 'Mobile'],
+                datasets: [{
+                    label: 'Performance Score',
+                    data: [85, 78, 92, 88, 75],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: colors.primary,
+                    borderWidth: 2,
+                    pointBackgroundColor: colors.primary,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e5e7eb',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            stepSize: 20
+                        },
+                        pointLabels: {
+                            color: '#e5e7eb'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Trends Chart
+        const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+        const trendsChart = new Chart(trendsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Issues Created',
+                        data: [12, 19, 15, 25, 22, 30, 28, 35, 32, 28, 25, 20],
+                        borderColor: colors.danger,
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Issues Resolved',
+                        data: [8, 15, 12, 20, 18, 25, 22, 30, 28, 25, 22, 18],
+                        borderColor: colors.success,
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e5e7eb',
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleColor: '#e5e7eb',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)'
+                        },
+                        ticks: {
+                            color: '#94a3b8'
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Refresh data function
+        function refreshData() {
+            const refreshBtn = event.target;
+            const originalContent = refreshBtn.innerHTML;
+            
+            refreshBtn.innerHTML = '<span class="loading-spinner me-2"></span>Refreshing...';
+            refreshBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Update metrics with random variations
+                const totalIssues = document.getElementById('totalIssues');
+                const resolvedIssues = document.getElementById('resolvedIssues');
+                const avgResolutionTime = document.getElementById('avgResolutionTime');
+                const teamEfficiency = document.getElementById('teamEfficiency');
+                
+                totalIssues.textContent = Math.floor(Math.random() * 20) + 110;
+                resolvedIssues.textContent = Math.floor(Math.random() * 10) + 15;
+                avgResolutionTime.textContent = (Math.random() * 2 + 2).toFixed(1);
+                teamEfficiency.textContent = Math.floor(Math.random() * 10) + 80 + '%';
+                
+                // Add pulse animation to updated metrics
+                [totalIssues, resolvedIssues, avgResolutionTime, teamEfficiency].forEach(el => {
+                    el.classList.add('pulse');
+                    setTimeout(() => el.classList.remove('pulse'), 2000);
+                });
+                
+                refreshBtn.innerHTML = originalContent;
+                refreshBtn.disabled = false;
+            }, 2000);
+        }
+
+        // Apply filters function
+        function applyFilters() {
+            const timeRange = document.getElementById('timeRange').value;
+            const teamFilter = document.getElementById('teamFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            // Show loading state
+            const applyBtn = event.target;
+            const originalContent = applyBtn.innerHTML;
+            applyBtn.innerHTML = '<span class="loading-spinner me-2"></span>Applying...';
+            applyBtn.disabled = true;
+            
+            // Simulate filter application
+            setTimeout(() => {
+                console.log('Filters applied:', { timeRange, teamFilter, priorityFilter });
+                
+                // Here you would typically make an API call to get filtered data
+                // and update the charts accordingly
+                
+                applyBtn.innerHTML = originalContent;
+                applyBtn.disabled = false;
+            }, 1500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 60000); // Update every minute
+            
+            // Add fade-in animation to cards
+            const cards = document.querySelectorAll('.card-modern, .metric-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        });
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

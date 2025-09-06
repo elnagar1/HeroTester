@@ -34,6 +34,43 @@ public class TestConditionController {
         return "index";
     }
 
+    @GetMapping("/cto/results")
+    public String ctoResults(Model model) {
+        // Sample data for CTO results - in real implementation, this would come from a service
+        model.addAttribute("issueTypes", Map.of(
+            "Bug", 45,
+            "Feature Request", 32,
+            "Technical Debt", 18,
+            "Performance Issue", 12,
+            "Security Issue", 8
+        ));
+        
+        model.addAttribute("statusDistribution", Map.of(
+            "Open", 25,
+            "In Progress", 35,
+            "In Review", 20,
+            "Resolved", 15,
+            "Closed", 5
+        ));
+        
+        model.addAttribute("priorityDistribution", Map.of(
+            "Critical", 8,
+            "High", 22,
+            "Medium", 45,
+            "Low", 25
+        ));
+        
+        model.addAttribute("teamPerformance", Map.of(
+            "Frontend Team", 85,
+            "Backend Team", 78,
+            "DevOps Team", 92,
+            "QA Team", 88,
+            "Mobile Team", 75
+        ));
+        
+        return "cto-results";
+    }
+
     @PostMapping("/generate-from-text")
     public String generateFromText(@RequestParam("businessText") String businessText, Model model) {
         if (businessText == null || businessText.trim().isEmpty()) {
