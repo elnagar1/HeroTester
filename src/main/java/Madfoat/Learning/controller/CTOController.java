@@ -304,4 +304,9 @@ public class CTOController {
     public ResponseEntity<Map<String, String>> health() {
         return ResponseEntity.ok(Map.of("status", "OK", "service", "CTO Management"));
     }
+
+    @GetMapping("/results")
+    public String showResultsPage() {
+        return "cto-results";
+    }
 }

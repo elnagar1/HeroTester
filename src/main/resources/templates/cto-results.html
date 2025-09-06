@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTO Management - Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            padding: 30px;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            color: #333;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .sprint-info-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .sprint-metric {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .sprint-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .sprint-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .cto-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .cto-metric-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-left: 5px solid #667eea;
+        }
+
+        .cto-metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .cto-metric-label {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .issues-table {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background: #f8f9fa;
+            border: none;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .table td {
+            border: none;
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 8px 12px;
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .export-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        /* CTO Text Visibility Fixes */
+        .cto-dashboard .text-dark,
+        .cto-dashboard .text-muted,
+        .cto-dashboard .form-control,
+        .cto-dashboard .form-select,
+        .cto-dashboard .alert {
+            color: #ffffff !important;
+        }
+
+        .cto-dashboard .bg-dark {
+            background-color: #1a1a1a !important;
+        }
+
+        .cto-dashboard .border-info {
+            border-color: #17a2b8 !important;
+        }
+
+        /* Additional text visibility fixes for all dark elements */
+        .bg-dark .text-muted,
+        .bg-dark .text-dark,
+        .bg-dark .form-control,
+        .bg-dark .form-select,
+        .bg-dark .alert {
+            color: #ffffff !important;
+        }
+
+        .bg-dark .form-control::placeholder,
+        .bg-dark .form-select::placeholder {
+            color: #cccccc !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-button">
+        <button type="button" class="btn btn-custom" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Back to Analysis
+        </button>
+    </div>
+
+    <div class="export-buttons">
+        <button type="button" class="btn btn-outline-success me-2" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="exportToPDF()">
+            <i class="fas fa-file-pdf"></i> PDF
+        </button>
+    </div>
+
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1><i class="fas fa-chart-line"></i> CTO Management Dashboard</h1>
+            <p class="mb-0">Comprehensive project analytics and team performance metrics</p>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading project data...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message"></div>
+
+        <!-- Project Info -->
+        <div id="projectInfo" class="row mb-4" style="display: none;">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-project-diagram"></i> Project Analysis Results
+                        </h5>
+                        <p class="card-text">
+                            <strong>Project:</strong> <span id="projectName">-</span><br>
+                            <strong>Analysis Date:</strong> <span id="analysisDate">-</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Metrics -->
+        <div id="basicMetrics" class="row mb-4" style="display: none;">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalBugs">0</div>
+                    <div class="metric-label">Total Bugs</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalStories">0</div>
+                    <div class="metric-label">Total Stories</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalTasks">0</div>
+                    <div class="metric-label">Total Tasks</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="completedIssues">0</div>
+                    <div class="metric-label">Completed Issues</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Sprint Information -->
+        <div id="sprintInfo" class="sprint-info-card" style="display: none;">
+            <h4 class="mb-4"><i class="fas fa-running"></i> Current Sprint Information</h4>
+            <div class="row">
+                <div class="col-md-2">
+                    <div class="sprint-metric">
+                        <div class="sprint-value" id="sprintName">-</div>
+                        <div class="sprint-label">Sprint Name</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="sprint-metric">
+                        <div class="sprint-value" id="sprintStories">0</div>
+                        <div class="sprint-label">Stories Count</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="sprint-metric">
+                        <div class="sprint-value" id="sprintBugs">0</div>
+                        <div class="sprint-label">Bugs Count</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="sprint-metric">
+                        <div class="sprint-value" id="sprintDuration">-</div>
+                        <div class="sprint-label">Duration</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="sprint-metric">
+                        <div class="sprint-value" id="sprintStartDate">-</div>
+                        <div class="sprint-label">Start Date</div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="sprint-metric">
+                        <div class="sprint-value" id="sprintEndDate">-</div>
+                        <div class="sprint-label">End Date</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTO Key Metrics -->
+        <div id="ctoMetrics" class="cto-metrics-grid" style="display: none;">
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="teamVelocity">0</div>
+                <div class="cto-metric-label">Team Velocity</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="completionRate">0%</div>
+                <div class="cto-metric-label">Completion Rate</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="bugsResolved">0</div>
+                <div class="cto-metric-label">Bugs Resolved</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="storiesCompleted">0</div>
+                <div class="cto-metric-label">Stories Completed</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="activeTeamMembers">0</div>
+                <div class="cto-metric-label">Active Team Members</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="avgResolutionTime">0</div>
+                <div class="cto-metric-label">Avg Resolution Time (days)</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="criticalBugs">0</div>
+                <div class="cto-metric-label">Critical Bugs</div>
+            </div>
+            <div class="cto-metric-card">
+                <div class="cto-metric-value" id="productivityIndex">0</div>
+                <div class="cto-metric-label">Productivity Index</div>
+            </div>
+        </div>
+
+        <!-- Column Statistics -->
+        <div id="columnStats" class="chart-container" style="display: none;">
+            <h4 class="chart-title"><i class="fas fa-columns"></i> Column Statistics</h4>
+            <div id="columnStatsContainer" class="row">
+                <!-- Column stats will be populated here -->
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <!-- Issue Types Distribution -->
+            <div class="col-md-6">
+                <div id="issueTypesChart" class="chart-container" style="display: none;">
+                    <h4 class="chart-title"><i class="fas fa-chart-pie"></i> Issue Types Distribution</h4>
+                    <canvas id="issueTypesChartCanvas" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Status Distribution -->
+            <div class="col-md-6">
+                <div id="statusChart" class="chart-container" style="display: none;">
+                    <h4 class="chart-title"><i class="fas fa-chart-bar"></i> Status Distribution</h4>
+                    <canvas id="statusChartCanvas" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Issues Table -->
+        <div id="issuesTable" class="issues-table" style="display: none;">
+            <h4 class="mb-4"><i class="fas fa-table"></i> Recent Issues</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Summary</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Assignee</th>
+                            <th>Created</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="issuesTableBody">
+                        <!-- Issues will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Debug Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Debug Tools</h5>
+                        <button type="button" class="btn btn-outline-info me-2" onclick="debugCurrentData()">
+                            <i class="fas fa-bug"></i> Debug Data
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="testSprintInfo()">
+                            <i class="fas fa-running"></i> Test Sprint
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let currentData = null;
+        let charts = {
+            issueTypes: null,
+            status: null
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('CTO Results page loaded');
+            loadDataFromStorage();
+        });
+
+        function loadDataFromStorage() {
+            try {
+                const storedData = localStorage.getItem('ctoAnalysisData');
+                if (storedData) {
+                    currentData = JSON.parse(storedData);
+                    console.log('Loaded data from storage:', currentData);
+                    displayDashboard(currentData);
+                } else {
+                    console.log('No data found in storage');
+                    showError('No analysis data found. Please go back and analyze a project first.');
+                }
+            } catch (error) {
+                console.error('Error loading data from storage:', error);
+                showError('Error loading analysis data: ' + error.message);
+            }
+        }
+
+        function displayDashboard(data) {
+            console.log('Displaying dashboard with data:', data);
+            
+            if (!data) {
+                showError('No data available to display');
+                return;
+            }
+
+            // Hide loading spinner
+            document.getElementById('loadingSpinner').style.display = 'none';
+            
+            // Show all sections
+            document.getElementById('projectInfo').style.display = 'block';
+            document.getElementById('basicMetrics').style.display = 'block';
+            document.getElementById('sprintInfo').style.display = 'block';
+            document.getElementById('ctoMetrics').style.display = 'block';
+            document.getElementById('columnStats').style.display = 'block';
+            document.getElementById('issueTypesChart').style.display = 'block';
+            document.getElementById('statusChart').style.display = 'block';
+            document.getElementById('issuesTable').style.display = 'block';
+
+            // Update project info
+            updateProjectInfo(data);
+            
+            // Update basic metrics
+            updateBasicMetrics(data);
+            
+            // Update sprint information
+            updateSprintInfo(data.sprintInfo || {});
+            
+            // Update CTO metrics
+            updateCTOMetrics(data);
+            
+            // Update other displays
+            displayColumnStats(data.columnStats || {});
+            updateIssueTypesChart(data.issueTypesDistribution || {});
+            updateStatusChart(data.statusDistribution || {});
+            updateIssuesTable(data.issues || []);
+            
+            console.log('Dashboard display completed');
+        }
+
+        function updateProjectInfo(data) {
+            document.getElementById('projectName').textContent = data.projectName || 'Unknown Project';
+            document.getElementById('analysisDate').textContent = new Date().toLocaleString();
+        }
+
+        function updateBasicMetrics(data) {
+            document.getElementById('totalBugs').textContent = data.totalBugs || 0;
+            document.getElementById('totalStories').textContent = data.totalStories || 0;
+            document.getElementById('totalTasks').textContent = data.totalTasks || 0;
+            document.getElementById('completedIssues').textContent = data.completedIssues || 0;
+        }
+
+        function updateSprintInfo(sprintInfo) {
+            console.log('Updating sprint info with:', sprintInfo);
+            
+            document.getElementById('sprintName').textContent = sprintInfo.name || 'No Sprint Found';
+            document.getElementById('sprintStories').textContent = sprintInfo.storiesCount || 0;
+            document.getElementById('sprintBugs').textContent = sprintInfo.bugsCount || 0;
+            document.getElementById('sprintDuration').textContent = sprintInfo.duration || 'Unknown';
+            document.getElementById('sprintStartDate').textContent = sprintInfo.startDate ? new Date(sprintInfo.startDate).toLocaleDateString() : 'Unknown';
+            document.getElementById('sprintEndDate').textContent = sprintInfo.endDate ? new Date(sprintInfo.endDate).toLocaleDateString() : 'Unknown';
+            
+            console.log('Sprint info updated successfully');
+        }
+
+        function updateCTOMetrics(data) {
+            // Team velocity calculation
+            const velocity = calculateTeamVelocity(data.issues || []);
+            document.getElementById('teamVelocity').textContent = velocity;
+            
+            // Completion rate
+            const totalIssues = data.totalIssues || 0;
+            const completedIssues = data.completedIssues || 0;
+            const completionRate = totalIssues > 0 ? Math.round((completedIssues / totalIssues) * 100) : 0;
+            document.getElementById('completionRate').textContent = completionRate + '%';
+            
+            // Bugs resolved
+            const bugsResolved = data.bugsResolved || 0;
+            document.getElementById('bugsResolved').textContent = bugsResolved + ' Resolved';
+            
+            // Stories completed
+            const storiesCompleted = data.storiesCompleted || 0;
+            document.getElementById('storiesCompleted').textContent = storiesCompleted + ' Completed';
+            
+            // Active team members
+            const activeMembers = data.activeTeamMembers || 0;
+            document.getElementById('activeTeamMembers').textContent = activeMembers;
+            
+            // Average resolution time
+            const avgResolutionTime = data.avgResolutionTime || 0;
+            document.getElementById('avgResolutionTime').textContent = avgResolutionTime + ' days';
+            
+            // Critical bugs
+            const criticalBugs = data.criticalBugs || 0;
+            document.getElementById('criticalBugs').textContent = criticalBugs;
+            
+            // Productivity index
+            const productivityIndex = data.productivityIndex || 0;
+            document.getElementById('productivityIndex').textContent = productivityIndex;
+        }
+
+        function calculateTeamVelocity(issues) {
+            // Simplified velocity calculation based on completed stories
+            const completedStories = issues.filter(issue => 
+                issue.type === 'Story' && issue.status === 'Done'
+            ).length;
+            
+            return completedStories;
+        }
+
+        function displayColumnStats(columnStats) {
+            console.log('Displaying column stats:', columnStats);
+            const container = document.getElementById('columnStatsContainer');
+            if (!container) {
+                console.error('Column stats container not found');
+                return;
+            }
+
+            let html = '';
+            const entries = Object.entries(columnStats);
+            console.log('Column stats entries:', entries);
+            
+            if (entries.length === 0) {
+                html = '<div class="col-12"><p class="text-muted">No column data available</p></div>';
+            } else {
+                for (const [columnName, count] of entries) {
+                    html += `
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-dark border-info">
+                                <div class="card-body text-center">
+                                    <h5 class="text-info">${count}</h5>
+                                    <p class="text-muted mb-0">${columnName}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = html;
+            console.log('Column stats HTML updated');
+        }
+
+        function updateIssueTypesChart(data) {
+            console.log('Updating issue types chart with:', data);
+            const ctx = document.getElementById('issueTypesChartCanvas');
+            if (!ctx) {
+                console.error('Issue types chart canvas not found');
+                return;
+            }
+
+            if (charts.issueTypes) {
+                charts.issueTypes.destroy();
+            }
+
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            console.log('Issue types labels:', labels);
+            console.log('Issue types values:', values);
+            
+            const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
+
+            if (labels.length === 0) {
+                console.log('No issue types data to display');
+                return;
+            }
+
+            charts.issueTypes = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#1f2937'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
+            console.log('Issue types chart updated successfully');
+        }
+
+        function updateStatusChart(data) {
+            console.log('Updating status chart with:', data);
+            const ctx = document.getElementById('statusChartCanvas');
+            if (!ctx) {
+                console.error('Status chart canvas not found');
+                return;
+            }
+
+            if (charts.status) {
+                charts.status.destroy();
+            }
+
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            console.log('Status labels:', labels);
+            console.log('Status values:', values);
+            
+            const colors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
+
+            if (labels.length === 0) {
+                console.log('No status data to display');
+                return;
+            }
+
+            charts.status = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Issues',
+                        data: values,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderColor: colors.slice(0, labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#e5e7eb'
+                            },
+                            grid: {
+                                color: '#374151'
+                            }
+                        }
+                    }
+                }
+            });
+            console.log('Status chart updated successfully');
+        }
+
+        function updateIssuesTable(issues) {
+            console.log('Updating issues table with:', issues);
+            const tbody = document.getElementById('issuesTableBody');
+            if (!tbody) {
+                console.error('Issues table body not found');
+                return;
+            }
+
+            let html = '';
+            if (issues.length === 0) {
+                html = '<tr><td colspan="8" class="text-center text-muted">No issues found</td></tr>';
+            } else {
+                issues.forEach(issue => {
+                    html += `
+                        <tr>
+                            <td><a href="#" class="text-primary">${issue.key}</a></td>
+                            <td>${issue.summary}</td>
+                            <td><span class="badge bg-secondary">${issue.type}</span></td>
+                            <td><span class="badge bg-${getStatusColor(issue.status)}">${issue.status}</span></td>
+                            <td><span class="badge bg-${getPriorityColor(issue.priority)}">${issue.priority}</span></td>
+                            <td>${issue.assignee || 'Unassigned'}</td>
+                            <td>${formatDate(issue.created)}</td>
+                            <td>${formatDate(issue.updated)}</td>
+                        </tr>
+                    `;
+                });
+            }
+            tbody.innerHTML = html;
+            console.log('Issues table updated with', issues.length, 'issues');
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'Done': 'success',
+                'In Progress': 'primary',
+                'To Do': 'secondary',
+                'In Review': 'warning',
+                'Blocked': 'danger'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function getPriorityColor(priority) {
+            const colors = {
+                'Highest': 'danger',
+                'High': 'warning',
+                'Medium': 'info',
+                'Low': 'success',
+                'Lowest': 'secondary'
+            };
+            return colors[priority] || 'secondary';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            try {
+                return new Date(dateString).toLocaleDateString();
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        function goBack() {
+            window.location.href = '/';
+        }
+
+        function exportToExcel() {
+            if (!currentData) {
+                alert('No data available to export');
+                return;
+            }
+            
+            // Simple Excel export implementation
+            const data = [
+                ['Metric', 'Value'],
+                ['Total Bugs', currentData.totalBugs || 0],
+                ['Total Stories', currentData.totalStories || 0],
+                ['Total Tasks', currentData.totalTasks || 0],
+                ['Completed Issues', currentData.completedIssues || 0],
+                ['Sprint Name', currentData.sprintInfo?.name || 'N/A'],
+                ['Sprint Stories', currentData.sprintInfo?.storiesCount || 0],
+                ['Sprint Bugs', currentData.sprintInfo?.bugsCount || 0]
+            ];
+            
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cto-analysis-results.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportToPDF() {
+            alert('PDF export feature will be implemented soon');
+        }
+
+        function debugCurrentData() {
+            console.log('=== CURRENT DATA DEBUG ===');
+            console.log('currentData:', currentData);
+            
+            if (currentData) {
+                console.log('Data keys:', Object.keys(currentData));
+                console.log('Sprint info:', currentData.sprintInfo);
+                console.log('Column stats:', currentData.columnStats);
+                console.log('Issue types:', currentData.issueTypesDistribution);
+                console.log('Status distribution:', currentData.statusDistribution);
+                console.log('Issues:', currentData.issues);
+                
+                alert('Debug info logged to console. Check F12 Console for details.');
+            } else {
+                alert('❌ No current data available.');
+            }
+        }
+
+        async function testSprintInfo() {
+            if (!currentData || !currentData.projectKey) {
+                alert('❌ No project data available for sprint test');
+                return;
+            }
+
+            try {
+                console.log('Testing sprint info for project:', currentData.projectKey);
+                
+                const response = await fetch('/api/cto/sprint-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectKey: currentData.projectKey })
+                });
+
+                const data = await response.json();
+                console.log('Sprint info response:', data);
+                
+                let sprintInfo = '=== SPRINT INFO TEST ===\n\n';
+                sprintInfo += `Project: ${currentData.projectKey}\n`;
+                sprintInfo += `Sprint Name: ${data.name || 'N/A'}\n`;
+                sprintInfo += `Stories Count: ${data.storiesCount || 0}\n`;
+                sprintInfo += `Bugs Count: ${data.bugsCount || 0}\n`;
+                sprintInfo += `Duration: ${data.duration || 'N/A'}\n`;
+                sprintInfo += `Start Date: ${data.startDate || 'N/A'}\n`;
+                sprintInfo += `End Date: ${data.endDate || 'N/A'}\n`;
+                sprintInfo += `State: ${data.state || 'N/A'}\n\n`;
+                sprintInfo += 'Check browser console for full details.';
+                
+                alert(sprintInfo);
+                
+            } catch (error) {
+                console.error('Sprint info test error:', error);
+                alert('❌ Sprint info test failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

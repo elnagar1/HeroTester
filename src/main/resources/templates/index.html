@@ -1590,204 +1590,15 @@
 
         // This function is removed - using the updated version below
 
-        function displayColumnStats(columnStats) {
-            console.log('Displaying column stats:', columnStats);
-            const container = document.getElementById('ctoColumnStats');
-            if (!container) {
-                console.error('Column stats container not found');
-                return;
-            }
+        // Column stats function moved to cto-results.html
 
-            let html = '';
-            const entries = Object.entries(columnStats);
-            console.log('Column stats entries:', entries);
-            
-            if (entries.length === 0) {
-                html = '<div class="col-12"><p class="text-muted">No column data available</p></div>';
-            } else {
-                for (const [columnName, count] of entries) {
-                    html += `
-                        <div class="col-md-3 mb-3">
-                            <div class="card bg-dark border-info">
-                                <div class="card-body text-center">
-                                    <h5 class="text-info">${count}</h5>
-                                    <p class="text-muted mb-0">${columnName}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            container.innerHTML = html;
-            console.log('Column stats HTML updated');
-        }
+        // Issue types chart function moved to cto-results.html
 
-        function updateIssueTypesChart(data) {
-            console.log('Updating issue types chart with:', data);
-            const ctx = document.getElementById('ctoIssueTypesChart');
-            if (!ctx) {
-                console.error('Issue types chart canvas not found');
-                return;
-            }
+        // Status chart function moved to cto-results.html
 
-            if (ctoCharts.issueTypes) {
-                ctoCharts.issueTypes.destroy();
-            }
+        // Issues table function moved to cto-results.html
 
-            const labels = Object.keys(data);
-            const values = Object.values(data);
-            console.log('Issue types labels:', labels);
-            console.log('Issue types values:', values);
-            
-            const colors = ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'];
-
-            if (labels.length === 0) {
-                console.log('No issue types data to display');
-                return;
-            }
-
-            ctoCharts.issueTypes = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors.slice(0, labels.length),
-                        borderWidth: 2,
-                        borderColor: '#1f2937'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#e5e7eb'
-                            }
-                        }
-                    }
-                }
-            });
-            console.log('Issue types chart updated successfully');
-        }
-
-        function updateStatusChart(data) {
-            console.log('Updating status chart with:', data);
-            const ctx = document.getElementById('ctoStatusChart');
-            if (!ctx) {
-                console.error('Status chart canvas not found');
-                return;
-            }
-
-            if (ctoCharts.status) {
-                ctoCharts.status.destroy();
-            }
-
-            const labels = Object.keys(data);
-            const values = Object.values(data);
-            console.log('Status labels:', labels);
-            console.log('Status values:', values);
-            
-            const colors = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
-
-            if (labels.length === 0) {
-                console.log('No status data to display');
-                return;
-            }
-
-            ctoCharts.status = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Issues',
-                        data: values,
-                        backgroundColor: colors.slice(0, labels.length),
-                        borderColor: colors.slice(0, labels.length),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#e5e7eb'
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#e5e7eb'
-                            },
-                            grid: {
-                                color: '#374151'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#e5e7eb'
-                            },
-                            grid: {
-                                color: '#374151'
-                            }
-                        }
-                    }
-                }
-            });
-            console.log('Status chart updated successfully');
-        }
-
-        function updateIssuesTable(issues) {
-            console.log('Updating issues table with:', issues);
-            const tbody = document.getElementById('ctoIssuesTableBody');
-            if (!tbody) {
-                console.error('Issues table body not found');
-                return;
-            }
-
-            let html = '';
-            if (issues.length === 0) {
-                html = '<tr><td colspan="8" class="text-center text-muted">No issues found</td></tr>';
-            } else {
-                issues.forEach(issue => {
-                    html += `
-                        <tr>
-                            <td><a href="#" class="text-primary">${issue.key}</a></td>
-                            <td>${issue.summary}</td>
-                            <td><span class="badge bg-secondary">${issue.type}</span></td>
-                            <td><span class="badge bg-${getStatusColor(issue.status)}">${issue.status}</span></td>
-                            <td><span class="badge bg-${getPriorityColor(issue.priority)}">${issue.priority}</span></td>
-                            <td>${issue.assignee || 'Unassigned'}</td>
-                            <td>${formatDate(issue.created)}</td>
-                            <td>${formatDate(issue.updated)}</td>
-                        </tr>
-                    `;
-                });
-            }
-            tbody.innerHTML = html;
-            console.log('Issues table updated with', issues.length, 'issues');
-        }
-
-        function getStatusColor(status) {
-            const colors = {
-                'Done': 'success',
-                'In Progress': 'primary',
-                'To Do': 'secondary',
-                'In Review': 'warning',
-                'Blocked': 'danger'
-            };
-            return colors[status] || 'secondary';
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            return new Date(dateString).toLocaleDateString();
-        }
+        // Helper functions moved to cto-results.html
 
         function populateFilterDropdowns(data) {
             console.log('Populating filter dropdowns with data:', data);
@@ -2167,13 +1978,16 @@
                     console.log('Sprint info details:', data.sprintInfo);
                 }
                 
-                ctoCurrentData = data;
+                // Add project key to data for results page
+                data.projectKey = projectKey;
+                data.projectName = selectedProject.textContent;
                 
-                if (loadingEl) loadingEl.style.display = 'none';
-                if (dashboardEl) dashboardEl.style.display = 'block';
-                if (filtersEl) filtersEl.style.display = 'block';
+                // Store data in localStorage for results page
+                localStorage.setItem('ctoAnalysisData', JSON.stringify(data));
+                console.log('Data stored in localStorage for results page');
                 
-                displayCTODashboard(data);
+                // Redirect to results page
+                window.location.href = '/cto/results';
                 
             } catch (error) {
                 console.error('Error analyzing project:', error);
@@ -2185,107 +1999,7 @@
             }
         }
 
-        function displayCTODashboard(data) {
-            console.log('Displaying CTO Dashboard with data:', data);
-            
-            // Update basic counts
-            document.getElementById('ctoTotalBugs').textContent = data.totalBugs || 0;
-            document.getElementById('ctoTotalStories').textContent = data.totalStories || 0;
-            document.getElementById('ctoTotalTasks').textContent = data.totalTasks || 0;
-            document.getElementById('ctoCompletedIssues').textContent = data.completedIssues || 0;
-
-            // Update sprint information
-            console.log('Updating sprint info:', data.sprintInfo);
-            updateSprintInfo(data.sprintInfo || {});
-            
-            // Update CTO metrics
-            console.log('Updating CTO metrics');
-            updateCTOMetrics(data);
-            
-            // Update other displays
-            console.log('Updating column stats:', data.columnStats);
-            displayColumnStats(data.columnStats || {});
-            
-            console.log('Updating issue types chart:', data.issueTypesDistribution);
-            updateIssueTypesChart(data.issueTypesDistribution || {});
-            
-            console.log('Updating status chart:', data.statusDistribution);
-            updateStatusChart(data.statusDistribution || {});
-            
-            console.log('Updating issues table:', data.issues);
-            updateIssuesTable(data.issues || []);
-            
-            console.log('Populating filter dropdowns');
-            populateFilterDropdowns(data);
-            
-            console.log('CTO Dashboard display completed');
-        }
-
-        function updateSprintInfo(sprintInfo) {
-            console.log('Updating sprint info with:', sprintInfo);
-            
-            const nameEl = document.getElementById('ctoSprintName');
-            const storiesEl = document.getElementById('ctoSprintStories');
-            const bugsEl = document.getElementById('ctoSprintBugs');
-            const durationEl = document.getElementById('ctoSprintDuration');
-            const startDateEl = document.getElementById('ctoSprintStartDate');
-            const endDateEl = document.getElementById('ctoSprintEndDate');
-            
-            if (nameEl) nameEl.textContent = sprintInfo.name || 'No Sprint Found';
-            if (storiesEl) storiesEl.textContent = sprintInfo.storiesCount || 0;
-            if (bugsEl) bugsEl.textContent = sprintInfo.bugsCount || 0;
-            if (durationEl) durationEl.textContent = sprintInfo.duration || 'Unknown';
-            if (startDateEl) startDateEl.textContent = sprintInfo.startDate ? new Date(sprintInfo.startDate).toLocaleDateString() : 'Unknown';
-            if (endDateEl) endDateEl.textContent = sprintInfo.endDate ? new Date(sprintInfo.endDate).toLocaleDateString() : 'Unknown';
-            
-            console.log('Sprint info updated successfully');
-        }
-
-        function updateCTOMetrics(data) {
-            // Team velocity calculation
-            const velocity = calculateTeamVelocity(data.issues || []);
-            document.getElementById('ctoTeamVelocity').textContent = velocity;
-            
-            // Completion rate
-            const totalIssues = data.totalIssues || 0;
-            const completedIssues = data.completedIssues || 0;
-            const completionRate = totalIssues > 0 ? Math.round((completedIssues / totalIssues) * 100) : 0;
-            document.getElementById('ctoCompletionRate').textContent = completionRate + '%';
-            
-            // Bugs resolved
-            const bugsResolved = data.bugsResolved || 0;
-            document.getElementById('ctoBugsResolved').textContent = bugsResolved + ' Resolved';
-            
-            // Stories completed
-            const storiesCompleted = data.storiesCompleted || 0;
-            document.getElementById('ctoStoriesCompleted').textContent = storiesCompleted + ' Completed';
-            
-            // Active team members
-            const activeMembers = data.activeTeamMembers || 0;
-            document.getElementById('ctoActiveTeamMembers').textContent = activeMembers;
-            
-            // Average resolution time
-            const avgResolutionTime = data.avgResolutionTime || 0;
-            document.getElementById('ctoAvgResolutionTime').textContent = avgResolutionTime + ' days avg';
-            
-            // Critical bugs
-            const criticalBugs = data.criticalBugs || 0;
-            document.getElementById('ctoCriticalBugs').textContent = criticalBugs;
-            
-            // Productivity index
-            const productivityIndex = data.productivityIndex || 0;
-            document.getElementById('ctoProductivityIndex').textContent = productivityIndex;
-        }
-
-        function calculateTeamVelocity(issues) {
-            // Simple velocity calculation based on completed stories
-            const completedStories = issues.filter(issue => 
-                issue.type === 'Story' && issue.status === 'Done'
-            );
-            
-            // This is a simplified calculation - in real scenario you'd use story points
-            return completedStories.length;
-        }
+        // All CTO display functions moved to cto-results.html
 
         async function debugProjects() {
             const jiraUrl = document.getElementById('ctoJiraUrl').value.trim();
