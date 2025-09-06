@@ -219,6 +219,39 @@ textarea {
 /* Redundant now with Bootstrap's spacing */
 /* .mt-3 { margin-top: 1.5rem; } */
 
+/* Fix Canvas Charts sizing issues - Global fix */
+.chart-container { 
+  max-height: 400px !important; 
+  overflow: hidden !important; 
+  position: relative !important;
+}
+.chart-container canvas { 
+  max-width: 100% !important; 
+  max-height: 400px !important; 
+  width: auto !important; 
+  height: auto !important;
+  display: block !important;
+}
+.compact-chart { 
+  max-height: 300px !important; 
+  overflow: hidden !important;
+}
+.compact-chart canvas { 
+  max-height: 300px !important; 
+  max-width: 100% !important;
+}
+/* Force chart containers to have fixed dimensions */
+#statusChart, #issueTypesChart {
+  max-height: 350px !important;
+  overflow: hidden !important;
+}
+#statusChartCanvas, #issueTypesChartCanvas {
+  max-height: 350px !important;
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+}
+
 /* Responsive Adjustments - mostly handled by Bootstrap grid now */
 @media (max-width: 768px) {
   /* .content { padding: 20px; } */
@@ -227,6 +260,10 @@ textarea {
   /* .form-section h3, .results h3 { font-size: 1.5em; } */
   /* .scenario-details { grid-template-columns: 1fr; } */
   /* .scenario-title { font-size: 1.3em; } */
+  
+  /* Mobile chart responsiveness */
+  .chart-container, .compact-chart { max-height: 250px !important; }
+  .chart-container canvas, .compact-chart canvas { max-height: 250px !important; }
 }
 
 @media (max-width: 480px) {
@@ -236,4 +273,8 @@ textarea {
   /* .btn { padding: 12px 20px; font-size: 1em; } */
   /* .scenario-card { padding: 15px; } */
   /* .scenario-title { font-size: 1.1em; } */
+  
+  /* Smaller charts on mobile */
+  .chart-container, .compact-chart { max-height: 200px !important; }
+  .chart-container canvas, .compact-chart canvas { max-height: 200px !important; }
 }

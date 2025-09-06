@@ -52,6 +52,39 @@
         /* Prevent table from expanding */
         .table-responsive { overflow-x: auto !important; }
         .table-responsive .table { min-width: 100% !important; }
+        
+        /* Fix Canvas Charts sizing issues */
+        .chart-container { 
+            max-height: 400px !important; 
+            overflow: hidden !important; 
+            position: relative !important;
+        }
+        .chart-container canvas { 
+            max-width: 100% !important; 
+            max-height: 400px !important; 
+            width: auto !important; 
+            height: auto !important;
+            display: block !important;
+        }
+        .compact-chart { 
+            max-height: 300px !important; 
+            overflow: hidden !important;
+        }
+        .compact-chart canvas { 
+            max-height: 300px !important; 
+            max-width: 100% !important;
+        }
+        /* Force chart containers to have fixed dimensions */
+        #statusChart, #issueTypesChart {
+            max-height: 350px !important;
+            overflow: hidden !important;
+        }
+        #statusChartCanvas, #issueTypesChartCanvas {
+            max-height: 350px !important;
+            max-width: 100% !important;
+            width: auto !important;
+            height: auto !important;
+        }
         .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: .8rem; color: #e5e7eb; background: rgba(51,65,85,.6); margin-right: 6px; }
         .form-select, .form-control { background-color: #0f172a; color: #e5e7eb; border-color: #334155; }
         .form-select:focus, .form-control:focus { background-color: #0f172a; color: #e5e7eb; border-color: #3b82f6; box-shadow: 0 0 0 .2rem rgba(59,130,246,.25); }
@@ -71,12 +104,20 @@
             .table th:nth-child(3), .table td:nth-child(3) { width: 25%; }
             .table th:nth-child(4), .table td:nth-child(4) { width: 25%; }
             .table th:nth-child(n+5), .table td:nth-child(n+5) { display: none; }
+            
+            /* Mobile chart responsiveness */
+            .chart-container, .compact-chart { max-height: 250px !important; }
+            .chart-container canvas, .compact-chart canvas { max-height: 250px !important; }
         }
         
         @media (max-width: 576px) {
             .table th:nth-child(3), .table td:nth-child(3) { display: none; }
             .table th:nth-child(1), .table td:nth-child(1) { width: 30%; }
             .table th:nth-child(2), .table td:nth-child(2) { width: 70%; }
+            
+            /* Smaller charts on mobile */
+            .chart-container, .compact-chart { max-height: 200px !important; }
+            .chart-container canvas, .compact-chart canvas { max-height: 200px !important; }
         }
         
         /* RTL adjustments */
@@ -443,6 +484,77 @@
             });
         }
 
+        function fixCanvasCharts() {
+            // Fix all canvas elements that might be oversized
+            const canvases = document.querySelectorAll('canvas');
+            canvases.forEach(canvas => {
+                // Reset canvas dimensions
+                canvas.style.maxWidth = '100%';
+                canvas.style.maxHeight = '350px';
+                canvas.style.width = 'auto';
+                canvas.style.height = 'auto';
+                canvas.style.display = 'block';
+                
+                // Force canvas to have reasonable dimensions
+                if (canvas.width > 800) {
+                    canvas.width = 800;
+                }
+                if (canvas.height > 350) {
+                    canvas.height = 350;
+                }
+            });
+            
+            // Fix specific chart containers
+            const chartContainers = document.querySelectorAll('.chart-container, .compact-chart');
+            chartContainers.forEach(container => {
+                container.style.maxHeight = '350px';
+                container.style.overflow = 'hidden';
+                container.style.position = 'relative';
+            });
+            
+            // Fix specific problematic charts
+            const statusChart = document.getElementById('statusChart');
+            const issueTypesChart = document.getElementById('issueTypesChart');
+            const statusCanvas = document.getElementById('statusChartCanvas');
+            const issueTypesCanvas = document.getElementById('issueTypesChartCanvas');
+            
+            if (statusChart) {
+                statusChart.style.maxHeight = '350px';
+                statusChart.style.overflow = 'hidden';
+            }
+            
+            if (issueTypesChart) {
+                issueTypesChart.style.maxHeight = '350px';
+                issueTypesChart.style.overflow = 'hidden';
+            }
+            
+            if (statusCanvas) {
+                statusCanvas.style.maxHeight = '350px';
+                statusCanvas.style.maxWidth = '100%';
+                statusCanvas.style.width = 'auto';
+                statusCanvas.style.height = 'auto';
+                if (statusCanvas.height > 350) {
+                    statusCanvas.height = 350;
+                }
+                if (statusCanvas.width > 800) {
+                    statusCanvas.width = 800;
+                }
+            }
+            
+            if (issueTypesCanvas) {
+                issueTypesCanvas.style.maxHeight = '350px';
+                issueTypesCanvas.style.maxWidth = '100%';
+                issueTypesCanvas.style.width = 'auto';
+                issueTypesCanvas.style.height = 'auto';
+                if (issueTypesCanvas.height > 350) {
+                    issueTypesCanvas.height = 350;
+                }
+                if (issueTypesCanvas.width > 800) {
+                    issueTypesCanvas.width = 800;
+                }
+            }
+        }
+
         function renderInitial() {
             const md = document.getElementById('rawText').textContent;
             const genType = (document.getElementById('generationTypeInitial').textContent || 'test_scenarios').toLowerCase();
@@ -677,6 +789,11 @@
                     }
                 });
             }, 500);
+            
+            // Fix Canvas charts sizing issues
+            setTimeout(() => {
+                fixCanvasCharts();
+            }, 1000);
 
             // Language switching
             document.querySelectorAll('.lang-option').forEach(item => {
