@@ -662,19 +662,7 @@
                                                     <i class="fas fa-sync-alt"></i> Refresh
                                                 </button>
                                             </div>
-                                            <div class="col-md-1 d-flex align-items-end">
-                                                <button type="button" class="btn btn-outline-warning w-100" onclick="debugProjectsFromConfig()" title="Debug Mode">
-                                                    <i class="fas fa-bug"></i> Debug
-                                                </button>
-                                            </div>
-                                            <div class="col-md-1 d-flex align-items-end">
-                        <button type="button" class="btn btn-outline-info w-100" onclick="testSprintInfo()" title="Test Sprint Info">
-                            <i class="fas fa-running"></i> Test Sprint
-                        </button>
-                        <button type="button" class="btn btn-outline-warning w-100 mt-2" onclick="debugCurrentData()" title="Debug Current Data">
-                            <i class="fas fa-bug"></i> Debug Data
-                        </button>
-                                            </div>
+                                            <!-- Debug buttons removed -->
                                         </div>
                                         
                                         <!-- Configuration Info -->
@@ -709,70 +697,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Filters Section -->
-                                <div class="card bg-dark border-secondary mb-4 cto-filter-card" id="ctoFiltersCard" style="display: none;">
-                                    <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row g-3">
-                                            <div class="col-md-3">
-                                                <label for="ctoDateFrom" class="form-label">From Date</label>
-                                                <input type="date" class="form-control" id="ctoDateFrom">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoDateTo" class="form-label">To Date</label>
-                                                <input type="date" class="form-control" id="ctoDateTo">
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoSprintFilter" class="form-label">Sprint</label>
-                                                <select class="form-select" id="ctoSprintFilter">
-                                                    <option value="">All Sprints</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoAssigneeFilter" class="form-label">Assignee</label>
-                                                <select class="form-select" id="ctoAssigneeFilter">
-                                                    <option value="">All Assignees</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="row g-3 mt-2">
-                                            <div class="col-md-3">
-                                                <label for="ctoIssueTypeFilter" class="form-label">Issue Type</label>
-                                                <select class="form-select" id="ctoIssueTypeFilter">
-                                                    <option value="">All Types</option>
-                                                    <option value="Bug">Bug</option>
-                                                    <option value="Story">Story</option>
-                                                    <option value="Task">Task</option>
-                                                    <option value="Epic">Epic</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoStatusFilter" class="form-label">Status</label>
-                                                <select class="form-select" id="ctoStatusFilter">
-                                                    <option value="">All Statuses</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoPriorityFilter" class="form-label">Priority</label>
-                                                <select class="form-select" id="ctoPriorityFilter">
-                                                    <option value="">All Priorities</option>
-                                                    <option value="Highest">Highest</option>
-                                                    <option value="High">High</option>
-                                                    <option value="Medium">Medium</option>
-                                                    <option value="Low">Low</option>
-                                                    <option value="Lowest">Lowest</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3 d-flex align-items-end">
-                                                <button type="button" class="btn btn-outline-primary w-100" onclick="applyCTOFilters()">
-                                                    <i class="fas fa-search"></i> Apply Filters
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- Filters removed - moved to results page -->
 
                                 <!-- Loading State -->
                                 <div id="ctoLoading" class="text-center my-4" style="display: none;">
@@ -1423,119 +1348,11 @@
             }
         }
 
-        async function debugProjectsFromConfig() {
-            try {
-                const response = await fetch('/api/cto/projects');
-                const data = await response.json();
-                
-                console.log('=== DEBUG MODE (Config) ===');
-                console.log('Response:', data);
-                
-                let debugInfo = '=== DEBUG INFORMATION ===\n\n';
-                debugInfo += `Status: ${response.status}\n`;
-                debugInfo += `Success: ${data.success || false}\n`;
-                debugInfo += `Total Projects: ${data.total || 0}\n`;
-                debugInfo += `Error: ${data.error || 'None'}\n\n`;
-                
-                if (data.projects && data.projects.length > 0) {
-                    debugInfo += 'Projects found:\n';
-                    data.projects.forEach((project, index) => {
-                        debugInfo += `${index + 1}. ${project.name} (${project.key})\n`;
-                    });
-                } else {
-                    debugInfo += 'No projects found in response\n';
-                }
-                
-                debugInfo += '\nCheck browser console for full details.';
-                
-                alert(debugInfo);
-                
-                if (data.projects && data.projects.length > 0) {
-                    populateProjectSelect(data.projects);
-                }
-                
-            } catch (error) {
-                console.error('Debug error:', error);
-                alert('❌ Debug failed: ' + error.message);
-            }
-        }
+        // Debug function removed
 
-        async function testSprintInfo() {
-            const select = document.getElementById('ctoProjectSelect');
-            const selectedProject = select.options[select.selectedIndex];
-            
-            if (!selectedProject.value) {
-                alert('❌ Please select a project first');
-                return;
-            }
+        // Test function removed
 
-            try {
-                console.log('Testing sprint info for project:', selectedProject.value);
-                
-                const response = await fetch('/api/cto/sprint-info', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ projectKey: selectedProject.value })
-                });
-
-                const data = await response.json();
-                console.log('Sprint info response:', data);
-                
-                let sprintInfo = '=== SPRINT INFO TEST ===\n\n';
-                sprintInfo += `Project: ${selectedProject.textContent}\n`;
-                sprintInfo += `Sprint Name: ${data.name || 'N/A'}\n`;
-                sprintInfo += `Stories Count: ${data.storiesCount || 0}\n`;
-                sprintInfo += `Bugs Count: ${data.bugsCount || 0}\n`;
-                sprintInfo += `Duration: ${data.duration || 'N/A'}\n`;
-                sprintInfo += `Start Date: ${data.startDate || 'N/A'}\n`;
-                sprintInfo += `End Date: ${data.endDate || 'N/A'}\n`;
-                sprintInfo += `State: ${data.state || 'N/A'}\n\n`;
-                sprintInfo += 'Check browser console for full details.';
-                
-                alert(sprintInfo);
-                
-            } catch (error) {
-                console.error('Sprint info test error:', error);
-                alert('❌ Sprint info test failed: ' + error.message);
-            }
-        }
-
-        function debugCurrentData() {
-            console.log('=== CURRENT DATA DEBUG ===');
-            console.log('ctoCurrentData:', ctoCurrentData);
-            
-            if (ctoCurrentData) {
-                console.log('Data keys:', Object.keys(ctoCurrentData));
-                console.log('Sprint info:', ctoCurrentData.sprintInfo);
-                console.log('Column stats:', ctoCurrentData.columnStats);
-                console.log('Issue types:', ctoCurrentData.issueTypesDistribution);
-                console.log('Status distribution:', ctoCurrentData.statusDistribution);
-                console.log('Issues:', ctoCurrentData.issues);
-                
-                // Check DOM elements
-                const sprintNameEl = document.getElementById('ctoSprintName');
-                const sprintStoriesEl = document.getElementById('ctoSprintStories');
-                const sprintBugsEl = document.getElementById('ctoSprintBugs');
-                
-                console.log('Sprint name element:', sprintNameEl);
-                console.log('Sprint stories element:', sprintStoriesEl);
-                console.log('Sprint bugs element:', sprintBugsEl);
-                
-                if (sprintNameEl) {
-                    console.log('Sprint name element text:', sprintNameEl.textContent);
-                }
-                if (sprintStoriesEl) {
-                    console.log('Sprint stories element text:', sprintStoriesEl.textContent);
-                }
-                if (sprintBugsEl) {
-                    console.log('Sprint bugs element text:', sprintBugsEl.textContent);
-                }
-                
-                alert('Debug info logged to console. Check F12 Console for details.');
-            } else {
-                alert('❌ No current data available. Please analyze a project first.');
-            }
-        }
+        // Debug function removed
 
         async function handleCTOConnection(event) {
             event.preventDefault();
@@ -1600,147 +1417,9 @@
 
         // Helper functions moved to cto-results.html
 
-        function populateFilterDropdowns(data) {
-            console.log('Populating filter dropdowns with data:', data);
-            
-            // Populate Sprint dropdown
-            const sprintFilter = document.getElementById('ctoSprintFilter');
-            if (sprintFilter && data.sprints) {
-                sprintFilter.innerHTML = '<option value="">All Sprints</option>';
-                data.sprints.forEach(sprint => {
-                    const option = document.createElement('option');
-                    option.value = sprint.id || sprint.name;
-                    option.textContent = sprint.name || sprint.id;
-                    if (sprint.state) {
-                        option.textContent += ` (${sprint.state})`;
-                    }
-                    sprintFilter.appendChild(option);
-                });
-                console.log('Populated sprints:', data.sprints.length);
-            }
+        // Filter functions removed - moved to results page
 
-            // Populate Assignee dropdown
-            const assigneeFilter = document.getElementById('ctoAssigneeFilter');
-            if (assigneeFilter && data.assignees) {
-                assigneeFilter.innerHTML = '<option value="">All Assignees</option>';
-                data.assignees.forEach(assignee => {
-                    const option = document.createElement('option');
-                    option.value = assignee;
-                    option.textContent = assignee;
-                    assigneeFilter.appendChild(option);
-                });
-                console.log('Populated assignees:', data.assignees.length);
-            }
-
-            // Populate Issue Type dropdown
-            const issueTypeFilter = document.getElementById('ctoIssueTypeFilter');
-            if (issueTypeFilter && data.issueTypes) {
-                issueTypeFilter.innerHTML = '<option value="">All Types</option>';
-                data.issueTypes.forEach(type => {
-                    const option = document.createElement('option');
-                    option.value = type;
-                    option.textContent = type;
-                    issueTypeFilter.appendChild(option);
-                });
-                console.log('Populated issue types:', data.issueTypes.length);
-            }
-
-            // Populate Status dropdown
-            const statusFilter = document.getElementById('ctoStatusFilter');
-            if (statusFilter && data.statuses) {
-                statusFilter.innerHTML = '<option value="">All Statuses</option>';
-                data.statuses.forEach(status => {
-                    const option = document.createElement('option');
-                    option.value = status;
-                    option.textContent = status;
-                    statusFilter.appendChild(option);
-                });
-                console.log('Populated statuses:', data.statuses.length);
-            }
-
-            // Populate Priority dropdown
-            const priorityFilter = document.getElementById('ctoPriorityFilter');
-            if (priorityFilter && data.priorities) {
-                priorityFilter.innerHTML = '<option value="">All Priorities</option>';
-                data.priorities.forEach(priority => {
-                    const option = document.createElement('option');
-                    option.value = priority;
-                    option.textContent = priority;
-                    priorityFilter.appendChild(option);
-                });
-                console.log('Populated priorities:', data.priorities.length);
-            }
-            
-            // Show filters card if we have data
-            if (data.sprints || data.assignees || data.issueTypes || data.statuses || data.priorities) {
-                document.getElementById('ctoFiltersCard').style.display = 'block';
-            }
-        }
-
-        function applyCTOFilters() {
-            if (!ctoCurrentData) return;
-
-            const filters = {
-                dateFrom: document.getElementById('ctoDateFrom').value,
-                dateTo: document.getElementById('ctoDateTo').value,
-                sprint: document.getElementById('ctoSprintFilter').value,
-                assignee: document.getElementById('ctoAssigneeFilter').value,
-                issueType: document.getElementById('ctoIssueTypeFilter').value,
-                status: document.getElementById('ctoStatusFilter').value,
-                priority: document.getElementById('ctoPriorityFilter').value
-            };
-
-            let filteredIssues = ctoCurrentData.issues || [];
-            
-            if (filters.dateFrom) {
-                filteredIssues = filteredIssues.filter(issue => 
-                    new Date(issue.created) >= new Date(filters.dateFrom)
-                );
-            }
-            
-            if (filters.dateTo) {
-                filteredIssues = filteredIssues.filter(issue => 
-                    new Date(issue.created) <= new Date(filters.dateTo)
-                );
-            }
-            
-            if (filters.assignee) {
-                filteredIssues = filteredIssues.filter(issue => 
-                    issue.assignee === filters.assignee
-                );
-            }
-            
-            if (filters.issueType) {
-                filteredIssues = filteredIssues.filter(issue => 
-                    issue.type === filters.issueType
-                );
-            }
-            
-            if (filters.status) {
-                filteredIssues = filteredIssues.filter(issue => 
-                    issue.status === filters.status
-                );
-            }
-            
-            if (filters.priority) {
-                filteredIssues = filteredIssues.filter(issue => 
-                    issue.priority === filters.priority
-                );
-            }
-
-            updateIssuesTable(filteredIssues);
-            
-            const filteredData = {
-                ...ctoCurrentData,
-                issues: filteredIssues,
-                totalBugs: filteredIssues.filter(i => i.type === 'Bug').length,
-                totalStories: filteredIssues.filter(i => i.type === 'Story').length,
-                totalTasks: filteredIssues.filter(i => i.type === 'Task').length,
-                completedIssues: filteredIssues.filter(i => i.status === 'Done').length
-            };
-            
-            displayCTODashboard(filteredData);
-        }
+        // Filter functions removed - moved to results page
 
         async function exportCTOData() {
             if (!ctoCurrentData) {

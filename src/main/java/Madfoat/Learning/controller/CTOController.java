@@ -305,8 +305,5 @@ public class CTOController {
         return ResponseEntity.ok(Map.of("status", "OK", "service", "CTO Management"));
     }
 
-    @GetMapping("/results")
-    public String showResultsPage() {
-        return "cto-results";
-    }
+    // Results page moved to CTOPageController
 }
