@@ -53,35 +53,56 @@
         .table-responsive { overflow-x: auto !important; }
         .table-responsive .table { min-width: 100% !important; }
         
-        /* Fix Canvas Charts sizing issues */
+        /* Fix Canvas Charts sizing issues - AGGRESSIVE FIX */
         .chart-container { 
-            max-height: 400px !important; 
+            max-height: 350px !important; 
             overflow: hidden !important; 
             position: relative !important;
+            height: 350px !important;
         }
         .chart-container canvas { 
             max-width: 100% !important; 
-            max-height: 400px !important; 
-            width: auto !important; 
-            height: auto !important;
+            max-height: 350px !important; 
+            width: 100% !important; 
+            height: 350px !important;
             display: block !important;
-        }
-        .compact-chart { 
-            max-height: 300px !important; 
             overflow: hidden !important;
         }
+        .compact-chart { 
+            max-height: 350px !important; 
+            overflow: hidden !important;
+            height: 350px !important;
+        }
         .compact-chart canvas { 
-            max-height: 300px !important; 
+            max-height: 350px !important; 
             max-width: 100% !important;
+            height: 350px !important;
+            width: 100% !important;
+            overflow: hidden !important;
         }
         /* Force chart containers to have fixed dimensions */
         #statusChart, #issueTypesChart {
             max-height: 350px !important;
+            height: 350px !important;
             overflow: hidden !important;
         }
         #statusChartCanvas, #issueTypesChartCanvas {
             max-height: 350px !important;
+            height: 350px !important;
             max-width: 100% !important;
+            width: 100% !important;
+            overflow: hidden !important;
+        }
+        /* Prevent any canvas from growing beyond limits */
+        canvas {
+            max-height: 350px !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+        }
+        /* Force all canvas elements to stay within bounds */
+        canvas[width], canvas[height] {
+            max-width: 100% !important;
+            max-height: 350px !important;
             width: auto !important;
             height: auto !important;
         }
@@ -488,12 +509,13 @@
             // Fix all canvas elements that might be oversized
             const canvases = document.querySelectorAll('canvas');
             canvases.forEach(canvas => {
-                // Reset canvas dimensions
+                // Lock canvas dimensions permanently
                 canvas.style.maxWidth = '100%';
                 canvas.style.maxHeight = '350px';
                 canvas.style.width = 'auto';
                 canvas.style.height = 'auto';
                 canvas.style.display = 'block';
+                canvas.style.overflow = 'hidden';
                 
                 // Force canvas to have reasonable dimensions
                 if (canvas.width > 800) {
@@ -502,6 +524,23 @@
                 if (canvas.height > 350) {
                     canvas.height = 350;
                 }
+                
+                // Override canvas properties to prevent dynamic resizing
+                Object.defineProperty(canvas, 'width', {
+                    get: function() { return 800; },
+                    set: function(value) { 
+                        if (value > 800) value = 800;
+                        this._width = value;
+                    }
+                });
+                
+                Object.defineProperty(canvas, 'height', {
+                    get: function() { return 350; },
+                    set: function(value) { 
+                        if (value > 350) value = 350;
+                        this._height = value;
+                    }
+                });
             });
             
             // Fix specific chart containers
@@ -533,6 +572,7 @@
                 statusCanvas.style.maxWidth = '100%';
                 statusCanvas.style.width = 'auto';
                 statusCanvas.style.height = 'auto';
+                statusCanvas.style.overflow = 'hidden';
                 if (statusCanvas.height > 350) {
                     statusCanvas.height = 350;
                 }
@@ -546,6 +586,7 @@
                 issueTypesCanvas.style.maxWidth = '100%';
                 issueTypesCanvas.style.width = 'auto';
                 issueTypesCanvas.style.height = 'auto';
+                issueTypesCanvas.style.overflow = 'hidden';
                 if (issueTypesCanvas.height > 350) {
                     issueTypesCanvas.height = 350;
                 }
@@ -553,6 +594,57 @@
                     issueTypesCanvas.width = 800;
                 }
             }
+        }
+
+        // Monitor canvas changes and fix them immediately
+        function startCanvasMonitoring() {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && 
+                        (mutation.attributeName === 'width' || mutation.attributeName === 'height' || mutation.attributeName === 'style')) {
+                        const target = mutation.target;
+                        if (target.tagName === 'CANVAS') {
+                            // Immediately fix the canvas
+                            if (target.height > 350) {
+                                target.height = 350;
+                                target.style.height = '350px';
+                            }
+                            if (target.width > 800) {
+                                target.width = 800;
+                                target.style.width = '800px';
+                            }
+                            target.style.maxHeight = '350px';
+                            target.style.maxWidth = '100%';
+                            target.style.overflow = 'hidden';
+                        }
+                    }
+                });
+            });
+
+            // Start observing
+            observer.observe(document.body, {
+                attributes: true,
+                subtree: true,
+                attributeFilter: ['width', 'height', 'style']
+            });
+
+            // Also run periodic checks
+            setInterval(() => {
+                const canvases = document.querySelectorAll('canvas');
+                canvases.forEach(canvas => {
+                    if (canvas.height > 350) {
+                        canvas.height = 350;
+                        canvas.style.height = '350px';
+                        canvas.style.maxHeight = '350px';
+                    }
+                    if (canvas.width > 800) {
+                        canvas.width = 800;
+                        canvas.style.width = '800px';
+                        canvas.style.maxWidth = '100%';
+                    }
+                    canvas.style.overflow = 'hidden';
+                });
+            }, 100); // Check every 100ms
         }
 
         function renderInitial() {
@@ -794,6 +886,29 @@
             setTimeout(() => {
                 fixCanvasCharts();
             }, 1000);
+            
+            // Start monitoring canvas changes
+            setTimeout(() => {
+                startCanvasMonitoring();
+            }, 2000);
+            
+            // Override Chart.js resize behavior if it exists
+            setTimeout(() => {
+                if (typeof Chart !== 'undefined') {
+                    // Override Chart.js resize method
+                    const originalResize = Chart.prototype.resize;
+                    Chart.prototype.resize = function() {
+                        // Limit the chart size before resizing
+                        if (this.canvas.height > 350) {
+                            this.canvas.height = 350;
+                        }
+                        if (this.canvas.width > 800) {
+                            this.canvas.width = 800;
+                        }
+                        return originalResize.call(this);
+                    };
+                }
+            }, 3000);
 
             // Language switching
             document.querySelectorAll('.lang-option').forEach(item => {

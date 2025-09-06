@@ -219,35 +219,56 @@ textarea {
 /* Redundant now with Bootstrap's spacing */
 /* .mt-3 { margin-top: 1.5rem; } */
 
-/* Fix Canvas Charts sizing issues - Global fix */
+/* Fix Canvas Charts sizing issues - AGGRESSIVE GLOBAL FIX */
 .chart-container { 
-  max-height: 400px !important; 
+  max-height: 350px !important; 
+  height: 350px !important;
   overflow: hidden !important; 
   position: relative !important;
 }
 .chart-container canvas { 
   max-width: 100% !important; 
-  max-height: 400px !important; 
-  width: auto !important; 
-  height: auto !important;
+  max-height: 350px !important; 
+  width: 100% !important; 
+  height: 350px !important;
   display: block !important;
+  overflow: hidden !important;
 }
 .compact-chart { 
-  max-height: 300px !important; 
+  max-height: 350px !important; 
+  height: 350px !important;
   overflow: hidden !important;
 }
 .compact-chart canvas { 
-  max-height: 300px !important; 
+  max-height: 350px !important; 
   max-width: 100% !important;
+  height: 350px !important;
+  width: 100% !important;
+  overflow: hidden !important;
 }
 /* Force chart containers to have fixed dimensions */
 #statusChart, #issueTypesChart {
   max-height: 350px !important;
+  height: 350px !important;
   overflow: hidden !important;
 }
 #statusChartCanvas, #issueTypesChartCanvas {
   max-height: 350px !important;
+  height: 350px !important;
   max-width: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+/* Prevent any canvas from growing beyond limits */
+canvas {
+  max-height: 350px !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+/* Force all canvas elements to stay within bounds */
+canvas[width], canvas[height] {
+  max-width: 100% !important;
+  max-height: 350px !important;
   width: auto !important;
   height: auto !important;
 }
