@@ -216,6 +216,64 @@
             border-color: #10b981;
             color: #ffffff;
         }
+        
+        /* Additional text visibility fixes for all dark elements */
+        .bg-dark h1, .bg-dark h2, .bg-dark h3, .bg-dark h4, .bg-dark h5, .bg-dark h6 {
+            color: #ffffff !important;
+        }
+        
+        .bg-dark p, .bg-dark span, .bg-dark div {
+            color: #e5e7eb !important;
+        }
+        
+        .bg-dark .text-muted {
+            color: #9ca3af !important;
+        }
+        
+        .bg-dark .form-label {
+            color: #f3f4f6 !important;
+            font-weight: 600;
+        }
+        
+        .bg-dark .form-control, .bg-dark .form-select {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #ffffff !important;
+        }
+        
+        .bg-dark .form-control:focus, .bg-dark .form-select:focus {
+            background-color: #1f2937 !important;
+            border-color: #3b82f6 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        }
+        
+        .bg-dark .form-control::placeholder {
+            color: #9ca3af !important;
+        }
+        
+        .bg-dark .card-header {
+            background-color: #111827 !important;
+            border-bottom-color: #374151 !important;
+        }
+        
+        .bg-dark .alert {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #e5e7eb !important;
+        }
+        
+        .bg-dark .alert-success {
+            background-color: #064e3b !important;
+            border-color: #065f46 !important;
+            color: #a7f3d0 !important;
+        }
+        
+        .bg-dark .alert-info {
+            background-color: #1e3a8a !important;
+            border-color: #1e40af !important;
+            color: #bfdbfe !important;
+        }
     </style>
 </head>
 <body>
@@ -593,94 +651,53 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row g-3">
-                                            <div class="col-md-3">
-                                                <label for="ctoJiraUrl" class="form-label">Jira URL</label>
-                                                <input type="url" class="form-control" id="ctoJiraUrl" placeholder="https://yourcompany.atlassian.net">
-                                                <small class="text-muted">Your Jira instance URL</small>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoUsername" class="form-label">Username</label>
-                                                <input type="text" class="form-control" id="ctoUsername" placeholder="user@company.com">
-                                                <small class="text-muted">Your email address</small>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label for="ctoApiToken" class="form-label">API Token</label>
-                                                <input type="password" class="form-control" id="ctoApiToken" placeholder="Your API token">
-                                                <small class="text-muted">
-                                                    <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" class="text-info">
-                                                        <i class="fas fa-external-link-alt"></i> Get API Token
-                                                    </a>
-                                                </small>
-                                            </div>
-                                            <div class="col-md-2 d-flex align-items-end">
-                                                <button type="button" class="btn btn-outline-primary w-100" onclick="loadProjects()">
-                                                    <i class="fas fa-search"></i> Load Projects
-                                                </button>
-                                            </div>
-                                            <div class="col-md-1 d-flex align-items-end">
-                                                <button type="button" class="btn btn-outline-warning w-100" onclick="debugProjects()" title="Debug Mode">
-                                                    <i class="fas fa-bug"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="row g-3 mt-3">
-                                            <div class="col-12">
+                                            <div class="col-md-8">
                                                 <label for="ctoProjectSelect" class="form-label">Select Project</label>
                                                 <select class="form-select" id="ctoProjectSelect">
-                                                    <option value="">Choose a project...</option>
+                                                    <option value="">Loading projects...</option>
                                                 </select>
+                                            </div>
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-primary w-100" onclick="loadProjectsFromConfig()">
+                                                    <i class="fas fa-sync-alt"></i> Refresh
+                                                </button>
+                                            </div>
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="button" class="btn btn-outline-warning w-100" onclick="debugProjectsFromConfig()" title="Debug Mode">
+                                                    <i class="fas fa-bug"></i> Debug
+                                                </button>
                                             </div>
                                         </div>
                                         
-                                        <!-- Help Information -->
+                                        <!-- Configuration Info -->
                                         <div class="row mt-3">
                                             <div class="col-12">
-                                                <div class="alert alert-info">
-                                                    <h6><i class="fas fa-info-circle"></i> Need Help?</h6>
-                                                    <ul class="mb-0">
-                                                        <li><strong>Jira URL:</strong> Find it in your browser address bar when logged into Jira</li>
-                                                        <li><strong>Username:</strong> Use your email address (the one you use to log into Jira)</li>
-                                                        <li><strong>API Token:</strong> 
-                                                            <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" class="text-info">
-                                                                Create one here
-                                                            </a> 
-                                                            (replace your password when using API)
-                                                        </li>
-                                                        <li><strong>No Projects?</strong> Make sure you have access to at least one project in Jira</li>
-                                                    </ul>
+                                                <div class="alert alert-success">
+                                                    <h6><i class="fas fa-check-circle"></i> Configuration Loaded</h6>
+                                                    <p class="mb-0">Using Jira configuration from properties file. Projects will be loaded automatically.</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Connection Section -->
-                                <div class="card bg-dark border-secondary mb-4" id="ctoConnectionCard" style="display: none;">
+                                <!-- Analysis Section -->
+                                <div class="card bg-dark border-secondary mb-4" id="ctoAnalysisCard" style="display: none;">
                                     <div class="card-header">
-                                        <h5 class="mb-0"><i class="fas fa-link"></i> Jira Connection</h5>
+                                        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Project Analysis</h5>
                                     </div>
                                     <div class="card-body">
-                                        <form id="ctoConnectionForm">
-                                            <div class="row g-3">
-                                                <div class="col-md-3">
-                                                    <label for="ctoUsername" class="form-label">Username</label>
-                                                    <input type="text" class="form-control" id="ctoUsername" placeholder="user@company.com">
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="ctoApiToken" class="form-label">API Token</label>
-                                                    <input type="password" class="form-control" id="ctoApiToken" placeholder="Your API token">
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="ctoSelectedProject" class="form-label">Selected Project</label>
-                                                    <input type="text" class="form-control" id="ctoSelectedProject" readonly>
-                                                </div>
-                                                <div class="col-md-3 d-flex align-items-end">
-                                                    <button type="submit" class="btn btn-primary w-100">
-                                                        <i class="fas fa-sync-alt"></i> Connect & Analyze
-                                                    </button>
-                                                </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="ctoSelectedProject" class="form-label">Selected Project</label>
+                                                <input type="text" class="form-control" id="ctoSelectedProject" readonly>
                                             </div>
-                                        </form>
+                                            <div class="col-md-6 d-flex align-items-end">
+                                                <button type="button" class="btn btn-primary w-100" onclick="analyzeSelectedProject()">
+                                                    <i class="fas fa-chart-line"></i> Analyze Project
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1364,33 +1381,74 @@
         let ctoCurrentData = null;
 
         function initializeCTOTab() {
-            const ctoForm = document.getElementById('ctoConnectionForm');
-            if (ctoForm) {
-                ctoForm.addEventListener('submit', handleCTOConnection);
-            }
-            
             const projectSelect = document.getElementById('ctoProjectSelect');
             if (projectSelect) {
                 projectSelect.addEventListener('change', handleProjectSelection);
             }
             
-            loadCTOConfig();
+            // Load projects automatically from config
+            loadProjectsFromConfig();
         }
 
-        async function loadCTOConfig() {
+        async function loadProjectsFromConfig() {
             try {
-                const res = await fetch('/api/jira/config');
-                const config = await res.json();
-                if (config.configured) {
-                    document.getElementById('ctoJiraUrl').value = config.url || '';
-                    document.getElementById('ctoUsername').value = config.username || '';
-                    // Auto-load projects if URL and username are available
-                    if (config.url && config.username) {
-                        // Don't auto-load projects, let user click the button
-                    }
+                const response = await fetch('/api/cto/projects');
+                const data = await response.json();
+                
+                console.log('Projects from config:', data);
+                
+                if (data.error) {
+                    alert('❌ Error loading projects: ' + data.error);
+                    populateProjectSelect([]);
+                } else if (data.projects && data.projects.length > 0) {
+                    populateProjectSelect(data.projects);
+                    console.log(`✅ Loaded ${data.projects.length} projects from config`);
+                } else {
+                    alert('⚠️ No projects found in Jira instance');
+                    populateProjectSelect([]);
                 }
-            } catch (e) {
-                console.log('Could not load Jira config:', e);
+                
+            } catch (error) {
+                console.error('Error loading projects from config:', error);
+                alert('❌ Failed to load projects: ' + error.message);
+                populateProjectSelect([]);
+            }
+        }
+
+        async function debugProjectsFromConfig() {
+            try {
+                const response = await fetch('/api/cto/projects');
+                const data = await response.json();
+                
+                console.log('=== DEBUG MODE (Config) ===');
+                console.log('Response:', data);
+                
+                let debugInfo = '=== DEBUG INFORMATION ===\n\n';
+                debugInfo += `Status: ${response.status}\n`;
+                debugInfo += `Success: ${data.success || false}\n`;
+                debugInfo += `Total Projects: ${data.total || 0}\n`;
+                debugInfo += `Error: ${data.error || 'None'}\n\n`;
+                
+                if (data.projects && data.projects.length > 0) {
+                    debugInfo += 'Projects found:\n';
+                    data.projects.forEach((project, index) => {
+                        debugInfo += `${index + 1}. ${project.name} (${project.key})\n`;
+                    });
+                } else {
+                    debugInfo += 'No projects found in response\n';
+                }
+                
+                debugInfo += '\nCheck browser console for full details.';
+                
+                alert(debugInfo);
+                
+                if (data.projects && data.projects.length > 0) {
+                    populateProjectSelect(data.projects);
+                }
+                
+            } catch (error) {
+                console.error('Debug error:', error);
+                alert('❌ Debug failed: ' + error.message);
             }
         }
 
@@ -1854,9 +1912,65 @@
             
             if (selectedProject.value) {
                 document.getElementById('ctoSelectedProject').value = selectedProject.textContent;
-                document.getElementById('ctoConnectionCard').style.display = 'block';
+                document.getElementById('ctoAnalysisCard').style.display = 'block';
             } else {
-                document.getElementById('ctoConnectionCard').style.display = 'none';
+                document.getElementById('ctoAnalysisCard').style.display = 'none';
+            }
+        }
+
+        async function analyzeSelectedProject() {
+            const select = document.getElementById('ctoProjectSelect');
+            const selectedProject = select.options[select.selectedIndex];
+            
+            if (!selectedProject.value) {
+                alert('❌ Please select a project first');
+                return;
+            }
+
+            const projectKey = selectedProject.value;
+            
+            // Show loading
+            const loadingEl = document.getElementById('ctoLoading');
+            const dashboardEl = document.getElementById('ctoDashboard');
+            const filtersEl = document.getElementById('ctoFiltersCard');
+            const errorEl = document.getElementById('ctoErrorMessage');
+            
+            if (loadingEl) loadingEl.style.display = 'block';
+            if (dashboardEl) dashboardEl.style.display = 'none';
+            if (filtersEl) filtersEl.style.display = 'none';
+            if (errorEl) errorEl.classList.add('d-none');
+
+            try {
+                const response = await fetch('/api/cto/project-stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        projectKey: projectKey,
+                        useConfig: true  // Flag to use config instead of request data
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to analyze project');
+                }
+
+                const data = await response.json();
+                ctoCurrentData = data;
+                
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (dashboardEl) dashboardEl.style.display = 'block';
+                if (filtersEl) filtersEl.style.display = 'block';
+                
+                displayCTODashboard(data);
+                
+            } catch (error) {
+                console.error('Error analyzing project:', error);
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (errorEl) {
+                    errorEl.textContent = 'Error: ' + error.message;
+                    errorEl.classList.remove('d-none');
+                }
             }
         }
 

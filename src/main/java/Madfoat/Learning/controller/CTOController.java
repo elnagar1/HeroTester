@@ -2,6 +2,7 @@ package Madfoat.Learning.controller;
 
 import Madfoat.Learning.service.CTOService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,18 +15,54 @@ public class CTOController {
 
     @Autowired
     private CTOService ctoService;
+    
+    @Value("${jira.url:}")
+    private String jiraUrl;
+    
+    @Value("${jira.username:}")
+    private String jiraUsername;
+    
+    @Value("${jira.api.token:}")
+    private String jiraApiToken;
 
     @PostMapping("/project-stats")
     public ResponseEntity<Map<String, Object>> getProjectStatistics(@RequestBody Map<String, String> request) {
         try {
-            String jiraUrl = request.get("jiraUrl");
+            String jiraUrl;
             String projectKey = request.get("projectKey");
-            String username = request.get("username");
-            String apiToken = request.get("apiToken");
+            String username;
+            String apiToken;
+            
+            // Check if we should use config values
+            boolean useConfig = "true".equals(request.get("useConfig"));
+            
+            if (useConfig) {
+                // Use values from properties file
+                jiraUrl = this.jiraUrl;
+                username = this.jiraUsername;
+                apiToken = this.jiraApiToken;
+                
+                if (jiraUrl == null || jiraUrl.isEmpty() || 
+                    username == null || username.isEmpty() || 
+                    apiToken == null || apiToken.isEmpty()) {
+                    return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Jira configuration not found in properties file"));
+                }
+            } else {
+                // Use values from request
+                jiraUrl = request.get("jiraUrl");
+                username = request.get("username");
+                apiToken = request.get("apiToken");
+                
+                if (jiraUrl == null || projectKey == null || username == null || apiToken == null) {
+                    return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Missing required fields: jiraUrl, projectKey, username, apiToken"));
+                }
+            }
 
-            if (jiraUrl == null || projectKey == null || username == null || apiToken == null) {
+            if (projectKey == null) {
                 return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Missing required fields: jiraUrl, projectKey, username, apiToken"));
+                    .body(Map.of("error", "Project key is required"));
             }
 
             // Remove trailing slash from Jira URL if present
@@ -168,6 +205,40 @@ public class CTOController {
             return ResponseEntity.internalServerError()
                 .body(Map.of("error", "Debug failed: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/projects")
+    public ResponseEntity<Map<String, Object>> getProjectsFromConfig() {
+        try {
+            if (jiraUrl == null || jiraUrl.isEmpty() || 
+                jiraUsername == null || jiraUsername.isEmpty() || 
+                jiraApiToken == null || jiraApiToken.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Jira configuration not found in properties file"));
+            }
+
+            // Remove trailing slash from Jira URL if present
+            String cleanJiraUrl = jiraUrl.endsWith("/") ? jiraUrl.substring(0, jiraUrl.length() - 1) : jiraUrl;
+
+            Map<String, Object> projects = ctoService.getProjects(cleanJiraUrl, jiraUsername, jiraApiToken);
+            return ResponseEntity.ok(projects);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                .body(Map.of("error", "Failed to get projects: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/config")
+    public ResponseEntity<Map<String, Object>> getConfig() {
+        return ResponseEntity.ok(Map.of(
+            "jiraUrl", jiraUrl != null ? jiraUrl : "",
+            "username", jiraUsername != null ? jiraUsername : "",
+            "hasApiToken", jiraApiToken != null && !jiraApiToken.isEmpty(),
+            "configured", jiraUrl != null && !jiraUrl.isEmpty() && 
+                        jiraUsername != null && !jiraUsername.isEmpty() && 
+                        jiraApiToken != null && !jiraApiToken.isEmpty()
+        ));
     }
 
     @GetMapping("/health")
