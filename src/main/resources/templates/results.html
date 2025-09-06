@@ -35,9 +35,20 @@
         .copy-btn { position: absolute; top: 10px; right: 10px; }
         .result-badge { font-size: .8rem; }
         .result-card-title { display: flex; align-items: center; gap: 8px; }
-        .table { color: #e5e7eb; }
+        .table { color: #e5e7eb; table-layout: fixed; width: 100%; }
         .table thead th { background: #0f172a; color: #cbd5e1; border-color: #334155; }
-        .table tbody td { border-color: #334155; }
+        .table tbody td { border-color: #334155; word-wrap: break-word; overflow-wrap: break-word; }
+        /* Column width controls for better layout */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 15%; min-width: 100px; }
+        .table th:nth-child(2), .table td:nth-child(2) { width: 25%; min-width: 150px; }
+        .table th:nth-child(3), .table td:nth-child(3) { width: 20%; min-width: 120px; }
+        .table th:nth-child(4), .table td:nth-child(4) { width: 20%; min-width: 120px; }
+        .table th:nth-child(5), .table td:nth-child(5) { width: 20%; min-width: 120px; }
+        /* For tables with more than 5 columns, use equal distribution */
+        .table th:nth-child(n+6), .table td:nth-child(n+6) { width: auto; min-width: 100px; }
+        /* Text truncation for long content */
+        .table td { max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .table td:hover { white-space: normal; overflow: visible; position: relative; z-index: 1; background: #0f172a; }
         .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: .8rem; color: #e5e7eb; background: rgba(51,65,85,.6); margin-right: 6px; }
         .form-select, .form-control { background-color: #0f172a; color: #e5e7eb; border-color: #334155; }
         .form-select:focus, .form-control:focus { background-color: #0f172a; color: #e5e7eb; border-color: #3b82f6; box-shadow: 0 0 0 .2rem rgba(59,130,246,.25); }
@@ -48,6 +59,23 @@
         .btn-success { background: #16a34a; border-color: #16a34a; }
         .btn-primary { background: #2563eb; border-color: #2563eb; }
         .row-selected { outline: 2px solid #22c55e; background: rgba(34,197,94,.1); }
+        /* Mobile responsiveness for tables */
+        @media (max-width: 768px) {
+            .table-responsive { font-size: 0.875rem; }
+            .table th, .table td { padding: 0.5rem 0.25rem; }
+            .table th:nth-child(1), .table td:nth-child(1) { width: 20%; }
+            .table th:nth-child(2), .table td:nth-child(2) { width: 30%; }
+            .table th:nth-child(3), .table td:nth-child(3) { width: 25%; }
+            .table th:nth-child(4), .table td:nth-child(4) { width: 25%; }
+            .table th:nth-child(n+5), .table td:nth-child(n+5) { display: none; }
+        }
+        
+        @media (max-width: 576px) {
+            .table th:nth-child(3), .table td:nth-child(3) { display: none; }
+            .table th:nth-child(1), .table td:nth-child(1) { width: 30%; }
+            .table th:nth-child(2), .table td:nth-child(2) { width: 70%; }
+        }
+        
         /* RTL adjustments */
         [dir="rtl"] .section-title { text-align: right; }
         [dir="rtl"] .input-preview { text-align: right; }
@@ -248,18 +276,43 @@
         function buildTableEl(parsed) {
             const table = document.createElement('table');
             table.className = 'table table-striped table-hover';
+            table.style.tableLayout = 'fixed';
+            table.style.width = '100%';
+            
             const thead = document.createElement('thead');
             const thRow = document.createElement('tr');
-            parsed.headers.forEach(h => {
-                const th = document.createElement('th'); th.textContent = h; thRow.appendChild(th);
+            parsed.headers.forEach((h, index) => {
+                const th = document.createElement('th'); 
+                th.textContent = h;
+                // Add specific styling for status columns
+                if (h.toLowerCase().includes('status')) {
+                    th.style.width = '15%';
+                    th.style.minWidth = '100px';
+                }
+                thRow.appendChild(th);
             });
             thead.appendChild(thRow);
+            
             const tbody = document.createElement('tbody');
             parsed.rows.forEach(row => {
                 const tr = document.createElement('tr');
-                parsed.headers.forEach((_, idx) => {
+                parsed.headers.forEach((header, idx) => {
                     const td = document.createElement('td');
-                    td.textContent = row[idx] ?? '';
+                    const cellContent = row[idx] ?? '';
+                    td.textContent = cellContent;
+                    
+                    // Add specific styling for status columns
+                    if (header.toLowerCase().includes('status')) {
+                        td.style.width = '15%';
+                        td.style.minWidth = '100px';
+                        td.style.maxWidth = '150px';
+                    }
+                    
+                    // Add tooltip for truncated content
+                    if (cellContent.length > 50) {
+                        td.title = cellContent;
+                    }
+                    
                     tr.appendChild(td);
                 });
                 tbody.appendChild(tr);
@@ -277,6 +330,66 @@
                 aoa.push(row);
             });
             return aoa.length > 1 ? aoa : null;
+        }
+
+        function optimizeTableColumns(tableEl) {
+            if (!tableEl) return;
+            
+            const headers = Array.from(tableEl.querySelectorAll('thead th'));
+            const rows = Array.from(tableEl.querySelectorAll('tbody tr'));
+            
+            // Calculate optimal column widths based on content
+            const columnWidths = headers.map((header, colIndex) => {
+                const headerText = header.textContent;
+                let maxLength = headerText.length;
+                
+                // Check all rows for this column
+                rows.forEach(row => {
+                    const cell = row.children[colIndex];
+                    if (cell) {
+                        const cellText = cell.textContent || '';
+                        maxLength = Math.max(maxLength, cellText.length);
+                    }
+                });
+                
+                // Set reasonable limits
+                const minWidth = 80;
+                const maxWidth = 300;
+                const calculatedWidth = Math.min(Math.max(maxLength * 8, minWidth), maxWidth);
+                
+                return {
+                    width: calculatedWidth,
+                    isStatus: headerText.toLowerCase().includes('status')
+                };
+            });
+            
+            // Apply optimized widths
+            headers.forEach((header, index) => {
+                const colWidth = columnWidths[index];
+                if (colWidth.isStatus) {
+                    header.style.width = '120px';
+                    header.style.minWidth = '100px';
+                    header.style.maxWidth = '150px';
+                } else {
+                    header.style.width = colWidth.width + 'px';
+                    header.style.minWidth = '80px';
+                }
+            });
+            
+            // Apply same widths to data cells
+            rows.forEach(row => {
+                Array.from(row.children).forEach((cell, index) => {
+                    const colWidth = columnWidths[index];
+                    if (colWidth.isStatus) {
+                        cell.style.width = '120px';
+                        cell.style.minWidth = '100px';
+                        cell.style.maxWidth = '150px';
+                    } else {
+                        cell.style.width = colWidth.width + 'px';
+                        cell.style.minWidth = '80px';
+                    }
+                });
+            });
         }
 
         function renderInitial() {
@@ -304,6 +417,8 @@
                     table.innerHTML = '';
                     table.appendChild(tableEl.querySelector('thead'));
                     table.appendChild(tableEl.querySelector('tbody'));
+                    // Optimize column widths after table is built
+                    setTimeout(() => optimizeTableColumns(table), 100);
                     window.__initialAOA = [headers, ...rows];
                 } else {
                     table.innerHTML = '<tbody><tr><td class="text-muted">No acceptance criteria detected.</td></tr></tbody>';
@@ -316,6 +431,8 @@
                     table.innerHTML = '';
                     table.appendChild(tableEl.querySelector('thead'));
                     table.appendChild(tableEl.querySelector('tbody'));
+                    // Optimize column widths after table is built
+                    setTimeout(() => optimizeTableColumns(table), 100);
                     window.__initialAOA = [parsed.headers, ...parsed.rows];
                 } else {
                     table.innerHTML = '<tbody><tr><td class="text-muted">No table detected in initial content.</td></tr></tbody>';
@@ -413,6 +530,8 @@
                 const tbl = buildTableEl(parsed);
                 tbl.setAttribute('data-table', 'true');
                 pane.appendChild(tbl);
+                // Optimize column widths for new tables
+                setTimeout(() => optimizeTableColumns(tbl), 100);
             } else {
                 const pre = document.createElement('pre'); pre.style.whiteSpace = 'pre-wrap'; pre.textContent = content; pane.appendChild(pre);
             }
