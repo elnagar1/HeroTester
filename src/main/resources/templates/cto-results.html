@@ -46,6 +46,20 @@
             transform: translateY(-5px);
         }
 
+        .metric-card.compact {
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .metric-card.compact .metric-value {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .metric-card.compact .metric-label {
+            font-size: 0.9rem;
+        }
+
         .metric-value {
             font-size: 2.5rem;
             font-weight: bold;
@@ -265,9 +279,9 @@
         <!-- Error Message -->
         <div id="errorMessage" class="error-message"></div>
 
-        <!-- Project Info -->
+        <!-- Project Info & Sprint Filter -->
         <div id="projectInfo" class="row mb-4" style="display: none;">
-            <div class="col-12">
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">
@@ -280,39 +294,64 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-filter"></i> Sprint Filter
+                        </h6>
+                        <select class="form-select" id="sprintFilter" onchange="filterBySprint()">
+                            <option value="">All Sprints</option>
+                        </select>
+                        <small class="text-muted">Filter data by specific sprint</small>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Basic Metrics -->
-        <div id="basicMetrics" class="row mb-4" style="display: none;">
-            <div class="col-md-3">
-                <div class="metric-card">
+        <!-- Basic Metrics - Compact View -->
+        <div id="basicMetrics" class="row mb-3" style="display: none;">
+            <div class="col-md-2">
+                <div class="metric-card compact">
                     <div class="metric-value" id="totalBugs">0</div>
-                    <div class="metric-label">Total Bugs</div>
+                    <div class="metric-label">Bugs</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="metric-card">
+            <div class="col-md-2">
+                <div class="metric-card compact">
                     <div class="metric-value" id="totalStories">0</div>
-                    <div class="metric-label">Total Stories</div>
+                    <div class="metric-label">Stories</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="metric-card">
+            <div class="col-md-2">
+                <div class="metric-card compact">
                     <div class="metric-value" id="totalTasks">0</div>
-                    <div class="metric-label">Total Tasks</div>
+                    <div class="metric-label">Tasks</div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="metric-card">
+            <div class="col-md-2">
+                <div class="metric-card compact">
                     <div class="metric-value" id="completedIssues">0</div>
-                    <div class="metric-label">Completed Issues</div>
+                    <div class="metric-label">Completed</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card compact">
+                    <div class="metric-value" id="totalIssues">0</div>
+                    <div class="metric-label">Total Issues</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card compact">
+                    <div class="metric-value" id="completionRate">0%</div>
+                    <div class="metric-label">Completion</div>
                 </div>
             </div>
         </div>
 
-        <!-- Current Sprint Information -->
+        <!-- Sprint Information (Dynamic) -->
         <div id="sprintInfo" class="sprint-info-card" style="display: none;">
-            <h4 class="mb-4"><i class="fas fa-running"></i> Current Sprint Information</h4>
+            <h4 class="mb-4"><i class="fas fa-running"></i> <span id="sprintInfoTitle">Sprint Information</span></h4>
             <div class="row">
                 <div class="col-md-2">
                     <div class="sprint-metric">
@@ -323,13 +362,13 @@
                 <div class="col-md-2">
                     <div class="sprint-metric">
                         <div class="sprint-value" id="sprintStories">0</div>
-                        <div class="sprint-label">Stories Count</div>
+                        <div class="sprint-label">Stories</div>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="sprint-metric">
                         <div class="sprint-value" id="sprintBugs">0</div>
-                        <div class="sprint-label">Bugs Count</div>
+                        <div class="sprint-label">Bugs</div>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -462,6 +501,8 @@
     <script>
         // Global variables
         let currentData = null;
+        let allProjectData = null;
+        let filteredData = null;
         let charts = {
             issueTypes: null,
             status: null
@@ -477,9 +518,16 @@
             try {
                 const storedData = localStorage.getItem('ctoAnalysisData');
                 if (storedData) {
-                    currentData = JSON.parse(storedData);
-                    console.log('Loaded data from storage:', currentData);
-                    displayDashboard(currentData);
+                    allProjectData = JSON.parse(storedData);
+                    currentData = allProjectData;
+                    filteredData = allProjectData;
+                    console.log('Loaded data from storage:', allProjectData);
+                    
+                    // Load sprints for filter
+                    loadSprintsForFilter();
+                    
+                    // Display all project data initially
+                    displayDashboard(allProjectData);
                 } else {
                     console.log('No data found in storage');
                     showError('No analysis data found. Please go back and analyze a project first.');
@@ -537,11 +585,94 @@
             document.getElementById('analysisDate').textContent = new Date().toLocaleString();
         }
 
+        function loadSprintsForFilter() {
+            const sprintFilter = document.getElementById('sprintFilter');
+            if (!sprintFilter || !allProjectData) return;
+
+            // Clear existing options
+            sprintFilter.innerHTML = '<option value="">All Sprints</option>';
+
+            // Add sprints from data
+            if (allProjectData.sprints && allProjectData.sprints.length > 0) {
+                allProjectData.sprints.forEach(sprint => {
+                    const option = document.createElement('option');
+                    option.value = sprint.id || sprint.name;
+                    option.textContent = sprint.name || sprint.id;
+                    if (sprint.state) {
+                        option.textContent += ` (${sprint.state})`;
+                    }
+                    sprintFilter.appendChild(option);
+                });
+            }
+
+            // Add "No Sprint" option for issues without sprint
+            const noSprintOption = document.createElement('option');
+            noSprintOption.value = 'no-sprint';
+            noSprintOption.textContent = 'No Sprint';
+            sprintFilter.appendChild(noSprintOption);
+        }
+
+        function filterBySprint() {
+            const selectedSprint = document.getElementById('sprintFilter').value;
+            console.log('Filtering by sprint:', selectedSprint);
+
+            if (!selectedSprint) {
+                // Show all project data
+                filteredData = allProjectData;
+                document.getElementById('sprintInfoTitle').textContent = 'All Project Data';
+            } else if (selectedSprint === 'no-sprint') {
+                // Show only issues without sprint
+                filteredData = filterDataBySprint(allProjectData, null);
+                document.getElementById('sprintInfoTitle').textContent = 'Issues Without Sprint';
+            } else {
+                // Show specific sprint data
+                filteredData = filterDataBySprint(allProjectData, selectedSprint);
+                const sprintName = document.getElementById('sprintFilter').selectedOptions[0].textContent;
+                document.getElementById('sprintInfoTitle').textContent = `Sprint: ${sprintName}`;
+            }
+
+            // Update display with filtered data
+            displayDashboard(filteredData);
+        }
+
+        function filterDataBySprint(data, sprintId) {
+            if (!data || !data.issues) return data;
+
+            let filteredIssues = data.issues;
+            
+            if (sprintId === null) {
+                // Filter for issues without sprint
+                filteredIssues = data.issues.filter(issue => !issue.sprint || issue.sprint === '');
+            } else {
+                // Filter for specific sprint
+                filteredIssues = data.issues.filter(issue => issue.sprint === sprintId);
+            }
+
+            // Recalculate metrics for filtered data
+            const filteredData = {
+                ...data,
+                issues: filteredIssues,
+                totalBugs: filteredIssues.filter(i => i.type === 'Bug').length,
+                totalStories: filteredIssues.filter(i => i.type === 'Story').length,
+                totalTasks: filteredIssues.filter(i => i.type === 'Task').length,
+                completedIssues: filteredIssues.filter(i => i.status === 'Done').length,
+                totalIssues: filteredIssues.length
+            };
+
+            // Calculate completion rate
+            filteredData.completionRate = filteredData.totalIssues > 0 ? 
+                Math.round((filteredData.completedIssues / filteredData.totalIssues) * 100) : 0;
+
+            return filteredData;
+        }
+
         function updateBasicMetrics(data) {
             document.getElementById('totalBugs').textContent = data.totalBugs || 0;
             document.getElementById('totalStories').textContent = data.totalStories || 0;
             document.getElementById('totalTasks').textContent = data.totalTasks || 0;
             document.getElementById('completedIssues').textContent = data.completedIssues || 0;
+            document.getElementById('totalIssues').textContent = data.totalIssues || 0;
+            document.getElementById('completionRate').textContent = (data.completionRate || 0) + '%';
         }
 
         function updateSprintInfo(sprintInfo) {

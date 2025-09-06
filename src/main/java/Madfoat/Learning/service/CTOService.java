@@ -108,6 +108,12 @@ public class CTOService {
             System.out.println("Sprint info result: " + sprintInfo);
             statistics.put("sprintInfo", sprintInfo);
             
+            // Get all sprints for the project
+            System.out.println("Getting all sprints for project: " + projectKey);
+            List<Map<String, Object>> allSprints = getAllSprints(jiraUrl, projectKey, username, apiToken);
+            System.out.println("All sprints result: " + allSprints);
+            statistics.put("sprints", allSprints);
+            
             return statistics;
             
         } catch (Exception e) {
@@ -718,6 +724,84 @@ public class CTOService {
             errorSprintInfo.put("endDate", "Error");
             
             return errorSprintInfo;
+        }
+    }
+
+    public List<Map<String, Object>> getAllSprints(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            System.out.println("=== GETTING ALL SPRINTS ===");
+            System.out.println("Jira URL: " + jiraUrl);
+            System.out.println("Project Key: " + projectKey);
+            
+            List<Map<String, Object>> sprints = new ArrayList<>();
+            
+            // Get boards for the project
+            String url = jiraUrl + "/rest/agile/1.0/board?projectKeyOrId=" + projectKey;
+            System.out.println("Boards URL: " + url);
+            
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            System.out.println("Boards response status: " + response.getStatusCode());
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode boards = objectMapper.readTree(response.getBody());
+                
+                if (boards.has("values") && boards.get("values").size() > 0) {
+                    System.out.println("Found " + boards.get("values").size() + " boards");
+                    
+                    for (JsonNode board : boards.get("values")) {
+                        String boardId = board.get("id").asText();
+                        String boardName = board.get("name").asText();
+                        System.out.println("Processing board: " + boardName + " (ID: " + boardId + ")");
+                        
+                        // Get all sprints for this board
+                        String sprintUrl = jiraUrl + "/rest/agile/1.0/board/" + boardId + "/sprint";
+                        System.out.println("Sprints URL: " + sprintUrl);
+                        
+                        ResponseEntity<String> sprintResponse = restTemplate.exchange(sprintUrl, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                        System.out.println("Sprints response status: " + sprintResponse.getStatusCode());
+                        
+                        if (sprintResponse.getStatusCode() == HttpStatus.OK) {
+                            JsonNode sprintData = objectMapper.readTree(sprintResponse.getBody());
+                            
+                            if (sprintData.has("values") && sprintData.get("values").size() > 0) {
+                                System.out.println("Found " + sprintData.get("values").size() + " sprints for board " + boardName);
+                                
+                                for (JsonNode sprint : sprintData.get("values")) {
+                                    Map<String, Object> sprintInfo = new HashMap<>();
+                                    sprintInfo.put("id", sprint.get("id").asText());
+                                    sprintInfo.put("name", sprint.get("name").asText());
+                                    sprintInfo.put("state", sprint.get("state").asText());
+                                    sprintInfo.put("startDate", sprint.path("startDate").asText(""));
+                                    sprintInfo.put("endDate", sprint.path("endDate").asText(""));
+                                    sprintInfo.put("boardId", boardId);
+                                    sprintInfo.put("boardName", boardName);
+                                    
+                                    sprints.add(sprintInfo);
+                                    System.out.println("Added sprint: " + sprint.get("name").asText() + " (State: " + sprint.get("state").asText() + ")");
+                                }
+                            } else {
+                                System.out.println("No sprints found for board " + boardName);
+                            }
+                        } else {
+                            System.out.println("Failed to get sprints for board " + boardName);
+                        }
+                    }
+                } else {
+                    System.out.println("No boards found for project");
+                }
+            } else {
+                System.out.println("Failed to get boards for project");
+            }
+            
+            System.out.println("Total sprints found: " + sprints.size());
+            return sprints;
+            
+        } catch (Exception e) {
+            System.err.println("Error getting all sprints: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
