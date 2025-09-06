@@ -1669,28 +1669,79 @@
         }
 
         function populateFilterDropdowns(data) {
+            console.log('Populating filter dropdowns with data:', data);
+            
+            // Populate Sprint dropdown
             const sprintFilter = document.getElementById('ctoSprintFilter');
             if (sprintFilter && data.sprints) {
                 sprintFilter.innerHTML = '<option value="">All Sprints</option>';
                 data.sprints.forEach(sprint => {
-                    sprintFilter.innerHTML += `<option value="${sprint.id}">${sprint.name}</option>`;
+                    const option = document.createElement('option');
+                    option.value = sprint.id || sprint.name;
+                    option.textContent = sprint.name || sprint.id;
+                    if (sprint.state) {
+                        option.textContent += ` (${sprint.state})`;
+                    }
+                    sprintFilter.appendChild(option);
                 });
+                console.log('Populated sprints:', data.sprints.length);
             }
 
+            // Populate Assignee dropdown
             const assigneeFilter = document.getElementById('ctoAssigneeFilter');
             if (assigneeFilter && data.assignees) {
                 assigneeFilter.innerHTML = '<option value="">All Assignees</option>';
                 data.assignees.forEach(assignee => {
-                    assigneeFilter.innerHTML += `<option value="${assignee}">${assignee}</option>`;
+                    const option = document.createElement('option');
+                    option.value = assignee;
+                    option.textContent = assignee;
+                    assigneeFilter.appendChild(option);
                 });
+                console.log('Populated assignees:', data.assignees.length);
             }
 
+            // Populate Issue Type dropdown
+            const issueTypeFilter = document.getElementById('ctoIssueTypeFilter');
+            if (issueTypeFilter && data.issueTypes) {
+                issueTypeFilter.innerHTML = '<option value="">All Types</option>';
+                data.issueTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    issueTypeFilter.appendChild(option);
+                });
+                console.log('Populated issue types:', data.issueTypes.length);
+            }
+
+            // Populate Status dropdown
             const statusFilter = document.getElementById('ctoStatusFilter');
             if (statusFilter && data.statuses) {
                 statusFilter.innerHTML = '<option value="">All Statuses</option>';
                 data.statuses.forEach(status => {
-                    statusFilter.innerHTML += `<option value="${status}">${status}</option>`;
+                    const option = document.createElement('option');
+                    option.value = status;
+                    option.textContent = status;
+                    statusFilter.appendChild(option);
                 });
+                console.log('Populated statuses:', data.statuses.length);
+            }
+
+            // Populate Priority dropdown
+            const priorityFilter = document.getElementById('ctoPriorityFilter');
+            if (priorityFilter && data.priorities) {
+                priorityFilter.innerHTML = '<option value="">All Priorities</option>';
+                data.priorities.forEach(priority => {
+                    const option = document.createElement('option');
+                    option.value = priority;
+                    option.textContent = priority;
+                    priorityFilter.appendChild(option);
+                });
+                console.log('Populated priorities:', data.priorities.length);
+            }
+            
+            // Show filters card if we have data
+            if (data.sprints || data.assignees || data.issueTypes || data.statuses || data.priorities) {
+                document.getElementById('ctoFiltersCard').style.display = 'block';
             }
         }
 
@@ -1913,8 +1964,39 @@
             if (selectedProject.value) {
                 document.getElementById('ctoSelectedProject').value = selectedProject.textContent;
                 document.getElementById('ctoAnalysisCard').style.display = 'block';
+                
+                // Load filter options for the selected project
+                loadFilterOptions(selectedProject.value);
             } else {
                 document.getElementById('ctoAnalysisCard').style.display = 'none';
+                document.getElementById('ctoFiltersCard').style.display = 'none';
+            }
+        }
+
+        async function loadFilterOptions(projectKey) {
+            try {
+                console.log('Loading filter options for project:', projectKey);
+                
+                const response = await fetch('/api/cto/filter-options', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ projectKey: projectKey })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load filter options');
+                }
+
+                const data = await response.json();
+                console.log('Filter options loaded:', data);
+                
+                // Populate filter dropdowns
+                populateFilterDropdowns(data);
+                
+            } catch (error) {
+                console.error('Error loading filter options:', error);
+                // Don't show alert for filter loading errors, just log them
             }
         }
 

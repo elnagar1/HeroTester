@@ -505,6 +505,162 @@ public class CTOService {
         return sprintInfo;
     }
 
+    public Map<String, Object> getFilterOptions(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            Map<String, Object> filterOptions = new HashMap<>();
+            
+            // Get sprints
+            List<Map<String, Object>> sprints = getSprints(jiraUrl, projectKey, username, apiToken);
+            filterOptions.put("sprints", sprints);
+            
+            // Get assignees
+            List<String> assignees = getAssignees(jiraUrl, projectKey, username, apiToken);
+            filterOptions.put("assignees", assignees);
+            
+            // Get issue types
+            List<String> issueTypes = getIssueTypes(jiraUrl, projectKey, username, apiToken);
+            filterOptions.put("issueTypes", issueTypes);
+            
+            // Get statuses
+            List<String> statuses = getStatuses(jiraUrl, projectKey, username, apiToken);
+            filterOptions.put("statuses", statuses);
+            
+            // Get priorities
+            List<String> priorities = getPriorities(jiraUrl, projectKey, username, apiToken);
+            filterOptions.put("priorities", priorities);
+            
+            return filterOptions;
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get filter options: " + e.getMessage(), e);
+        }
+    }
+    
+    
+    private List<String> getAssignees(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            String url = jiraUrl + "/rest/api/2/search?jql=project=" + projectKey + "&fields=assignee&maxResults=1000";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode searchResult = objectMapper.readTree(response.getBody());
+                Set<String> assignees = new HashSet<>();
+                
+                if (searchResult.has("issues")) {
+                    for (JsonNode issue : searchResult.get("issues")) {
+                        JsonNode assignee = issue.path("fields").path("assignee");
+                        if (!assignee.isNull() && assignee.has("displayName")) {
+                            assignees.add(assignee.get("displayName").asText());
+                        }
+                    }
+                }
+                
+                return new ArrayList<>(assignees);
+            }
+            
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            System.err.println("Error getting assignees: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    private List<String> getIssueTypes(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            String url = jiraUrl + "/rest/api/2/search?jql=project=" + projectKey + "&fields=issuetype&maxResults=1000";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode searchResult = objectMapper.readTree(response.getBody());
+                Set<String> issueTypes = new HashSet<>();
+                
+                if (searchResult.has("issues")) {
+                    for (JsonNode issue : searchResult.get("issues")) {
+                        JsonNode issueType = issue.path("fields").path("issuetype");
+                        if (issueType.has("name")) {
+                            issueTypes.add(issueType.get("name").asText());
+                        }
+                    }
+                }
+                
+                return new ArrayList<>(issueTypes);
+            }
+            
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            System.err.println("Error getting issue types: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    private List<String> getStatuses(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            String url = jiraUrl + "/rest/api/2/search?jql=project=" + projectKey + "&fields=status&maxResults=1000";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode searchResult = objectMapper.readTree(response.getBody());
+                Set<String> statuses = new HashSet<>();
+                
+                if (searchResult.has("issues")) {
+                    for (JsonNode issue : searchResult.get("issues")) {
+                        JsonNode status = issue.path("fields").path("status");
+                        if (status.has("name")) {
+                            statuses.add(status.get("name").asText());
+                        }
+                    }
+                }
+                
+                return new ArrayList<>(statuses);
+            }
+            
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            System.err.println("Error getting statuses: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    private List<String> getPriorities(String jiraUrl, String projectKey, String username, String apiToken) {
+        try {
+            String url = jiraUrl + "/rest/api/2/search?jql=project=" + projectKey + "&fields=priority&maxResults=1000";
+            HttpHeaders headers = createAuthHeaders(username, apiToken);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode searchResult = objectMapper.readTree(response.getBody());
+                Set<String> priorities = new HashSet<>();
+                
+                if (searchResult.has("issues")) {
+                    for (JsonNode issue : searchResult.get("issues")) {
+                        JsonNode priority = issue.path("fields").path("priority");
+                        if (!priority.isNull() && priority.has("name")) {
+                            priorities.add(priority.get("name").asText());
+                        }
+                    }
+                }
+                
+                return new ArrayList<>(priorities);
+            }
+            
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            System.err.println("Error getting priorities: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     private HttpHeaders createAuthHeaders(String username, String apiToken) {
         HttpHeaders headers = new HttpHeaders();
         String auth = username + ":" + apiToken;
